@@ -1,0 +1,112 @@
+version: 2.1
+
+orbs:
+  codecov: codecov/codecov@1
+  snyk: snyk/snyk@0.0.10
+
+executors:
+  gradle_docker:
+    docker:
+      - image: cimg/openjdk:11.0
+    environment:
+      JVM_OPTS: -Xmx2g
+      TERM: dumb
+
+commands:
+  gradle:
+    description: 'Run the provided gradle command'
+    parameters:
+      args:
+        type: string
+      when:
+        default: "on_success"
+        type: enum
+        enum: ["on_fail", "on_success", "always"]
+    steps:
+      - run:
+          name: << parameters.args >>
+          command: ./gradlew << parameters.args >> --info --max-workers=2 --continue
+          when: << parameters.when >>
+  setup_build_environment:
+    description: 'Generates cache key from a hash of all gradle files'
+    steps:
+      - checkout
+      - run:
+          name: Generate cache key
+          command: find . -type f -name "*.gradle*" -o -name "gradle-wrapper*" -exec shasum {} + | sort > /tmp/checksum.txt && cat /tmp/checksum.txt
+      - restore_cache:
+          keys:
+            - v1-dependencies-{{ checksum "/tmp/checksum.txt" }}
+            # fallback to using the latest cache if no exact match is found
+            - v1-dependencies-
+  populate_and_save_cache:
+    description: 'Downloads all gradle dependencies and uploads cache for later use'
+    steps:
+      - gradle:
+          args: downloadDependencies
+      - save_cache:
+          paths:
+            - ~/.gradle
+          key: v1-dependencies-{{ checksum "/tmp/checksum.txt" }}
+
+jobs:
+  build:
+    executor: gradle_docker
+    steps:
+      - setup_build_environment
+      - setup_remote_docker
+      - populate_and_save_cache
+      - gradle:
+          args: build
+      - gradle:
+          args: jacocoTestReport
+      - gradle:
+          args: copyAllReports --output-dir=/tmp/test-reports
+          when: always
+      - codecov/upload:
+          flags: unit
+      - store_test_results:
+          path: /tmp/test-reports
+      - store_artifacts:
+          path: /tmp/test-reports
+          destination: reports
+
+  publish:
+    executor: gradle_docker
+    steps:
+      - setup_build_environment
+      - setup_remote_docker
+      - gradle:
+          args: :tag -Prelease
+      - add_ssh_keys:
+          fingerprints:
+            - '3d:92:e9:3f:26:4c:0f:2b:34:0c:be:ba:38:71:13:89'
+      - run: git push origin $(./gradlew -q :printVersion)
+      - gradle:
+          args: publish
+  snyk-scan:
+    executor:
+      name: gradle_docker
+    environment:
+      GRADLE_OPTS: -Dorg.gradle.workers.max=1 # Snyk doesn't handle parallelism well
+    steps:
+      - setup_build_environment
+      - snyk/scan:
+          additional-arguments: --all-sub-projects
+
+workflows:
+  version: 2
+  build-and-publish:
+    jobs:
+      - build
+      - snyk-scan:
+          context: hypertrace-vulnerability-scanning
+      - publish:
+          context: hypertrace-publishing
+          requires:
+            - build
+            - snyk-scan
+          filters:
+            branches:
+              only:
+                - master
