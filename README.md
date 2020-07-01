@@ -1,3 +1,11 @@
-# service-framework
+# Hypertrace Service Framework
+###### org.hypertrace.core.serviceframework
 
-Includes the following components platform-service-framework,platform-metrics,integrationtest-service-framework
+[![CircleCI](https://circleci.com/gh/hypertrace/service-framework.svg?style=shield)](https://circleci.com/gh/hypertrace/service-framework)
+[![codecov](https://codecov.io/gh/hypertrace/service-framework/branch/master/graph/badge.svg)](https://codecov.io/gh/hypertrace/service-framework)
+
+Includes the following components:
+
+- platform-service-framework
+- platform-metrics
+- integrationtest-service-framework
