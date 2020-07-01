@@ -4,7 +4,7 @@ import org.hypertrace.gradle.publishing.License
 plugins {
   id("org.hypertrace.repository-plugin") version "0.1.2"
   id("org.hypertrace.ci-utils-plugin") version "0.1.1"
-  id("org.hypertrace.publish-plugin") version "0.1.2" apply false
+  id("org.hypertrace.publish-plugin") version "0.1.4" apply false
   id("org.hypertrace.jacoco-report-plugin") version "0.1.0" apply false
 }
 
