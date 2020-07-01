@@ -5,12 +5,9 @@ orbs:
   snyk: snyk/snyk@0.0.10
 
 executors:
-  gradle_docker:
+  java:
     docker:
       - image: cimg/openjdk:11.0
-    environment:
-      JVM_OPTS: -Xmx2g
-      TERM: dumb
 
 commands:
   gradle:
@@ -25,7 +22,7 @@ commands:
     steps:
       - run:
           name: << parameters.args >>
-          command: ./gradlew << parameters.args >> --info --max-workers=2 --continue
+          command: ./gradlew << parameters.args >> --info --max-workers=2 -Dorg.gradle.jvmargs=-Xmx2g -Dorg.gradle.console=plain --continue
           when: << parameters.when >>
   setup_build_environment:
     description: 'Generates cache key from a hash of all gradle files'
@@ -51,7 +48,7 @@ commands:
 
 jobs:
   build:
-    executor: gradle_docker
+    executor: java
     steps:
       - setup_build_environment
       - setup_remote_docker
@@ -63,8 +60,7 @@ jobs:
       - gradle:
           args: copyAllReports --output-dir=/tmp/test-reports
           when: always
-      - codecov/upload:
-          flags: unit
+      - codecov/upload
       - store_test_results:
           path: /tmp/test-reports
       - store_artifacts:
@@ -72,7 +68,7 @@ jobs:
           destination: reports
 
   publish:
-    executor: gradle_docker
+    executor: java
     steps:
       - setup_build_environment
       - setup_remote_docker
@@ -85,8 +81,7 @@ jobs:
       - gradle:
           args: publish
   snyk-scan:
-    executor:
-      name: gradle_docker
+    executor: java
     environment:
       GRADLE_OPTS: -Dorg.gradle.workers.max=1 # Snyk doesn't handle parallelism well
     steps:
