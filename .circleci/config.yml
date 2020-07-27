@@ -87,7 +87,7 @@ jobs:
     steps:
       - setup_build_environment
       - snyk/scan:
-          additional-arguments: --all-sub-projects
+          additional-arguments: --all-sub-projects --policy-path=.snyk
 
 workflows:
   version: 2
