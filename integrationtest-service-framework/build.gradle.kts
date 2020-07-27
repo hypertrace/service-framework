@@ -12,9 +12,6 @@ tasks.test {
 dependencies {
     implementation(project(":platform-service-framework"))
 
-    // grpc
-    implementation("io.grpc:grpc-core:1.30.2")
-
     // Configuration
     implementation("com.typesafe:config:1.3.2")
     // Logging

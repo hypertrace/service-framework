@@ -1,5 +1,8 @@
 package org.hypertrace.core.serviceframework;
 
+import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.DEFAULT_METRICS_REPORTERS;
+
+import com.codahale.metrics.servlets.CpuProfileServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
 import com.typesafe.config.Config;
 import java.net.InetAddress;
@@ -15,10 +18,9 @@ import org.hypertrace.core.serviceframework.config.ConfigUtils;
 import org.hypertrace.core.serviceframework.metrics.MetricsServlet;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.service.servlets.HealthCheckServlet;
+import org.hypertrace.core.serviceframework.service.servlets.JVMDiagnosticServlet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.DEFAULT_METRICS_REPORTERS;
 
 public abstract class PlatformService {
 
@@ -108,6 +110,9 @@ public abstract class PlatformService {
     context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
     context.addServlet(new ServletHolder(new HealthCheckServlet(this)), "/health");
     context.addServlet(new ServletHolder(new ThreadDumpServlet()), "/threads");
+    context.addServlet(new ServletHolder(new CpuProfileServlet()), "/pprof");
+    context.addServlet(new ServletHolder(new JVMDiagnosticServlet()), "/diags/*");
+
     try {
       final Thread thread = new Thread(() -> doStart());
       thread.start();
