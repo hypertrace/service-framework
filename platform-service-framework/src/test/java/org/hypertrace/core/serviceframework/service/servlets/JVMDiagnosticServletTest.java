@@ -50,7 +50,7 @@ public class JVMDiagnosticServletTest {
   public void testUnknownCommand() throws Exception {
     final Response response = processRequest("/diags/unknown");
 
-    //Unknow command
+    // Unknown command returns 200 but with with error message
     Assertions.assertEquals(HttpStatus.OK_200, response.getStatus());
     Assertions.assertTrue(response.getContent().startsWith("Error"),
         "Response expected to contain error message. Response received: " + response.getContent());
