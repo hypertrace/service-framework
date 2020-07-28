@@ -34,4 +34,6 @@ dependencies {
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
   testImplementation("org.mockito:mockito-core:3.3.3")
+  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.18.v20190429:tests")
+  testImplementation("org.eclipse.jetty:jetty-http:9.4.18.v20190429:tests")
 }

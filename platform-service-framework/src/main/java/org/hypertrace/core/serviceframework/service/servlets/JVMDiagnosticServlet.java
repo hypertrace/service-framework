@@ -68,7 +68,7 @@ public class JVMDiagnosticServlet extends HttpServlet {
     String uri = req.getPathInfo();
     Op operation = URI_TO_OP.get(uri);
     if (operation == null) {
-      responseWriter.println("Error: Operation not found for uri:" + uri);
+      responseWriter.println("Error: Unknown operation: " + uri);
       return;
     }
 
