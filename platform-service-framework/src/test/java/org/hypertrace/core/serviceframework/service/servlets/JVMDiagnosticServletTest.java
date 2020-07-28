@@ -7,10 +7,8 @@ import org.eclipse.jetty.http.HttpTester.Response;
 import org.eclipse.jetty.http.HttpVersion;
 import org.eclipse.jetty.servlet.ServletTester;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class JVMDiagnosticServletTest {
@@ -45,7 +43,18 @@ public class JVMDiagnosticServletTest {
     Assertions.assertEquals(HttpStatus.OK_200, response.getStatus());
     Assertions.assertNotNull(response.getContent());
     Assertions.assertTrue(response.getContent().contains("version"),
-        "Response doesn't contain version. Response received: " + response.getContent());
+        "Response doesn't contain word 'version'. Response received: " + response.getContent());
+  }
+
+  @Test
+  public void testUnknownCommand() throws Exception {
+    final Response response = processRequest("/diags/unknown");
+
+    //Unknow command
+    Assertions.assertEquals(HttpStatus.OK_200, response.getStatus());
+    Assertions.assertTrue(response.getContent().startsWith("Error"),
+        "Response expected to contain error message. Response received: " + response.getContent());
+
   }
 
   private Response processRequest(String uri) throws Exception {
