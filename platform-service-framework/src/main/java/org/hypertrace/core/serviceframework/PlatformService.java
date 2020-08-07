@@ -4,11 +4,15 @@ import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegist
 
 import com.codahale.metrics.servlets.CpuProfileServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -26,7 +30,18 @@ public abstract class PlatformService {
 
   private static final String METRICS_REPORTER_NAMES_CONFIG_KEY = "metrics.reporter.names";
   private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "metrics.reporter.prefix";
-  private static final String METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_CONFIG_KEY = "metrics.reporter.console.reportInterval";
+  private static final String METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_CONFIG_KEY =
+      "metrics.reporter.console.reportInterval";
+
+  /**
+   * List of tags that need to be reported for all the metrics reported by this service.
+   * The tag keys, values are separated by just commas. Any key without a value will be ignored.
+   * Example: k1,v1,k2,v2.
+   *
+   * Please note "app:serviceName" will be reported by default for all metrics, and hence
+   * needn't be included in this list.
+   */
+  private static final String METRICS_REPORTER_TAGS_CONFIG_KEY = "metrics.reporter.tags";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformService.class);
 
@@ -40,7 +55,7 @@ public abstract class PlatformService {
   }
 
   protected ConfigClient configClient;
-  private Config appConfig;
+  private final Config appConfig;
   private State serviceState = State.NOT_STARTED;
   private Server adminServer;
 
@@ -84,9 +99,11 @@ public abstract class PlatformService {
     }
     serviceState = State.INITIALIZING;
 
-    initializeMetricRegistry(this.appConfig);
     LOGGER.info("Starting the service with this config {}", appConfig);
     doInit();
+
+    initializeMetricRegistry(this.appConfig);
+
     serviceState = State.INITIALIZED;
     LOGGER.info("Service - {} is initialized.", getServiceName());
   }
@@ -114,7 +131,7 @@ public abstract class PlatformService {
     context.addServlet(new ServletHolder(new JVMDiagnosticServlet()), "/diags/*");
 
     try {
-      final Thread thread = new Thread(() -> doStart());
+      final Thread thread = new Thread(this::doStart);
       thread.start();
     } catch (Exception e) {
       LOGGER.error("Failed to start thread for application.", e);
@@ -187,7 +204,20 @@ public abstract class PlatformService {
             METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_CONFIG_KEY,
             PlatformMetricsRegistry.METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_DEFAULT);
 
-    PlatformMetricsRegistry.initMetricsRegistry(reporters, metricsPrefix, reportInterval);
+    Map<String, String> tags = new HashMap<>();
+
+    // If the metric tags were provided, parse them and pass to the MetricRegistry.
+    if (config.hasPath(METRICS_REPORTER_TAGS_CONFIG_KEY)) {
+      String tagsStr = config.getString(METRICS_REPORTER_TAGS_CONFIG_KEY);
+      for (List<String> sublist: Lists.partition(Splitter.on(",").splitToList(tagsStr), 2)) {
+        if (sublist.size() == 2) {
+          tags.put(sublist.get(0), sublist.get(1));
+        }
+      }
+    }
+
+    PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), reporters, metricsPrefix,
+        reportInterval, tags);
   }
 
   enum State {
