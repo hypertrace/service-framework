@@ -205,6 +205,9 @@ public abstract class PlatformService {
 
     Map<String, String> tags = new HashMap<>();
 
+    // Add the service name and other given tags to the default tags list.
+    tags.put("app", getServiceName());
+
     // If the metric tags were provided, parse them and pass to the MetricRegistry.
     if (config.hasPath(METRICS_DEFAULT_TAGS_CONFIG_KEY)) {
       String tagsStr = config.getString(METRICS_DEFAULT_TAGS_CONFIG_KEY);
@@ -215,7 +218,7 @@ public abstract class PlatformService {
       }
     }
 
-    PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), reporters, metricsPrefix,
+    PlatformMetricsRegistry.initMetricsRegistry(reporters, metricsPrefix,
         reportIntervalSec, tags);
   }
 

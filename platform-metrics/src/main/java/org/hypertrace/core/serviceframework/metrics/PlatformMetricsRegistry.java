@@ -119,14 +119,13 @@ public class PlatformMetricsRegistry {
     }, Clock.SYSTEM));
   }
 
-  public synchronized static void initMetricsRegistry(String serviceName, Map<String, String> tags) {
-    initMetricsRegistry(serviceName, DEFAULT_METRICS_REPORTERS, DEFAULT_METRICS_PREFIX,
-        METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_DEFAULT, tags);
+  public synchronized static void initMetricsRegistry(Map<String, String> defaultTags) {
+    initMetricsRegistry(DEFAULT_METRICS_REPORTERS, DEFAULT_METRICS_PREFIX,
+        METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_DEFAULT, defaultTags);
   }
 
-  public synchronized static void initMetricsRegistry(String serviceName,
-      final List<String> reporters, final String prefix,
-      final int reportIntervalSec, Map<String, String> tags) {
+  public synchronized static void initMetricsRegistry(final List<String> reporters,
+      final String prefix, final int reportIntervalSec, Map<String, String> tags) {
     if (isInit) {
       return;
     }
@@ -149,8 +148,7 @@ public class PlatformMetricsRegistry {
       }
     }
 
-    // Add the service name and other given tags to the default tags list.
-    DEFAULT_TAGS.add(new ImmutableTag("app", serviceName));
+    LOGGER.info("Setting default tags for all metrics to: {}", tags);
     tags.forEach((key, value) -> DEFAULT_TAGS.add(new ImmutableTag(key, value)));
 
     // Register different metrics with the registry.
@@ -274,8 +272,18 @@ public class PlatformMetricsRegistry {
     return METER_REGISTRY;
   }
 
-  public static void stop() {
+  public static synchronized void stop() {
     stopConsoleMetricsReporter();
+    METRIC_REGISTRY.getNames().forEach(METRIC_REGISTRY::remove);
+
+    DEFAULT_TAGS.clear();
+    METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
+    METER_REGISTRY.getRegistries().forEach(e -> {
+      e.clear();
+      METER_REGISTRY.remove(e);
+    });
+    CollectorRegistry.defaultRegistry.clear();
+    isInit = false;
   }
 
   private static void stopConsoleMetricsReporter() {
