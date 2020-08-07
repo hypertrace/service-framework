@@ -27,11 +27,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class PlatformService {
+  private static final int DEFAULT_METRIC_REPORT_INTERVAL_SEC = 30;
 
   private static final String METRICS_REPORTER_NAMES_CONFIG_KEY = "metrics.reporter.names";
   private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "metrics.reporter.prefix";
-  private static final String METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_CONFIG_KEY =
-      "metrics.reporter.console.reportInterval";
+  private static final String METRICS_REPORT_INTERVAL_CONFIG_KEY = "metrics.reportInterval";
 
   /**
    * List of tags that need to be reported for all the metrics reported by this service.
@@ -41,7 +41,7 @@ public abstract class PlatformService {
    * Please note "app:serviceName" will be reported by default for all metrics, and hence
    * needn't be included in this list.
    */
-  private static final String METRICS_REPORTER_TAGS_CONFIG_KEY = "metrics.reporter.tags";
+  private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "metrics.defaultTags";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformService.class);
 
@@ -200,16 +200,14 @@ public abstract class PlatformService {
         .getStringConfig(config, METRICS_REPORTER_PREFIX_CONFIG_KEY,
             PlatformMetricsRegistry.DEFAULT_METRICS_PREFIX);
 
-    int reportInterval = ConfigUtils
-        .getIntConfig(config,
-            METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_CONFIG_KEY,
-            PlatformMetricsRegistry.METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_DEFAULT);
+    int reportIntervalSec = ConfigUtils.getIntConfig(config,
+        METRICS_REPORT_INTERVAL_CONFIG_KEY, DEFAULT_METRIC_REPORT_INTERVAL_SEC);
 
     Map<String, String> tags = new HashMap<>();
 
     // If the metric tags were provided, parse them and pass to the MetricRegistry.
-    if (config.hasPath(METRICS_REPORTER_TAGS_CONFIG_KEY)) {
-      String tagsStr = config.getString(METRICS_REPORTER_TAGS_CONFIG_KEY);
+    if (config.hasPath(METRICS_DEFAULT_TAGS_CONFIG_KEY)) {
+      String tagsStr = config.getString(METRICS_DEFAULT_TAGS_CONFIG_KEY);
       for (List<String> sublist: Lists.partition(Splitter.on(",").splitToList(tagsStr), 2)) {
         if (sublist.size() == 2) {
           tags.put(sublist.get(0), sublist.get(1));
@@ -218,7 +216,7 @@ public abstract class PlatformService {
     }
 
     PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), reporters, metricsPrefix,
-        reportInterval, tags);
+        reportIntervalSec, tags);
   }
 
   enum State {
@@ -230,6 +228,4 @@ public abstract class PlatformService {
     STOPPING,
     STOPPED
   }
-
-
 }
