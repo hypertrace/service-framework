@@ -15,7 +15,6 @@ dependencies {
   api("org.apache.flink:flink-metrics-core:1.10.1")
   api("org.apache.flink:flink-metrics-prometheus_2.12:1.10.1")
   api("javax.servlet:javax.servlet-api:3.1.0")
-  api("com.google.guava:guava:29.0-jre")
 
   implementation("io.micrometer:micrometer-registry-prometheus:1.5.3")
   implementation("io.github.mweirauch:micrometer-jvm-extras:0.2.0")

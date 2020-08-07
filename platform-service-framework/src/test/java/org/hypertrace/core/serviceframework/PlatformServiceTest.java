@@ -4,13 +4,12 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.hypertrace.core.serviceframework.PlatformService.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -25,12 +24,10 @@ public class PlatformServiceTest {
    */
   static class TestService extends PlatformService {
     private final String name;
-    private final CountDownLatch latch;
 
-    public TestService(String name, ConfigClient client, CountDownLatch latch) {
+    public TestService(String name, ConfigClient client) {
       super(client);
       this.name = name;
-      this.latch = latch;
     }
 
     @Override
@@ -40,7 +37,6 @@ public class PlatformServiceTest {
 
     @Override
     protected void doStart() {
-      latch.countDown();
     }
 
     @Override
@@ -59,8 +55,7 @@ public class PlatformServiceTest {
     }
   }
 
-  private PlatformService getService(String name, Map<String, String> configs,
-      CountDownLatch serviceStartSignal) {
+  private PlatformService getService(String name, Map<String, String> configs) {
     return new TestService(name, new ConfigClient() {
       @Override
       public Config getConfig() {
@@ -71,36 +66,29 @@ public class PlatformServiceTest {
       public Config getConfig(String service, String cluster, String pod, String container) {
         return null;
       }
-    }, serviceStartSignal);
+    });
   }
 
-  private Thread startService(final PlatformService service,
-      CountDownLatch serviceStartSignal) {
-    // Start the service in a separate thread since the thread which starts it waits until
-    // the service is shutting down.
-    Thread t = new Thread(() -> {
+  private void startService(final PlatformService service) {
+    new Thread(() -> {
       service.initialize();
       service.start();
-    });
-    t.start();
+    }).start();
 
     // Wait for the service to fully start so that admin server is started and all servlets
     // are initialized.
-    try {
-      serviceStartSignal.await(5, TimeUnit.SECONDS);
-    } catch (InterruptedException e) {
-      Assertions.fail("Waited too long for the service to start.");
+    while (service.getServiceState() != State.STARTED) {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException ignore) {}
     }
-
-    return t;
   }
 
   @Test
   public void testMetricInitialization() {
-    CountDownLatch serviceStartSignal = new CountDownLatch(1);
     PlatformService service = getService("test-service",
-        Map.of("service.admin.port", "59001"), serviceStartSignal);
-    Thread t = startService(service, serviceStartSignal);
+        Map.of("service.admin.port", "59001"));
+    startService(service);
 
     Assertions.assertEquals("test-service", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
@@ -122,12 +110,6 @@ public class PlatformServiceTest {
     }
 
     service.shutdown();
-    try {
-      // Wait for the thread which started the service to go down.
-      t.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
 
     // Metrics endpoint should be down now.
     try {
@@ -140,11 +122,10 @@ public class PlatformServiceTest {
 
   @Test
   public void testMetricInitializationWithDefaultTags() {
-    CountDownLatch serviceStartSignal = new CountDownLatch(1);
     PlatformService service = getService("test-service2",
-        Map.of("service.admin.port", "59002", "metrics.defaultTags", "foo,bar,k1,v1"),
-        serviceStartSignal);
-    Thread t = startService(service, serviceStartSignal);
+        Map.of("service.admin.port", "59002", "metrics.defaultTags", "foo,bar,k1,v1,k2")
+    );
+    startService(service);
 
     Assertions.assertEquals("test-service2", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
@@ -167,11 +148,5 @@ public class PlatformServiceTest {
     }
 
     service.shutdown();
-    try {
-      // Wait for the thread which started the service to go down.
-      t.join();
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
   }
 }

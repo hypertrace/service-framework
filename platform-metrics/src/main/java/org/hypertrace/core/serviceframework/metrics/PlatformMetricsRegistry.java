@@ -8,7 +8,6 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.JvmAttributeGaugeSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
-import com.google.common.cache.Cache;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.core.instrument.Clock;
@@ -17,7 +16,6 @@ import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
-import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
@@ -27,6 +25,8 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
+import io.micrometer.core.lang.NonNull;
+import io.micrometer.core.lang.Nullable;
 import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
@@ -39,7 +39,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
-import javax.annotation.Nonnull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +78,7 @@ public class PlatformMetricsRegistry {
     // Add Prometheus registry to the composite registry.
     METER_REGISTRY.add(new PrometheusMeterRegistry(new PrometheusConfig() {
       @Override
-      @Nonnull
+      @NonNull
       public Duration step() {
         return Duration.ofSeconds(reportInterval);
       }
@@ -106,7 +105,7 @@ public class PlatformMetricsRegistry {
 
     METER_REGISTRY.add(new LoggingMeterRegistry(new LoggingRegistryConfig() {
       @Override
-      @Nonnull
+      @NonNull
       public Duration step() {
         return Duration.ofSeconds(reportIntervalSec);
       }
@@ -220,7 +219,7 @@ public class PlatformMetricsRegistry {
   }
 
   /**
-   * Registers the given number as a Guage with the service's metric registry and reports it
+   * Registers the given number as a Gauge with the service's metric registry and reports it
    * periodically to the configured reporters. Apart from the given tags, the reporting service's
    * default tags also will be reported with the metrics.
    *
@@ -231,18 +230,6 @@ public class PlatformMetricsRegistry {
   }
 
   /**
-   * Registers metrics for the given Guava Cache with the service's metric registry and
-   * reports them periodically to the configured reporters. Apart from the given tags, the
-   * reporting service's default tags also will be reported with the metrics.
-   *
-   * See https://micrometer.io/docs/ref/cache for more details on the metrics.
-   */
-  public static void monitorGuavaCache(String name, Cache cache,
-      @javax.annotation.Nullable Map<String, String> tags) {
-    GuavaCacheMetrics.monitor(METER_REGISTRY, cache, name, addDefaultTags(tags));
-  }
-
-  /**
    * Registers metrics for the given executor service with the service's metric registry and
    * reports them periodically to the configured reporters. Apart from the given tags, the
    * reporting service's default tags also will be reported with the metrics.
@@ -250,7 +237,7 @@ public class PlatformMetricsRegistry {
    * See https://micrometer.io/docs/ref/jvm for more details on the metrics.
    */
   public static void monitorExecutorService(String name, ExecutorService executorService,
-      @javax.annotation.Nullable Map<String, String> tags) {
+      @Nullable Map<String, String> tags) {
     new ExecutorServiceMetrics(executorService, name, addDefaultTags(tags)).bindTo(METER_REGISTRY);
   }
 

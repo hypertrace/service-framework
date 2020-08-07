@@ -4,8 +4,6 @@ import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegist
 
 import com.codahale.metrics.servlets.CpuProfileServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
-import com.google.common.base.Splitter;
-import com.google.common.collect.Lists;
 import com.typesafe.config.Config;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -86,6 +84,10 @@ public abstract class PlatformService {
 
   public abstract String getServiceName();
 
+  public State getServiceState() {
+    return this.serviceState;
+  }
+
   protected final Config getAppConfig() {
     return this.appConfig;
   }
@@ -139,12 +141,14 @@ public abstract class PlatformService {
       throw e;
     }
 
-    serviceState = State.STARTED;
-    LOGGER.info("Service - {} is started.", getServiceName());
     // Start the webserver.
     try {
       adminServer.start();
       LOGGER.info("Started admin service on port: {}.", serviceAdminPort);
+
+      serviceState = State.STARTED;
+      LOGGER.info("Service - {} is started.", getServiceName());
+
       thread.join();
       adminServer.join();
     } catch (Exception e) {
@@ -211,9 +215,10 @@ public abstract class PlatformService {
     // If the metric tags were provided, parse them and pass to the MetricRegistry.
     if (config.hasPath(METRICS_DEFAULT_TAGS_CONFIG_KEY)) {
       String tagsStr = config.getString(METRICS_DEFAULT_TAGS_CONFIG_KEY);
-      for (List<String> sublist: Lists.partition(Splitter.on(",").splitToList(tagsStr), 2)) {
-        if (sublist.size() == 2) {
-          tags.put(sublist.get(0), sublist.get(1));
+      if (tagsStr != null) {
+        String[] list = tagsStr.split(",");
+        for (int i = 0; i + 1 < list.length; i += 2) {
+          tags.put(list[i], list[i + 1]);
         }
       }
     }
