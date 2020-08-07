@@ -130,8 +130,8 @@ public abstract class PlatformService {
     context.addServlet(new ServletHolder(new CpuProfileServlet()), "/pprof");
     context.addServlet(new ServletHolder(new JVMDiagnosticServlet()), "/diags/*");
 
+    final Thread thread = new Thread(this::doStart);
     try {
-      final Thread thread = new Thread(this::doStart);
       thread.start();
     } catch (Exception e) {
       LOGGER.error("Failed to start thread for application.", e);
@@ -145,6 +145,7 @@ public abstract class PlatformService {
     try {
       adminServer.start();
       LOGGER.info("Started admin service on port: {}.", serviceAdminPort);
+      thread.join();
       adminServer.join();
     } catch (Exception e) {
       LOGGER.error("Failed to start service servlet.");

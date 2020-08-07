@@ -149,7 +149,7 @@ public class PlatformMetricsRegistry {
   }
 
   public static Counter registerCounter(String name, Map<String, String> tags) {
-    return METER_REGISTRY.counter(String.format("%s.%s", metricsPrefix, name), addDefaultTags(tags));
+    return METER_REGISTRY.counter(name, addDefaultTags(tags));
   }
 
   public static Timer registerTimer(String name, Map<String, String> tags) {
@@ -157,7 +157,7 @@ public class PlatformMetricsRegistry {
   }
 
   public static Timer registerTimer(String name, Map<String, String> tags, boolean histogram) {
-    Timer.Builder builder = Timer.builder(String.format("%s.%s", metricsPrefix, name))
+    Timer.Builder builder = Timer.builder(name)
         .publishPercentiles(0.5, 0.95, 0.99)
         .tags(addDefaultTags(tags));
     if (histogram) {
@@ -167,7 +167,7 @@ public class PlatformMetricsRegistry {
   }
 
   public static <T extends Number> T registerGauge(String name, Map<String, String> tags, T number) {
-    return METER_REGISTRY.gauge(String.format("%s.%s", metricsPrefix, name), addDefaultTags(tags), number);
+    return METER_REGISTRY.gauge(name, addDefaultTags(tags), number);
   }
 
   /**
