@@ -36,8 +36,8 @@ public class MetricsServlet extends HttpServlet {
 
   private static final String NAME_PARAM_KEY = "name[]";
 
-  private CollectorRegistry registry;
-  private org.apache.flink.shaded.io.prometheus.client.CollectorRegistry flinkRegistry;
+  private final CollectorRegistry registry;
+  private final org.apache.flink.shaded.io.prometheus.client.CollectorRegistry flinkRegistry;
 
   public MetricsServlet() {
     this.registry = CollectorRegistry.defaultRegistry;
@@ -45,12 +45,11 @@ public class MetricsServlet extends HttpServlet {
   }
 
   protected void doGet(final HttpServletRequest req, final HttpServletResponse resp)
-      throws ServletException, IOException {
+      throws IOException {
     resp.setStatus(HttpServletResponse.SC_OK);
     resp.setContentType(TextFormat.CONTENT_TYPE_004);
 
-    Writer writer = resp.getWriter();
-    try {
+    try (Writer writer = resp.getWriter()) {
       Set<String> includedNames = parse(req);
       // first write all the dropwizard metric samples
       TextFormat.write004(writer, registry.filteredMetricFamilySamples(includedNames));
@@ -58,8 +57,6 @@ public class MetricsServlet extends HttpServlet {
       TextFormat.write004(writer,
           adaptShadedFlinkMetricSamples(flinkRegistry.filteredMetricFamilySamples(includedNames)));
       writer.flush();
-    } finally {
-      writer.close();
     }
   }
 
@@ -119,7 +116,7 @@ public class MetricsServlet extends HttpServlet {
 
   @Override
   protected void doPost(final HttpServletRequest req, final HttpServletResponse resp)
-      throws ServletException, IOException {
+      throws IOException {
     doGet(req, resp);
   }
 

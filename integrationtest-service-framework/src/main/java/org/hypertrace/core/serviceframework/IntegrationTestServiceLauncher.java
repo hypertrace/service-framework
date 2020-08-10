@@ -18,7 +18,7 @@ import org.slf4j.LoggerFactory;
 public class IntegrationTestServiceLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformServiceLauncher.class);
-  private static List<PlatformService> apps = new ArrayList<>();
+  private static final List<PlatformService> PLATFORM_SERVICES = new ArrayList<>();
 
   /** @param serviceNames list of services to start */
   public static void main(String[] serviceNames) {
@@ -30,7 +30,7 @@ public class IntegrationTestServiceLauncher {
         PlatformService app = PlatformServiceFactory.get(configClient);
         app.initialize();
         Runtime.getRuntime().addShutdownHook(new Thread(app::shutdown));
-        apps.add(app);
+        PLATFORM_SERVICES.add(app);
         app.start();
       } catch (Exception e) {
         LOGGER.error("Got exception while starting PlatformService: " + serviceName, e);
@@ -39,6 +39,6 @@ public class IntegrationTestServiceLauncher {
   }
 
   static void shutdown() {
-    apps.forEach(PlatformService::shutdown);
+    PLATFORM_SERVICES.forEach(PlatformService::shutdown);
   }
 }

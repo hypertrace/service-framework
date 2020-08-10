@@ -11,7 +11,7 @@ public class IntegrationTestConfigClient implements ConfigClient {
   private static final String APPLICATION_CONFIG_FILE = "application.conf";
   private static final String INTEGRATION_TEST_ENV = "local";
 
-  private String resourcePrefix;
+  private final String resourcePrefix;
 
   public IntegrationTestConfigClient(String resourcePrefix) {
     this.resourcePrefix = resourcePrefix;
