@@ -1,22 +1,17 @@
 package org.hypertrace.core.serviceframework;
 
-import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.DEFAULT_METRICS_REPORTERS;
-
 import com.codahale.metrics.servlets.CpuProfileServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.ConfigClientFactory;
-import org.hypertrace.core.serviceframework.config.ConfigUtils;
 import org.hypertrace.core.serviceframework.metrics.MetricsServlet;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.service.servlets.HealthCheckServlet;
@@ -25,23 +20,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public abstract class PlatformService {
-  private static final int DEFAULT_METRIC_REPORT_INTERVAL_SEC = 30;
-
-  private static final String METRICS_REPORTER_NAMES_CONFIG_KEY = "metrics.reporter.names";
-  private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "metrics.reporter.prefix";
-  private static final String METRICS_REPORT_INTERVAL_CONFIG_KEY = "metrics.reportInterval";
-
-  /**
-   * List of tags that need to be reported for all the metrics reported by this service.
-   * The tag keys, values are separated by just commas. Any key without a value will be ignored.
-   * Example: k1,v1,k2,v2.
-   *
-   * Please note "app:serviceName" will be reported by default for all metrics, and hence
-   * needn't be included in this list.
-   */
-  private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "metrics.defaultTags";
-
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformService.class);
+
+  private static final String METRICS_CONFIG_KEY = "metrics";
 
   static {
     try {
@@ -104,7 +85,9 @@ public abstract class PlatformService {
     LOGGER.info("Starting the service with this config {}", appConfig);
     doInit();
 
-    initializeMetricRegistry(this.appConfig);
+    Config metricsConfig = appConfig.hasPath(METRICS_CONFIG_KEY) ?
+        appConfig.getConfig(METRICS_CONFIG_KEY) : ConfigFactory.empty();
+    PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), metricsConfig);
 
     serviceState = State.INITIALIZED;
     LOGGER.info("Service - {} is initialized.", getServiceName());
@@ -193,38 +176,6 @@ public abstract class PlatformService {
     LOGGER.info("Stopping metrics registry");
     PlatformMetricsRegistry.stop();
     LOGGER.info("Service - {} is shutdown.", getServiceName());
-  }
-
-  private void initializeMetricRegistry(Config config) {
-    List<String> reporters = ConfigUtils
-        .getStringsConfig(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
-            DEFAULT_METRICS_REPORTERS);
-
-    String metricsPrefix = ConfigUtils
-        .getStringConfig(config, METRICS_REPORTER_PREFIX_CONFIG_KEY,
-            PlatformMetricsRegistry.DEFAULT_METRICS_PREFIX);
-
-    int reportIntervalSec = ConfigUtils.getIntConfig(config,
-        METRICS_REPORT_INTERVAL_CONFIG_KEY, DEFAULT_METRIC_REPORT_INTERVAL_SEC);
-
-    Map<String, String> tags = new HashMap<>();
-
-    // Add the service name and other given tags to the default tags list.
-    tags.put("app", getServiceName());
-
-    // If the metric tags were provided, parse them and pass to the MetricRegistry.
-    if (config.hasPath(METRICS_DEFAULT_TAGS_CONFIG_KEY)) {
-      String tagsStr = config.getString(METRICS_DEFAULT_TAGS_CONFIG_KEY);
-      if (tagsStr != null) {
-        String[] list = tagsStr.split(",");
-        for (int i = 0; i + 1 < list.length; i += 2) {
-          tags.put(list[i], list[i + 1]);
-        }
-      }
-    }
-
-    PlatformMetricsRegistry.initMetricsRegistry(reporters, metricsPrefix,
-        reportIntervalSec, tags);
   }
 
   enum State {

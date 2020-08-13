@@ -10,6 +10,7 @@ tasks.test {
 }
 
 dependencies {
+  api("com.typesafe:config:1.3.2")
   api("io.dropwizard.metrics:metrics-core:4.1.0")
   api("io.micrometer:micrometer-core:1.5.3")
   api("org.apache.flink:flink-metrics-core:1.10.1")

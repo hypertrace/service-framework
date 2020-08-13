@@ -8,6 +8,7 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.JvmAttributeGaugeSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
+import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.core.instrument.Clock;
@@ -25,6 +26,7 @@ import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import io.micrometer.core.lang.NonNull;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -32,6 +34,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -47,10 +50,24 @@ import org.slf4j.LoggerFactory;
  * of metrics exporters.
  */
 public class PlatformMetricsRegistry {
-
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformMetricsRegistry.class);
-  private static final int METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_DEFAULT = 30;
+
   public static final String DEFAULT_METRICS_PREFIX = "org.hypertrace.core.serviceframework";
+  private static final int DEFAULT_METRIC_REPORT_INTERVAL_SEC = 30;
+
+  private static final String METRICS_REPORTER_NAMES_CONFIG_KEY = "reporter.names";
+  private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "reporter.prefix";
+  private static final String METRICS_REPORT_INTERVAL_CONFIG_KEY = "reportInterval";
+
+  /**
+   * List of tags that need to be reported for all the metrics reported by this service.
+   * The tag keys, values are separated by just commas. Any key without a value will be ignored.
+   * Example: k1,v1,k2,v2.
+   *
+   * Please note "app:serviceName" will be reported by default for all metrics, and hence
+   * needn't be included in this list.
+   */
+  private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "defaultTags";
 
   private static final MetricRegistry METRIC_REGISTRY = new MetricRegistry();
   private static ConsoleReporter consoleReporter;
@@ -72,7 +89,7 @@ public class PlatformMetricsRegistry {
    */
   private static final CompositeMeterRegistry METER_REGISTRY = new CompositeMeterRegistry();
 
-  private static void initPrometheusExporter(int reportInterval) {
+  private static void initPrometheusReporter(int reportInterval) {
     LOGGER.info("Trying to init PrometheusReporter");
 
     // Add Prometheus registry to the composite registry.
@@ -118,18 +135,49 @@ public class PlatformMetricsRegistry {
     }, Clock.SYSTEM));
   }
 
-  public synchronized static void initMetricsRegistry(Map<String, String> defaultTags) {
-    initMetricsRegistry(DEFAULT_METRICS_REPORTERS, DEFAULT_METRICS_PREFIX,
-        METRICS_REPORTER_CONSOLE_REPORT_INTERVAL_DEFAULT, defaultTags);
+  private static void initTestingMetricsReporter() {
+    LOGGER.info("Initializing the testing metric reporter.");
+
+    METER_REGISTRY.add(new SimpleMeterRegistry());
   }
 
-  public synchronized static void initMetricsRegistry(final List<String> reporters,
-      final String prefix, final int reportIntervalSec, Map<String, String> tags) {
+  public synchronized static void initMetricsRegistry(String serviceName, Config config) {
     if (isInit) {
       return;
     }
 
-    metricsPrefix = prefix;
+    List<String> reporters;
+    if (config.hasPath(METRICS_REPORTER_NAMES_CONFIG_KEY)) {
+      reporters = Arrays.asList(config.getString(METRICS_REPORTER_NAMES_CONFIG_KEY).split(","));
+    } else {
+      reporters = DEFAULT_METRICS_REPORTERS;
+    }
+
+    metricsPrefix = DEFAULT_METRICS_PREFIX;
+    if (config.hasPath(METRICS_REPORTER_PREFIX_CONFIG_KEY)) {
+      metricsPrefix = config.getString(METRICS_REPORTER_PREFIX_CONFIG_KEY);
+    }
+
+    int reportIntervalSec = DEFAULT_METRIC_REPORT_INTERVAL_SEC;
+    if (config.hasPath(METRICS_REPORT_INTERVAL_CONFIG_KEY)) {
+      reportIntervalSec = config.getInt(METRICS_REPORT_INTERVAL_CONFIG_KEY);
+    }
+
+    Map<String, String> defaultTags = new HashMap<>();
+
+    // Add the service name and other given tags to the default tags list.
+    defaultTags.put("app", serviceName);
+
+    // If the metric tags were provided, parse them and pass to the MetricRegistry.
+    if (config.hasPath(METRICS_DEFAULT_TAGS_CONFIG_KEY)) {
+      String tagsStr = config.getString(METRICS_DEFAULT_TAGS_CONFIG_KEY);
+      if (tagsStr != null) {
+        String[] list = tagsStr.split(",");
+        for (int i = 0; i + 1 < list.length; i += 2) {
+          defaultTags.put(list[i], list[i + 1]);
+        }
+      }
+    }
 
     for (String reporter : reporters) {
       switch (reporter.toLowerCase()) {
@@ -140,15 +188,18 @@ public class PlatformMetricsRegistry {
           initLoggingMetricsReporter(reportIntervalSec);
           break;
         case "prometheus":
-          initPrometheusExporter(reportIntervalSec);
+          initPrometheusReporter(reportIntervalSec);
+          break;
+        case "testing":
+          initTestingMetricsReporter();
           break;
         default:
           LOGGER.warn("Cannot find metric reporter: {}", reporter);
       }
     }
 
-    LOGGER.info("Setting default tags for all metrics to: {}", tags);
-    tags.forEach((key, value) -> DEFAULT_TAGS.add(new ImmutableTag(key, value)));
+    LOGGER.info("Setting default tags for all metrics to: {}", defaultTags);
+    defaultTags.forEach((key, value) -> DEFAULT_TAGS.add(new ImmutableTag(key, value)));
 
     // Register different metrics with the registry.
     new ClassLoaderMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);

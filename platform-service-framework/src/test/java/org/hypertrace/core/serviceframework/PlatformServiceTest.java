@@ -11,6 +11,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.hypertrace.core.serviceframework.PlatformService.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
+import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -41,7 +42,7 @@ public class PlatformServiceTest {
 
     @Override
     protected void doStop() {
-
+      PlatformMetricsRegistry.stop();
     }
 
     @Override

@@ -3,11 +3,13 @@ package org.hypertrace.core.serviceframework.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -67,4 +69,13 @@ public class ConfigUtilsTest {
     assertEquals(2, configProperties.size());
   }
 
+  @Test
+  public void testDefaultValues() {
+    Config config = ConfigFactory.empty();
+    assertEquals(1, ConfigUtils.getIntConfig(config, "test", 1));
+    assertFalse(ConfigUtils.getBooleanConfig(config, "test", false));
+    assertEquals("bar", ConfigUtils.getStringConfig(config, "test", "bar"));
+    assertEquals(1, ConfigUtils.getLongConfig(config, "test", 1L));
+    assertEquals(List.of("one"), ConfigUtils.getStringsConfig(config, "test", List.of("one")));
+  }
 }
