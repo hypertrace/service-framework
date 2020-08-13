@@ -3,6 +3,7 @@ package org.hypertrace.core.serviceframework.metrics;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -18,10 +19,10 @@ public class PlatformMetricsRegistryTest {
   static void initialize() {
     PlatformMetricsRegistry.initMetricsRegistry("test-service",
         ConfigFactory.parseMap(Map.of(
-            "reporter.names", "testing",
+            "reporter.names", List.of("testing"),
             "reporter.prefix", "test-service",
             "reportInterval", "10",
-            "defaultTags", "test.name,PlatformMetricsRegistryTest"
+            "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest")
         )));
   }
 

@@ -26,7 +26,7 @@ public class DirectoryBasedConfigClientTest {
         config.getStringList("metrics.reporter.names"));
     Assertions.assertEquals("org.hypertrace.core.sample-app",
         config.getString("metrics.reporter.prefix"));
-    Assertions.assertEquals(35, config.getInt("metrics.reporter.console.reportInterval"));
+    Assertions.assertEquals(35, config.getInt("metrics.reportInterval"));
     Assertions.assertEquals("sample-app-staging-gcp01", config.getString("deployment.id"));
     Assertions.assertEquals("gcp01:5092", config.getString("service.discovery.url"));
   }
