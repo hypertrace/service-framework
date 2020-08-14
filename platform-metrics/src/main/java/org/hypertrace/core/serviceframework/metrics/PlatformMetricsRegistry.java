@@ -34,7 +34,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -61,8 +60,9 @@ public class PlatformMetricsRegistry {
 
   /**
    * List of tags that need to be reported for all the metrics reported by this service.
-   * The tag keys, values are separated by just commas. Any key without a value will be ignored.
-   * Example: k1,v1,k2,v2.
+   * The tags are given as a list with tag key followed by corresponding value.
+   * Any key without a value will be ignored.
+   * Example: defaultTags = ["k1", "v1", "k2", "v2"]
    *
    * Please note "app:serviceName" will be reported by default for all metrics, and hence
    * needn't be included in this list.
@@ -141,17 +141,20 @@ public class PlatformMetricsRegistry {
     METER_REGISTRY.add(new SimpleMeterRegistry());
   }
 
+  private static List<String> getStringList(Config config, String path, List<String> defaultVal) {
+    if (config.hasPath(path)) {
+      return config.getStringList(path);
+    }
+    return defaultVal;
+  }
+
   public synchronized static void initMetricsRegistry(String serviceName, Config config) {
     if (isInit) {
       return;
     }
 
-    List<String> reporters;
-    if (config.hasPath(METRICS_REPORTER_NAMES_CONFIG_KEY)) {
-      reporters = Arrays.asList(config.getString(METRICS_REPORTER_NAMES_CONFIG_KEY).split(","));
-    } else {
-      reporters = DEFAULT_METRICS_REPORTERS;
-    }
+    List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
+        DEFAULT_METRICS_REPORTERS);
 
     metricsPrefix = DEFAULT_METRICS_PREFIX;
     if (config.hasPath(METRICS_REPORTER_PREFIX_CONFIG_KEY)) {
@@ -168,15 +171,9 @@ public class PlatformMetricsRegistry {
     // Add the service name and other given tags to the default tags list.
     defaultTags.put("app", serviceName);
 
-    // If the metric tags were provided, parse them and pass to the MetricRegistry.
-    if (config.hasPath(METRICS_DEFAULT_TAGS_CONFIG_KEY)) {
-      String tagsStr = config.getString(METRICS_DEFAULT_TAGS_CONFIG_KEY);
-      if (tagsStr != null) {
-        String[] list = tagsStr.split(",");
-        for (int i = 0; i + 1 < list.length; i += 2) {
-          defaultTags.put(list[i], list[i + 1]);
-        }
-      }
+    List<String> defaultTagsList = getStringList(config, METRICS_DEFAULT_TAGS_CONFIG_KEY, List.of());
+    for (int i = 0; i + 1 < defaultTagsList.size(); i += 2) {
+      defaultTags.put(defaultTagsList.get(i), defaultTagsList.get(i + 1));
     }
 
     for (String reporter : reporters) {

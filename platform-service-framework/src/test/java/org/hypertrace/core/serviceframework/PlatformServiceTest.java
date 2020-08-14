@@ -3,6 +3,8 @@ package org.hypertrace.core.serviceframework;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.IOException;
+import java.net.URL;
+import java.util.List;
 import java.util.Map;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
@@ -11,6 +13,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.hypertrace.core.serviceframework.PlatformService.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
+import org.hypertrace.core.serviceframework.config.DirectoryBasedConfigClient;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -24,11 +27,9 @@ public class PlatformServiceTest {
    * A test service implementation.
    */
   static class TestService extends PlatformService {
-    private final String name;
 
-    public TestService(String name, ConfigClient client) {
+    public TestService(ConfigClient client) {
       super(client);
-      this.name = name;
     }
 
     @Override
@@ -52,12 +53,12 @@ public class PlatformServiceTest {
 
     @Override
     public String getServiceName() {
-      return this.name;
+      return getAppConfig().getString("service.name");
     }
   }
 
-  private PlatformService getService(String name, Map<String, String> configs) {
-    return new TestService(name, new ConfigClient() {
+  private PlatformService getService(Map<String, Object> configs) {
+    return new TestService(new ConfigClient() {
       @Override
       public Config getConfig() {
         return ConfigFactory.parseMap(configs);
@@ -87,8 +88,8 @@ public class PlatformServiceTest {
 
   @Test
   public void testMetricInitialization() {
-    PlatformService service = getService("test-service",
-        Map.of("service.admin.port", "59001"));
+    PlatformService service = getService(Map.of("service.name", "test-service",
+        "service.admin.port", "59001"));
     startService(service);
 
     Assertions.assertEquals("test-service", service.getServiceName());
@@ -123,8 +124,10 @@ public class PlatformServiceTest {
 
   @Test
   public void testMetricInitializationWithDefaultTags() {
-    PlatformService service = getService("test-service2",
-        Map.of("service.admin.port", "59002", "metrics.defaultTags", "foo,bar,k1,v1,k2")
+    PlatformService service = getService(
+        Map.of("service.name", "test-service2",
+            "service.admin.port", "59002",
+            "metrics.defaultTags", List.of("foo", "bar", "k1", "v1", "k2"))
     );
     startService(service);
 
@@ -143,6 +146,35 @@ public class PlatformServiceTest {
 
       // Verify that some key JVM metrics are present in the response.
       Assertions.assertTrue(responseStr.contains("jvm_memory_used_bytes{app=\"test-service2\",area=\"heap\",foo=\"bar\""));
+    } catch (IOException e) {
+      e.printStackTrace();
+      Assertions.fail("Unexpected exception: " + e.getMessage());
+    }
+
+    service.shutdown();
+  }
+
+  @Test
+  public void testSampleAppInitialization() {
+    System.setProperty("service.name", "sample-app");
+    URL configDirURL = this.getClass().getClassLoader().getResource("configs");
+    PlatformService service = new TestService(new DirectoryBasedConfigClient(configDirURL.getPath()));
+    startService(service);
+
+    Assertions.assertEquals("sample-app", service.getServiceName());
+    Assertions.assertTrue(service.healthCheck());
+
+    // Verify that the metric registry is initialized and `/metrics` endpoint is working.
+    HttpClient httpclient = HttpClients.createDefault();
+    HttpGet metricsGet = new HttpGet("http://localhost:8099/metrics");
+    try {
+      HttpResponse response = httpclient.execute(metricsGet);
+      Assertions.assertTrue(response.getEntity().getContentType().getValue().startsWith("text/plain;"));
+      String responseStr = EntityUtils.toString(response.getEntity());
+      EntityUtils.consume(response.getEntity());
+
+      // Verify that some key JVM metrics are present in the response.
+      Assertions.assertTrue(responseStr.contains("jvm_memory_used_bytes{app=\"sample-app\",area=\"heap\""));
     } catch (IOException e) {
       e.printStackTrace();
       Assertions.fail("Unexpected exception: " + e.getMessage());
