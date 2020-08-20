@@ -33,12 +33,12 @@ public abstract class PlatformService {
     }
   }
 
+  private static final String SERVICE_NAME_CONFIG = "service.name";
   protected ConfigClient configClient;
   private final Config appConfig;
   private State serviceState = State.NOT_STARTED;
   private Server adminServer;
   private final String serviceName;
-  private static final String SERVICE_NAME_CONFIG = "service.name";
 
 
   public PlatformService() {
@@ -91,7 +91,7 @@ public abstract class PlatformService {
     LOGGER.info("Starting the service with this config {}", appConfig);
     Config metricsConfig = appConfig.hasPath(METRICS_CONFIG_KEY) ?
         appConfig.getConfig(METRICS_CONFIG_KEY) : ConfigFactory.empty();
-    PlatformMetricsRegistry.initMetricsRegistry(this.appConfig.getString(SERVICE_NAME_CONFIG), metricsConfig);
+    PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), metricsConfig);
     doInit();
     serviceState = State.INITIALIZED;
     LOGGER.info("Service - {} is initialized.", getServiceName());

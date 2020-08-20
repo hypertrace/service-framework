@@ -212,7 +212,6 @@ public class PlatformMetricsRegistry {
       METRIC_REGISTRY
           .registerAll(String.format("%s.%s", metricsPrefix, key), DEFAULT_METRIC_SET.get(key));
     }
-
     isInit = true;
   }
 
