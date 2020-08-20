@@ -14,6 +14,7 @@ import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.ImmutableTag;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
@@ -39,6 +40,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
@@ -198,6 +200,15 @@ public class PlatformMetricsRegistry {
     LOGGER.info("Setting default tags for all metrics to: {}", defaultTags);
     defaultTags.forEach((key, value) -> DEFAULT_TAGS.add(new ImmutableTag(key, value)));
 
+
+    //if any meter was already registered before init, add default tags to it.
+    List<Meter> meters = getMeterRegistry().getMeters();
+    for (Meter meter : meters) {
+      Meter.Id id = meter.getId().withTags(DEFAULT_TAGS);
+      Meter.builder(id.getName(), id.getType(), meter.measure()).tags(id.getTags()).register(getMeterRegistry());
+      getMeterRegistry().remove(meter);
+    }
+
     // Register different metrics with the registry.
     new ClassLoaderMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
     new JvmGcMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
@@ -212,6 +223,7 @@ public class PlatformMetricsRegistry {
       METRIC_REGISTRY
           .registerAll(String.format("%s.%s", metricsPrefix, key), DEFAULT_METRIC_SET.get(key));
     }
+
     isInit = true;
   }
 
