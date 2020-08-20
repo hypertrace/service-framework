@@ -10,9 +10,7 @@ import org.slf4j.Logger;
  * another. The workhorse is wrapped in an implementation of PlatformBackgroundJob.
  */
 public abstract class PlatformBackgroundService extends PlatformService {
-  private static final String SERVICE_NAME_CONFIG = "service.name";
 
-  private String serviceName;
   private PlatformBackgroundJob job;
 
   public PlatformBackgroundService(ConfigClient configClient) {
@@ -21,7 +19,7 @@ public abstract class PlatformBackgroundService extends PlatformService {
 
   @Override
   protected void doInit() {
-    serviceName = getAppConfig().getString(SERVICE_NAME_CONFIG);
+
 
     try {
       this.job = createBackgroundJob(getAppConfig());
@@ -53,11 +51,6 @@ public abstract class PlatformBackgroundService extends PlatformService {
   @Override
   public boolean healthCheck() {
     return true;
-  }
-
-  @Override
-  public String getServiceName() {
-    return serviceName;
   }
 
   protected abstract PlatformBackgroundJob createBackgroundJob(Config config);

@@ -37,6 +37,9 @@ public abstract class PlatformService {
   private final Config appConfig;
   private State serviceState = State.NOT_STARTED;
   private Server adminServer;
+  private final String serviceName;
+  private static final String SERVICE_NAME_CONFIG = "service.name";
+
 
   public PlatformService() {
     this(ConfigClientFactory.getClient());
@@ -49,6 +52,7 @@ public abstract class PlatformService {
   public PlatformService(ConfigClient configClient) {
     this.configClient = configClient;
     this.appConfig = configClient.getConfig();
+    this.serviceName = appConfig.getString(SERVICE_NAME_CONFIG);
   }
 
   // initialize the service. This method will always be called before start.
@@ -63,7 +67,9 @@ public abstract class PlatformService {
   // Contains the logic to do health check of the service.
   public abstract boolean healthCheck();
 
-  public abstract String getServiceName();
+  public String getServiceName() {
+    return this.serviceName;
+  }
 
   public State getServiceState() {
     return this.serviceState;
@@ -83,12 +89,10 @@ public abstract class PlatformService {
     serviceState = State.INITIALIZING;
 
     LOGGER.info("Starting the service with this config {}", appConfig);
-    doInit();
-
     Config metricsConfig = appConfig.hasPath(METRICS_CONFIG_KEY) ?
         appConfig.getConfig(METRICS_CONFIG_KEY) : ConfigFactory.empty();
-    PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), metricsConfig);
-
+    PlatformMetricsRegistry.initMetricsRegistry(this.appConfig.getString(SERVICE_NAME_CONFIG), metricsConfig);
+    doInit();
     serviceState = State.INITIALIZED;
     LOGGER.info("Service - {} is initialized.", getServiceName());
   }

@@ -200,15 +200,6 @@ public class PlatformMetricsRegistry {
     LOGGER.info("Setting default tags for all metrics to: {}", defaultTags);
     defaultTags.forEach((key, value) -> DEFAULT_TAGS.add(new ImmutableTag(key, value)));
 
-
-    //if any meter was already registered before init, add default tags to it.
-    List<Meter> meters = getMeterRegistry().getMeters();
-    for (Meter meter : meters) {
-      Meter.Id id = meter.getId().withTags(DEFAULT_TAGS);
-      Meter.builder(id.getName(), id.getType(), meter.measure()).tags(id.getTags()).register(getMeterRegistry());
-      getMeterRegistry().remove(meter);
-    }
-
     // Register different metrics with the registry.
     new ClassLoaderMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
     new JvmGcMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
