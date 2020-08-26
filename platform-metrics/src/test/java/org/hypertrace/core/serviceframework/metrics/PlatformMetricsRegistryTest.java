@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -53,7 +55,7 @@ public class PlatformMetricsRegistryTest {
     timer.record(1, TimeUnit.SECONDS);
 
     PlatformMetricsRegistry.stop();
-    assertEquals(0, PlatformMetricsRegistry.getMeterRegistry().getMeters().size());
+    assertEquals(0, ((CompositeMeterRegistry)PlatformMetricsRegistry.getMeterRegistry()).getRegistries().size());
   }
 
   @Test
