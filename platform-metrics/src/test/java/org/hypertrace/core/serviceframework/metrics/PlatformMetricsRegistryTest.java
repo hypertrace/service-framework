@@ -16,6 +16,8 @@ import org.junit.jupiter.api.Test;
  * Unit tests for {@link PlatformMetricsRegistry}
  */
 public class PlatformMetricsRegistryTest {
+  private static final String PUSH_GATEWAY_REPORTER_NAME = "pushgateway";
+  private static final String PROMETHEUS_REPORTER_NAME = "prometheus";
   private static void initializeCustomRegistry(List<String> reporters) {
     PlatformMetricsRegistry.initMetricsRegistry("test-service",
         ConfigFactory.parseMap(Map.of(
@@ -103,13 +105,13 @@ public class PlatformMetricsRegistryTest {
   @Test
   public void test_initializePrometheusPushGateway_withNullUrlAddress_throwsException() {
     Assertions.assertThrows(IllegalArgumentException.class,
-        () -> initializeCustomRegistry(List.of("pushgateway")));
+        () -> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME)));
   }
 
   @Test
   public void test_initializePromethusPushGateway_malformUrlAddress_throwsException() {
     Config malformUrlConfig = ConfigFactory.parseMap(Map.of(
-        "reporter.names", "pushgateway",
+        "reporter.names", PUSH_GATEWAY_REPORTER_NAME,
         "reporter.prefix", "test-service",
         "reportInterval", "10",
         "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
@@ -117,5 +119,11 @@ public class PlatformMetricsRegistryTest {
         ));
     Assertions.assertThrows(RuntimeException.class,
         () -> PlatformMetricsRegistry.initMetricsRegistry("test-service", malformUrlConfig));
+  }
+
+  @Test
+  public void test_init_withBothPromethuesAndPushGateway_throwsException() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        ()-> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME, PROMETHEUS_REPORTER_NAME)));
   }
 }

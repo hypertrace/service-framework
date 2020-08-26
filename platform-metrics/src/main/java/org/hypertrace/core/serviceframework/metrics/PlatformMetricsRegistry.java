@@ -63,6 +63,11 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "reporter.prefix";
   private static final String METRICS_REPORT_INTERVAL_CONFIG_KEY = "reportInterval";
   private static final String METRICS_REPORT_PUSH_URL_ADDRESS = "pushUrlAddress";
+  private static final String PROMETHEUS_REPORTER_NAME = "prometheus";
+  private static final String PUSH_GATEWAY_REPORTER_NAME = "pushgateway";
+  private static final String LOGGING_REPORTER_NAME = "logging";
+  private static final String TESTING_REPORTER_NAME = "testing";
+  private static final String CONSOLE_REPORTER_NAME = "console";
 
   /**
    * List of tags that need to be reported for all the metrics reported by this service.
@@ -167,7 +172,7 @@ public class PlatformMetricsRegistry {
 
       @Override
       public String prefix() {
-        return "prometheus";
+        return PUSH_GATEWAY_REPORTER_NAME;
       }
 
       @Override
@@ -194,6 +199,8 @@ public class PlatformMetricsRegistry {
     if (isInit) {
       return;
     }
+
+    validate(config);
 
     List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
         DEFAULT_METRICS_REPORTERS);
@@ -226,19 +233,19 @@ public class PlatformMetricsRegistry {
 
     for (String reporter : reporters) {
       switch (reporter.toLowerCase()) {
-        case "console":
+        case CONSOLE_REPORTER_NAME:
           initConsoleMetricsReporter(reportIntervalSec);
           break;
-        case "logging":
+        case LOGGING_REPORTER_NAME:
           initLoggingMetricsReporter(reportIntervalSec);
           break;
-        case "prometheus":
+        case PROMETHEUS_REPORTER_NAME:
           initPrometheusReporter(reportIntervalSec);
           break;
-        case "testing":
+        case TESTING_REPORTER_NAME:
           initTestingMetricsReporter();
           break;
-        case "pushgateway":
+        case PUSH_GATEWAY_REPORTER_NAME:
           initPrometheusPushGatewayReporter(serviceName, reportIntervalSec, pushUrlAddress);
         default:
           LOGGER.warn("Cannot find metric reporter: {}", reporter);
@@ -379,5 +386,16 @@ public class PlatformMetricsRegistry {
     consoleReporter.report();
     // stop console reporter
     consoleReporter.stop();
+  }
+
+  private static void validate(Config config) {
+    List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
+        DEFAULT_METRICS_REPORTERS);
+    /* can't contains both prometheus pull and push mechanism */
+    if (reporters.contains(PROMETHEUS_REPORTER_NAME) &&
+        reporters.contains(PUSH_GATEWAY_REPORTER_NAME)) {
+      throw new IllegalArgumentException("Both prometheus and pushgateway are included in the "
+          + METRICS_REPORTER_NAMES_CONFIG_KEY + " configuration. Please choose one of them.");
+    }
   }
 }

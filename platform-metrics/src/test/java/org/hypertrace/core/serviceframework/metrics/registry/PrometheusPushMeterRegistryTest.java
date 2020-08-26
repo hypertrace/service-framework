@@ -4,6 +4,8 @@ import static java.lang.Thread.sleep;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import io.prometheus.client.CollectorRegistry;
@@ -23,7 +25,23 @@ public class PrometheusPushMeterRegistryTest {
   @Test
   public void test_init_metric_pushed() throws InterruptedException, IOException {
     PushGateway mockPushGateway = Mockito.mock(PushGateway.class);
-    pushMeterRegistry = new PrometheusPushMeterRegistry(new PrometheusPushRegistryConfig() {
+    pushMeterRegistry = createDefault(mockPushGateway);
+    sleep(500);
+    verify(mockPushGateway, atLeastOnce()).pushAdd(any(CollectorRegistry.class), eq(JOB_NAME));
+    pushMeterRegistry.stop();
+  }
+
+  @Test
+  public void test_close_enabled() throws IOException {
+    PushGateway mockPushGateway = Mockito.mock(PushGateway.class);
+    pushMeterRegistry = spy(createDefault(mockPushGateway));
+    pushMeterRegistry.close();
+    verify(pushMeterRegistry, times(1)).publish();
+    verify(pushMeterRegistry, times(1)).stop();
+  }
+
+  private PrometheusPushMeterRegistry createDefault(PushGateway mockPushGateway) {
+    return new PrometheusPushMeterRegistry(new PrometheusPushRegistryConfig() {
       @Override
       public String jobName() {
         return JOB_NAME;
@@ -43,10 +61,6 @@ public class PrometheusPushMeterRegistryTest {
       public Duration step() {
         return Duration.ofMillis(pushIntervalInMillis);
       }
-
-    }, Executors.defaultThreadFactory(), mockPushGateway);
-    sleep(500);
-    verify(mockPushGateway, atLeastOnce()).pushAdd(any(CollectorRegistry.class), eq(JOB_NAME));
-    pushMeterRegistry.stop();
+     }, Executors.defaultThreadFactory(), mockPushGateway);
   }
 }
