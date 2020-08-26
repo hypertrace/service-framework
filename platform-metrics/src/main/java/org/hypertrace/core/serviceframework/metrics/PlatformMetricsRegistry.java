@@ -27,6 +27,7 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
+import io.micrometer.core.instrument.util.StringUtils;
 import io.micrometer.core.lang.NonNull;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -214,7 +215,9 @@ public class PlatformMetricsRegistry {
     Map<String, String> defaultTags = new HashMap<>();
 
     // Add the service name and other given tags to the default tags list.
-    defaultTags.put("app", serviceName);
+    if (StringUtils.isNotEmpty(serviceName)) {
+      defaultTags.put("app", serviceName);
+    }
 
     List<String> defaultTagsList = getStringList(config, METRICS_DEFAULT_TAGS_CONFIG_KEY, List.of());
     for (int i = 0; i + 1 < defaultTagsList.size(); i += 2) {
