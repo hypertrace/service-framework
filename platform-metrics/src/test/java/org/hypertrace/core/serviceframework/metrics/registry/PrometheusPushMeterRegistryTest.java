@@ -47,5 +47,6 @@ public class PrometheusPushMeterRegistryTest {
     }, Executors.defaultThreadFactory(), mockPushGateway);
     sleep(500);
     verify(mockPushGateway, atLeastOnce()).pushAdd(any(CollectorRegistry.class), eq(JOB_NAME));
+    pushMeterRegistry.stop();
   }
 }

@@ -1,5 +1,6 @@
 package org.hypertrace.core.serviceframework.metrics;
 
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
@@ -97,5 +98,24 @@ public class PlatformMetricsRegistryTest {
         Map.of("foo", "bar"), newAtomicInteger);
     newAtomicInteger.addAndGet(10);
     Assertions.assertEquals(11, gauge.get());
+  }
+
+  @Test
+  public void test_initializePrometheusPushGateway_withNullUrlAddress_throwsException() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> initializeCustomRegistry(List.of("pushgateway")));
+  }
+
+  @Test
+  public void test_initializePromethusPushGateway_malformUrlAddress_throwsException() {
+    Config malformUrlConfig = ConfigFactory.parseMap(Map.of(
+        "reporter.names", "pushgateway",
+        "reporter.prefix", "test-service",
+        "reportInterval", "10",
+        "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
+        "pushUrlAddress", "httpMalformUrl://"
+        ));
+    Assertions.assertThrows(RuntimeException.class,
+        () -> PlatformMetricsRegistry.initMetricsRegistry("test-service", malformUrlConfig));
   }
 }
