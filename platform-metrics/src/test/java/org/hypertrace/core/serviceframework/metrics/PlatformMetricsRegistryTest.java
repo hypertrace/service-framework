@@ -1,8 +1,11 @@
 package org.hypertrace.core.serviceframework.metrics;
 
+import static java.lang.Thread.sleep;
+
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
 import java.util.List;
 import java.util.Map;
@@ -109,21 +112,24 @@ public class PlatformMetricsRegistryTest {
   }
 
   @Test
-  public void test_initializePromethusPushGateway_malformUrlAddress_throwsException() {
-    Config malformUrlConfig = ConfigFactory.parseMap(Map.of(
-        "reporter.names", PUSH_GATEWAY_REPORTER_NAME,
-        "reporter.prefix", "test-service",
-        "reportInterval", "10",
-        "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
-        "pushUrlAddress", "httpMalformUrl://"
-        ));
-    Assertions.assertThrows(RuntimeException.class,
-        () -> PlatformMetricsRegistry.initMetricsRegistry("test-service", malformUrlConfig));
-  }
-
-  @Test
   public void test_init_withBothPromethuesAndPushGateway_throwsException() {
     Assertions.assertThrows(IllegalArgumentException.class,
         ()-> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME, PROMETHEUS_REPORTER_NAME)));
+  }
+
+  @Test
+  public void test_pushMetrics() throws InterruptedException {
+    Config config = ConfigFactory.parseMap(Map.of(
+        "reporter.names", List.of(PUSH_GATEWAY_REPORTER_NAME),
+        "reporter.prefix", "ines-service",
+        "reportInterval", "10",
+        "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
+        "pushUrlAddress", "localhost:9091"
+    ));
+
+    PlatformMetricsRegistry.initMetricsRegistry("ines-service", config);
+    Counter counter = PlatformMetricsRegistry.registerCounter("my.counter", Map.of("foo", "bar"));
+    counter.increment();
+    Assertions.assertEquals(1, counter.count());
   }
 }
