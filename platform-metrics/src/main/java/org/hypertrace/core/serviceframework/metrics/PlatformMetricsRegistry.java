@@ -36,6 +36,7 @@ import io.prometheus.client.dropwizard.DropwizardExports;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -313,10 +314,10 @@ public class PlatformMetricsRegistry {
 
     DEFAULT_TAGS.clear();
     METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
-    METER_REGISTRY.getRegistries().forEach(e -> {
-      e.clear();
-      METER_REGISTRY.remove(e);
-    });
+    METER_REGISTRY.getRegistries().forEach(MeterRegistry::clear);
+    Set<MeterRegistry> registries = new HashSet<>(METER_REGISTRY.getRegistries());
+    registries.forEach(METER_REGISTRY::remove);
+    registries.clear();
     CollectorRegistry.defaultRegistry.clear();
     isInit = false;
   }
