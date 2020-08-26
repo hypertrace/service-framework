@@ -23,8 +23,10 @@ dependencies {
   implementation("io.dropwizard.metrics:metrics-jvm:4.1.0")
   implementation("io.prometheus:simpleclient_dropwizard:0.6.0")
   implementation("io.prometheus:simpleclient_servlet:0.6.0")
+  implementation("io.prometheus:simpleclient_pushgateway:0.9.0")
   implementation("org.eclipse.jetty:jetty-servlet:9.4.18.v20190429")
 
+  testImplementation("io.micrometer:micrometer-core:1.5.3")
   testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
   testImplementation("org.mockito:mockito-core:3.3.3")
 }

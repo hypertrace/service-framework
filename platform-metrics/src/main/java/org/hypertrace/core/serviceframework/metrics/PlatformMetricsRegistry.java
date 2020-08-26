@@ -33,6 +33,7 @@ import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
+import io.prometheus.client.exporter.PushGateway;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -40,7 +41,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.hypertrace.core.serviceframework.metrics.config.PrometheusPushRegistryConfig;
+import org.hypertrace.core.serviceframework.metrics.registry.PrometheusPushMeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -57,6 +61,7 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_REPORTER_NAMES_CONFIG_KEY = "reporter.names";
   private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "reporter.prefix";
   private static final String METRICS_REPORT_INTERVAL_CONFIG_KEY = "reportInterval";
+  private static final String METRICS_REPORT_PUSH_URL_ADDRESS = "pushUrlAddress";
 
   /**
    * List of tags that need to be reported for all the metrics reported by this service.
@@ -141,6 +146,42 @@ public class PlatformMetricsRegistry {
     METER_REGISTRY.add(new SimpleMeterRegistry());
   }
 
+  private static void initPrometheusPushGatewayReporter(String serviceName,
+      int reportIntervalSec,
+      String gatewayUrlAddress) {
+    LOGGER.info("Initializing Prometheus PushGateway Reporter with urlAddress: {}, jobName: {}. "
+        + "Metric is configured get pushed for every {} seconds", gatewayUrlAddress, serviceName,
+        reportIntervalSec);
+
+    if (gatewayUrlAddress == null || gatewayUrlAddress.isEmpty()) {
+      throw new IllegalArgumentException("pushUrlAddress configuration is not specified.");
+    }
+
+    METER_REGISTRY.add(new PrometheusPushMeterRegistry(
+    new PrometheusPushRegistryConfig() {
+      @Override
+      public String jobName() {
+        return serviceName;
+      }
+
+      @Override
+      public String prefix() {
+        return "prometheus";
+      }
+
+      @Override
+      @io.micrometer.core.lang.Nullable
+      public String get(String key) {
+        return null;
+      }
+
+      @Override
+      public Duration step() {
+        return Duration.ofSeconds(reportIntervalSec);
+      }
+    }, Executors.defaultThreadFactory(), new PushGateway(gatewayUrlAddress)));
+  }
+
   private static List<String> getStringList(Config config, String path, List<String> defaultVal) {
     if (config.hasPath(path)) {
       return config.getStringList(path);
@@ -166,6 +207,10 @@ public class PlatformMetricsRegistry {
       reportIntervalSec = config.getInt(METRICS_REPORT_INTERVAL_CONFIG_KEY);
     }
 
+    String pushUrlAddress = null;
+    if (config.hasPath(METRICS_REPORT_PUSH_URL_ADDRESS)) {
+      pushUrlAddress = config.getString(METRICS_REPORT_PUSH_URL_ADDRESS);
+    }
     Map<String, String> defaultTags = new HashMap<>();
 
     // Add the service name and other given tags to the default tags list.
@@ -190,6 +235,8 @@ public class PlatformMetricsRegistry {
         case "testing":
           initTestingMetricsReporter();
           break;
+        case "pushgateway":
+          initPrometheusPushGatewayReporter(serviceName, reportIntervalSec, pushUrlAddress);
         default:
           LOGGER.warn("Cannot find metric reporter: {}", reporter);
       }
