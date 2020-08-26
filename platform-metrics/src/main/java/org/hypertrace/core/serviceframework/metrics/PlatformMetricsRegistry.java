@@ -369,6 +369,8 @@ public class PlatformMetricsRegistry {
     METRIC_REGISTRY.getNames().forEach(METRIC_REGISTRY::remove);
 
     DEFAULT_TAGS.clear();
+    /* For each meter registry in this composite, it will call the close function */
+    METER_REGISTRY.getRegistries().forEach(MeterRegistry::close);
     METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
     METER_REGISTRY.getRegistries().forEach(e -> {
       e.clear();
@@ -378,6 +380,10 @@ public class PlatformMetricsRegistry {
     isInit = false;
   }
 
+  /*
+  * This is needed because ConsoleMetricReporter.stop() doesn't call report for the last time
+  * before closing the scheduled thread
+  */
   private static void stopConsoleMetricsReporter() {
     if (consoleReporter == null) {
       return;
