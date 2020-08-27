@@ -372,10 +372,10 @@ public class PlatformMetricsRegistry {
     /* For each meter registry in this composite, it will call the close function */
     METER_REGISTRY.getRegistries().forEach(MeterRegistry::close);
     METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
-    METER_REGISTRY.getRegistries().forEach(e -> {
-      e.clear();
-      METER_REGISTRY.remove(e);
-    });
+    METER_REGISTRY.getRegistries().forEach(MeterRegistry::clear);
+    Set<MeterRegistry> registries = new HashSet<>(METER_REGISTRY.getRegistries());
+    registries.forEach(METER_REGISTRY::remove);
+    registries.clear();
     CollectorRegistry.defaultRegistry.clear();
     isInit = false;
   }
