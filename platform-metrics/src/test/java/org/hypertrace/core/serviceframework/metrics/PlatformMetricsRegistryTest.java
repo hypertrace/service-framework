@@ -1,23 +1,19 @@
 package org.hypertrace.core.serviceframework.metrics;
 
-import static java.lang.Thread.sleep;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
-import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link PlatformMetricsRegistry}
