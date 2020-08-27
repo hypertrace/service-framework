@@ -55,7 +55,7 @@ public class PrometheusPushMeterRegistry extends PrometheusMeterRegistry {
 
   public void start(ThreadFactory threadFactory) {
     if (scheduledExecutorService != null)
-      stop();
+      return;
 
     if (pushConfig.enabled()) {
       logger.info("publishing metrics for " + this.getClass().getSimpleName() + " every " + TimeUtils

@@ -154,12 +154,12 @@ public class PlatformMetricsRegistry {
 
   private static void initPrometheusPushGatewayReporter(String serviceName,
       int reportIntervalSec,
-      String gatewayUrlAddress) {
+      String pushUrlAddress) {
     LOGGER.info("Initializing Prometheus PushGateway Reporter with urlAddress: {}, jobName: {}. "
-        + "Metric is configured get pushed for every {} seconds", gatewayUrlAddress, serviceName,
+        + "Metric is configured get pushed for every {} seconds", pushUrlAddress, serviceName,
         reportIntervalSec);
 
-    if (gatewayUrlAddress == null || gatewayUrlAddress.isEmpty()) {
+    if (pushUrlAddress == null || pushUrlAddress.isEmpty()) {
       throw new IllegalArgumentException("pushUrlAddress configuration is not specified.");
     }
 
@@ -185,7 +185,7 @@ public class PlatformMetricsRegistry {
       public Duration step() {
         return Duration.ofSeconds(reportIntervalSec);
       }
-    }, Executors.defaultThreadFactory(), new PushGateway(gatewayUrlAddress)));
+    }, Executors.defaultThreadFactory(), new PushGateway(pushUrlAddress)));
   }
 
   private static List<String> getStringList(Config config, String path, List<String> defaultVal) {
@@ -397,7 +397,7 @@ public class PlatformMetricsRegistry {
   private static void validate(Config config) {
     List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
         DEFAULT_METRICS_REPORTERS);
-    /* can't contains both prometheus pull and push mechanism */
+    /* can't contain both prometheus pull and push mechanism */
     if (reporters.contains(PROMETHEUS_REPORTER_NAME) &&
         reporters.contains(PUSH_GATEWAY_REPORTER_NAME)) {
       throw new IllegalArgumentException("Both prometheus and pushgateway are included in the "
