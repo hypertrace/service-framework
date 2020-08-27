@@ -70,10 +70,14 @@ public class PrometheusPushMeterRegistryTest {
      }, Executors.defaultThreadFactory(), mockPushGateway);
   }
 
-  private void verifyWithRetry(long initialDelayInMillis, long intervalInMillis, int maxRetries, Runnable runnable)
-      throws InterruptedException {
+  private void verifyWithRetry(long initialDelayInMillis, long intervalInMillis, int maxRetries, Runnable runnable) {
+    try {
+      sleep(initialDelayInMillis);
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+    }
+
     int runCount = 0;
-    sleep(initialDelayInMillis);
     while (runCount <= maxRetries){
       try {
         runnable.run();
@@ -82,9 +86,13 @@ public class PrometheusPushMeterRegistryTest {
       } catch (AssertionError assertionError) {
         /* reached max retry */
         if (runCount == maxRetries) {
-          throw new AssertionError("Failed verification after retries");
+          throw assertionError;
         }
-        sleep(intervalInMillis);
+        try {
+          sleep(intervalInMillis);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        }
       }
       runCount++;
     }
