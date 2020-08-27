@@ -1,24 +1,26 @@
 package org.hypertrace.core.serviceframework.metrics;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Unit tests for {@link PlatformMetricsRegistry}
  */
 public class PlatformMetricsRegistryTest {
+  private static final String PUSH_GATEWAY_REPORTER_NAME = "pushgateway";
+  private static final String PROMETHEUS_REPORTER_NAME = "prometheus";
   private static void initializeCustomRegistry(List<String> reporters) {
     PlatformMetricsRegistry.initMetricsRegistry("test-service",
         ConfigFactory.parseMap(Map.of(
@@ -113,5 +115,33 @@ public class PlatformMetricsRegistryTest {
         Map.of("foo", "bar"), newAtomicInteger);
     newAtomicInteger.addAndGet(10);
     assertEquals(11, gauge.get());
+  }
+
+  @Test
+  public void test_initializePrometheusPushGateway_withNullUrlAddress_throwsException() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        () -> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME)));
+  }
+
+  @Test
+  public void test_init_withBothPromethuesAndPushGateway_throwsException() {
+    Assertions.assertThrows(IllegalArgumentException.class,
+        ()-> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME, PROMETHEUS_REPORTER_NAME)));
+  }
+
+  @Test
+  public void test_pushMetrics() throws InterruptedException {
+    Config config = ConfigFactory.parseMap(Map.of(
+        "reporter.names", List.of(PUSH_GATEWAY_REPORTER_NAME),
+        "reporter.prefix", "ines-service",
+        "reportInterval", "10",
+        "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
+        "pushUrlAddress", "localhost:9091"
+    ));
+
+    PlatformMetricsRegistry.initMetricsRegistry("ines-service", config);
+    Counter counter = PlatformMetricsRegistry.registerCounter("my.counter", Map.of("foo", "bar"));
+    counter.increment();
+    Assertions.assertEquals(1, counter.count());
   }
 }
