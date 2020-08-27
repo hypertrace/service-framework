@@ -316,10 +316,10 @@ public class PlatformMetricsRegistry {
 
     DEFAULT_TAGS.clear();
     METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
-    METER_REGISTRY.getRegistries().forEach(e -> {
-      e.clear();
-      METER_REGISTRY.remove(e);
-    });
+    METER_REGISTRY.getRegistries().forEach(MeterRegistry::clear);
+    Set<MeterRegistry> registries = new HashSet<>(METER_REGISTRY.getRegistries());
+    registries.forEach(METER_REGISTRY::remove);
+    registries.clear();
     CollectorRegistry.defaultRegistry.clear();
     isInit = false;
   }
