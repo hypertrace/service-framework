@@ -35,6 +35,7 @@ import io.micrometer.prometheus.PrometheusConfig;
 import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
+import io.prometheus.client.exporter.PushGateway;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -42,7 +43,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.hypertrace.core.serviceframework.metrics.config.PrometheusPushRegistryConfig;
+import org.hypertrace.core.serviceframework.metrics.registry.PrometheusPushMeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,6 +63,12 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_REPORTER_NAMES_CONFIG_KEY = "reporter.names";
   private static final String METRICS_REPORTER_PREFIX_CONFIG_KEY = "reporter.prefix";
   private static final String METRICS_REPORT_INTERVAL_CONFIG_KEY = "reportInterval";
+  private static final String METRICS_REPORT_PUSH_URL_ADDRESS = "pushUrlAddress";
+  private static final String PROMETHEUS_REPORTER_NAME = "prometheus";
+  private static final String PUSH_GATEWAY_REPORTER_NAME = "pushgateway";
+  private static final String LOGGING_REPORTER_NAME = "logging";
+  private static final String TESTING_REPORTER_NAME = "testing";
+  private static final String CONSOLE_REPORTER_NAME = "console";
 
   /**
    * List of tags that need to be reported for all the metrics reported by this service.
@@ -143,6 +153,42 @@ public class PlatformMetricsRegistry {
     METER_REGISTRY.add(new SimpleMeterRegistry());
   }
 
+  private static void initPrometheusPushGatewayReporter(String serviceName,
+      int reportIntervalSec,
+      String pushUrlAddress) {
+    LOGGER.info("Initializing Prometheus PushGateway Reporter with urlAddress: {}, jobName: {}. "
+        + "Metric is configured get pushed for every {} seconds", pushUrlAddress, serviceName,
+        reportIntervalSec);
+
+    if (pushUrlAddress == null || pushUrlAddress.isEmpty()) {
+      throw new IllegalArgumentException("pushUrlAddress configuration is not specified.");
+    }
+
+    METER_REGISTRY.add(new PrometheusPushMeterRegistry(
+    new PrometheusPushRegistryConfig() {
+      @Override
+      public String jobName() {
+        return serviceName;
+      }
+
+      @Override
+      public String prefix() {
+        return PUSH_GATEWAY_REPORTER_NAME;
+      }
+
+      @Override
+      @io.micrometer.core.lang.Nullable
+      public String get(String key) {
+        return null;
+      }
+
+      @Override
+      public Duration step() {
+        return Duration.ofSeconds(reportIntervalSec);
+      }
+    }, Executors.defaultThreadFactory(), new PushGateway(pushUrlAddress)));
+  }
+
   private static List<String> getStringList(Config config, String path, List<String> defaultVal) {
     if (config.hasPath(path)) {
       return config.getStringList(path);
@@ -154,6 +200,8 @@ public class PlatformMetricsRegistry {
     if (isInit) {
       return;
     }
+
+    validate(config);
 
     List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
         DEFAULT_METRICS_REPORTERS);
@@ -168,6 +216,10 @@ public class PlatformMetricsRegistry {
       reportIntervalSec = config.getInt(METRICS_REPORT_INTERVAL_CONFIG_KEY);
     }
 
+    String pushUrlAddress = null;
+    if (config.hasPath(METRICS_REPORT_PUSH_URL_ADDRESS)) {
+      pushUrlAddress = config.getString(METRICS_REPORT_PUSH_URL_ADDRESS);
+    }
     Map<String, String> defaultTags = new HashMap<>();
 
     // Add the service name and other given tags to the default tags list.
@@ -182,18 +234,20 @@ public class PlatformMetricsRegistry {
 
     for (String reporter : reporters) {
       switch (reporter.toLowerCase()) {
-        case "console":
+        case CONSOLE_REPORTER_NAME:
           initConsoleMetricsReporter(reportIntervalSec);
           break;
-        case "logging":
+        case LOGGING_REPORTER_NAME:
           initLoggingMetricsReporter(reportIntervalSec);
           break;
-        case "prometheus":
+        case PROMETHEUS_REPORTER_NAME:
           initPrometheusReporter(reportIntervalSec);
           break;
-        case "testing":
+        case TESTING_REPORTER_NAME:
           initTestingMetricsReporter();
           break;
+        case PUSH_GATEWAY_REPORTER_NAME:
+          initPrometheusPushGatewayReporter(serviceName, reportIntervalSec, pushUrlAddress);
         default:
           LOGGER.warn("Cannot find metric reporter: {}", reporter);
       }
@@ -317,15 +371,21 @@ public class PlatformMetricsRegistry {
     METRIC_REGISTRY.getNames().forEach(METRIC_REGISTRY::remove);
 
     DEFAULT_TAGS.clear();
+    /* For each meter registry in this composite, it will call the close function */
+    METER_REGISTRY.getRegistries().forEach(MeterRegistry::close);
     METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
-    METER_REGISTRY.getRegistries().forEach(e -> {
-      e.clear();
-      METER_REGISTRY.remove(e);
-    });
+    METER_REGISTRY.getRegistries().forEach(MeterRegistry::clear);
+    Set<MeterRegistry> registries = new HashSet<>(METER_REGISTRY.getRegistries());
+    registries.forEach(METER_REGISTRY::remove);
+    registries.clear();
     CollectorRegistry.defaultRegistry.clear();
     isInit = false;
   }
 
+  /*
+  * This is needed because ConsoleMetricReporter.stop() doesn't call report for the last time
+  * before closing the scheduled thread
+  */
   private static void stopConsoleMetricsReporter() {
     if (consoleReporter == null) {
       return;
@@ -334,5 +394,16 @@ public class PlatformMetricsRegistry {
     consoleReporter.report();
     // stop console reporter
     consoleReporter.stop();
+  }
+
+  private static void validate(Config config) {
+    List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
+        DEFAULT_METRICS_REPORTERS);
+    /* can't contain both prometheus pull and push mechanism */
+    if (reporters.contains(PROMETHEUS_REPORTER_NAME) &&
+        reporters.contains(PUSH_GATEWAY_REPORTER_NAME)) {
+      throw new IllegalArgumentException("Both prometheus and pushgateway are included in the "
+          + METRICS_REPORTER_NAMES_CONFIG_KEY + " configuration. Please choose one of them.");
+    }
   }
 }
