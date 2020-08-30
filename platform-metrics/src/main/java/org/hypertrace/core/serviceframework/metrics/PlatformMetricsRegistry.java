@@ -23,6 +23,7 @@ import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
+import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
@@ -261,6 +262,7 @@ public class PlatformMetricsRegistry {
     new ProcessorMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
     new JvmThreadMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
     new JvmMemoryMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
+    new UptimeMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
 
     new ProcessMemoryMetrics().bindTo(METER_REGISTRY);
     new ProcessThreadMetrics().bindTo(METER_REGISTRY);
