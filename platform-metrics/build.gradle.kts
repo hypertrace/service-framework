@@ -10,7 +10,7 @@ tasks.test {
 }
 
 dependencies {
-  api("com.typesafe:config:1.3.2")
+  api("com.typesafe:config:1.4.0")
   api("io.dropwizard.metrics:metrics-core:4.1.0")
   api("io.micrometer:micrometer-core:1.5.3")
   api("org.apache.flink:flink-metrics-core:1.10.1")
@@ -19,7 +19,7 @@ dependencies {
 
   implementation("io.micrometer:micrometer-registry-prometheus:1.5.3")
   implementation("io.github.mweirauch:micrometer-jvm-extras:0.2.0")
-  implementation("org.slf4j:slf4j-api:1.7.25")
+  implementation("org.slf4j:slf4j-api:1.7.30")
   implementation("io.dropwizard.metrics:metrics-jvm:4.1.0")
   implementation("io.prometheus:simpleclient_dropwizard:0.6.0")
   implementation("io.prometheus:simpleclient_servlet:0.6.0")
