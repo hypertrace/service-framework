@@ -20,7 +20,7 @@ dependencies {
   implementation("org.eclipse.jetty:jetty-servlet:9.4.18.v20190429")
 
   // http client
-  implementation("org.apache.httpcomponents:httpclient:4.5.12")
+  implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
   constraints {
     implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0") {
