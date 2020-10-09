@@ -1,5 +1,9 @@
 package org.hypertrace.core.serviceframework;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.io.IOException;
@@ -11,7 +15,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.hypertrace.core.serviceframework.PlatformService.State;
+import org.hypertrace.core.serviceframework.PlatformServiceLifecycle.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.DirectoryBasedConfigClient;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
@@ -92,7 +96,7 @@ public class PlatformServiceTest {
         "service.admin.port", "59001"));
     startService(service);
 
-    Assertions.assertEquals("test-service", service.getServiceName());
+    assertEquals("test-service", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
 
     // Verify that the metric registry is initialized and `/metrics` endpoint is working.
@@ -131,7 +135,7 @@ public class PlatformServiceTest {
     );
     startService(service);
 
-    Assertions.assertEquals("test-service2", service.getServiceName());
+    assertEquals("test-service2", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
 
     // Verify that the metric registry is initialized and `/metrics` endpoint is working.
@@ -161,7 +165,7 @@ public class PlatformServiceTest {
     PlatformService service = new TestService(new DirectoryBasedConfigClient(configDirURL.getPath()));
     startService(service);
 
-    Assertions.assertEquals("sample-app", service.getServiceName());
+    assertEquals("sample-app", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
 
     // Verify that the metric registry is initialized and `/metrics` endpoint is working.
@@ -181,5 +185,28 @@ public class PlatformServiceTest {
     }
 
     service.shutdown();
+  }
+
+  @Test
+  void testLifecycle() {
+    PlatformService service = getService(
+        Map.of("service.name", "test-service2",
+            "service.admin.port", "59002")
+    );
+    assertEquals(State.NOT_STARTED, service.getServiceState());
+
+    service.initialize();
+
+    assertEquals(State.INITIALIZED, service.getServiceState());
+    assertFalse(service.getLifecycle().shutdownComplete().toCompletableFuture().isDone());
+
+    startService(service);
+
+    assertEquals(State.STARTED, service.getServiceState());
+    assertFalse(service.getLifecycle().shutdownComplete().toCompletableFuture().isDone());
+
+    service.shutdown();
+    assertEquals(State.STOPPED, service.getServiceState());
+    assertTrue(service.getLifecycle().shutdownComplete().toCompletableFuture().isDone());
   }
 }
