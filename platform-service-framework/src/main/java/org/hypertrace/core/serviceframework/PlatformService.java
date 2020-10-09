@@ -76,6 +76,10 @@ public abstract class PlatformService {
     return this.serviceLifecycle.getState();
   }
 
+  public PlatformServiceLifecycle getLifecycle() {
+    return this.serviceLifecycle;
+  }
+
   protected final Config getAppConfig() {
     return this.appConfig;
   }
@@ -175,16 +179,12 @@ public abstract class PlatformService {
       return;
     }
     LOGGER.info("Trying to shutdown service - {}...", getServiceName());
-    this.serviceLifecycle.setState(State.STOPPING);
+    serviceLifecycle.setState(State.STOPPING);
     doStop();
     serviceLifecycle.setState(State.STOPPED);
     LOGGER.info("Stopping metrics registry");
     PlatformMetricsRegistry.stop();
     LOGGER.info("Service - {} is shutdown.", getServiceName());
-  }
-
-  public PlatformServiceLifecycle getLifecycle() {
-    return this.serviceLifecycle;
   }
 
 }
