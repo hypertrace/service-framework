@@ -15,3 +15,4 @@ plugins {
 include(":platform-service-framework")
 include(":platform-metrics")
 include(":integrationtest-service-framework")
+include(":service-framework-spi")

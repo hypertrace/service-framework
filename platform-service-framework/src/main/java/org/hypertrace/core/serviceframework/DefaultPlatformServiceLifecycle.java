@@ -2,6 +2,7 @@ package org.hypertrace.core.serviceframework;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
 class DefaultPlatformServiceLifecycle implements PlatformServiceLifecycle {
   private volatile State state = State.NOT_STARTED;

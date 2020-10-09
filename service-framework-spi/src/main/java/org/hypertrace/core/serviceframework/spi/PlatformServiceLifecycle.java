@@ -1,4 +1,4 @@
-package org.hypertrace.core.serviceframework;
+package org.hypertrace.core.serviceframework.spi;
 
 import java.util.concurrent.CompletionStage;
 

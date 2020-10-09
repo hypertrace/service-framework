@@ -15,7 +15,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
-import org.hypertrace.core.serviceframework.PlatformServiceLifecycle.State;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.DirectoryBasedConfigClient;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;

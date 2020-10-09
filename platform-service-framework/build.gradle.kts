@@ -10,6 +10,7 @@ tasks.test {
 }
 
 dependencies {
+  api(project(":service-framework-spi"))
   implementation(project(":platform-metrics"))
 
   api("org.slf4j:slf4j-api:1.7.25")
