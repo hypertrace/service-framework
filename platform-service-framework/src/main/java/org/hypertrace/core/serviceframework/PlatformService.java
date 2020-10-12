@@ -10,6 +10,8 @@ import java.net.UnknownHostException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.ConfigClientFactory;
 import org.hypertrace.core.serviceframework.metrics.MetricsServlet;
@@ -36,7 +38,7 @@ public abstract class PlatformService {
   private static final String SERVICE_NAME_CONFIG = "service.name";
   protected ConfigClient configClient;
   private final Config appConfig;
-  private State serviceState = State.NOT_STARTED;
+  private final DefaultPlatformServiceLifecycle serviceLifecycle = new DefaultPlatformServiceLifecycle();
   private Server adminServer;
   private final String serviceName;
 
@@ -72,7 +74,11 @@ public abstract class PlatformService {
   }
 
   public State getServiceState() {
-    return this.serviceState;
+    return this.serviceLifecycle.getState();
+  }
+
+  public PlatformServiceLifecycle getLifecycle() {
+    return this.serviceLifecycle;
   }
 
   protected final Config getAppConfig() {
@@ -80,31 +86,31 @@ public abstract class PlatformService {
   }
 
   public void initialize() {
-    if (serviceState != State.NOT_STARTED) {
+    if (getServiceState() != State.NOT_STARTED) {
       LOGGER.info(
           "Service - {} is at state: {}. Expecting state: NOT_STARTED. Skipping initialize...",
-          getServiceName(), serviceState);
+          getServiceName(), getServiceState());
       return;
     }
-    serviceState = State.INITIALIZING;
+    serviceLifecycle.setState(State.INITIALIZING);
 
     LOGGER.info("Starting the service with this config {}", appConfig);
     Config metricsConfig = appConfig.hasPath(METRICS_CONFIG_KEY) ?
         appConfig.getConfig(METRICS_CONFIG_KEY) : ConfigFactory.empty();
     PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), metricsConfig);
     doInit();
-    serviceState = State.INITIALIZED;
+    serviceLifecycle.setState(State.INITIALIZED);
     LOGGER.info("Service - {} is initialized.", getServiceName());
   }
 
   public void start() {
-    if (serviceState != State.INITIALIZED) {
+    if (getServiceState() != State.INITIALIZED) {
       LOGGER.info("Service - {} is at state: {}. Expecting state: INITIALIZED. Skipping start...",
-          getServiceName(), serviceState);
+          getServiceName(), getServiceState());
       return;
     }
     LOGGER.info("Trying to start service - {}...", getServiceName());
-    serviceState = State.STARTING;
+    serviceLifecycle.setState(State.STARTING);
     final int serviceAdminPort = getServiceAdminPort();
     adminServer = new Server(serviceAdminPort);
     ServletContextHandler context = new ServletContextHandler();
@@ -133,7 +139,7 @@ public abstract class PlatformService {
       adminServer.start();
       LOGGER.info("Started admin service on port: {}.", serviceAdminPort);
 
-      serviceState = State.STARTED;
+      serviceLifecycle.setState(State.STARTED);
       LOGGER.info("Service - {} is started.", getServiceName());
 
       thread.join();
@@ -167,28 +173,19 @@ public abstract class PlatformService {
     } catch (Exception ex) {
       LOGGER.error("Error stopping admin server");
     }
-    if (serviceState != State.STARTED) {
+    if (getServiceState() != State.STARTED) {
       LOGGER.info(
           "Service - {} is at state: {}. Expecting state: STARTED. Skipping shutdown...",
-          getServiceName(), serviceState);
+          getServiceName(), getServiceState());
       return;
     }
     LOGGER.info("Trying to shutdown service - {}...", getServiceName());
-    serviceState = State.STOPPING;
+    serviceLifecycle.setState(State.STOPPING);
     doStop();
-    serviceState = State.STOPPED;
+    serviceLifecycle.setState(State.STOPPED);
     LOGGER.info("Stopping metrics registry");
     PlatformMetricsRegistry.stop();
     LOGGER.info("Service - {} is shutdown.", getServiceName());
   }
 
-  enum State {
-    NOT_STARTED,
-    INITIALIZING,
-    INITIALIZED,
-    STARTING,
-    STARTED,
-    STOPPING,
-    STOPPED
-  }
 }
