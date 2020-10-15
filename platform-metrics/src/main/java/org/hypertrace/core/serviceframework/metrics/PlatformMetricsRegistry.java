@@ -248,6 +248,7 @@ public class PlatformMetricsRegistry {
           break;
         case PUSH_GATEWAY_REPORTER_NAME:
           initPrometheusPushGatewayReporter(serviceName, reportIntervalSec, pushUrlAddress);
+          break;
         default:
           LOGGER.warn("Cannot find metric reporter: {}", reporter);
       }
