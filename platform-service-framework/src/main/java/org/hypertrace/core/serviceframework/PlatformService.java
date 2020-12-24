@@ -94,10 +94,12 @@ public abstract class PlatformService {
     }
     serviceLifecycle.setState(State.INITIALIZING);
 
-    LOGGER.info("Starting the service with this config {}", appConfig);
     Config metricsConfig = appConfig.hasPath(METRICS_CONFIG_KEY) ?
         appConfig.getConfig(METRICS_CONFIG_KEY) : ConfigFactory.empty();
+
+    LOGGER.info("Starting the service by using this metrics configuration {}", metricsConfig);
     PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), metricsConfig);
+
     doInit();
     serviceLifecycle.setState(State.INITIALIZED);
     LOGGER.info("Service - {} is initialized.", getServiceName());
