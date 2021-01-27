@@ -13,8 +13,6 @@ dependencies {
   api("com.typesafe:config:1.4.1")
   api("io.dropwizard.metrics:metrics-core:4.1.16")
   api("io.micrometer:micrometer-core:1.5.3")
-  api("org.apache.flink:flink-metrics-core:1.10.1")
-  api("org.apache.flink:flink-metrics-prometheus_2.12:1.10.1")
   api("javax.servlet:javax.servlet-api:3.1.0")
 
   implementation("io.micrometer:micrometer-registry-prometheus:1.5.3")
