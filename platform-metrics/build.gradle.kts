@@ -22,7 +22,7 @@ dependencies {
   implementation("io.prometheus:simpleclient_dropwizard:0.6.0")
   implementation("io.prometheus:simpleclient_servlet:0.6.0")
   implementation("io.prometheus:simpleclient_pushgateway:0.9.0")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.35.v20201120")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.38.v20210224")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
   testImplementation("org.mockito:mockito-core:3.3.3")
