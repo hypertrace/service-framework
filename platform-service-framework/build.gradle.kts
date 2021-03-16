@@ -18,7 +18,10 @@ dependencies {
 
   // Use for thread dump servlet
   implementation("io.dropwizard.metrics:metrics-servlets:4.1.16")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.35.v20201120")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.38.v20210224")
+
+  // Use for metrics servlet
+  implementation("io.prometheus:simpleclient_servlet:0.6.0")
 
   // http client
   implementation("org.apache.httpcomponents:httpclient:4.5.13")

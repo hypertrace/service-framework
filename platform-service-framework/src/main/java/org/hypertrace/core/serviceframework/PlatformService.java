@@ -14,7 +14,7 @@ import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.ConfigClientFactory;
-import org.hypertrace.core.serviceframework.metrics.MetricsServlet;
+import io.prometheus.client.exporter.MetricsServlet;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.service.servlets.HealthCheckServlet;
 import org.hypertrace.core.serviceframework.service.servlets.JVMDiagnosticServlet;
