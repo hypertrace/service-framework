@@ -9,7 +9,9 @@ import com.typesafe.config.ConfigFactory;
  */
 public class IntegrationTestConfigClient implements ConfigClient {
   private static final String APPLICATION_CONFIG_FILE = "application.conf";
+  private static final String INTEGRATION_TEST_COMMON_PREFIX = "configs/common";
   private static final String INTEGRATION_TEST_ENV = "local";
+
 
   private final String resourcePrefix;
 
@@ -20,9 +22,11 @@ public class IntegrationTestConfigClient implements ConfigClient {
   @Override
   public Config getConfig() {
     Config config = ConfigFactory.parseResources(resourcePrefix + "/" + APPLICATION_CONFIG_FILE);
+    Config commonConfig = ConfigFactory.parseResources(
+        String.format("%s/%s", INTEGRATION_TEST_COMMON_PREFIX, APPLICATION_CONFIG_FILE));
     Config localConfig = ConfigFactory.parseResources(resourcePrefix + "/" + INTEGRATION_TEST_ENV
         + "/" + APPLICATION_CONFIG_FILE);
-    return localConfig.withFallback(config).resolve();
+    return localConfig.withFallback(config).withFallback(commonConfig).resolve();
   }
 
   @Override
