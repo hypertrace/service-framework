@@ -18,7 +18,7 @@ dependencies {
 
   // Use for thread dump servlet
   implementation("io.dropwizard.metrics:metrics-servlets:4.1.16")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.38.v20210224")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.39.v20210325")
 
   // Use for metrics servlet
   implementation("io.prometheus:simpleclient_servlet:0.6.0")
@@ -27,18 +27,17 @@ dependencies {
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
 
   constraints {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.11.0") {
-      because("Deserialization of Untrusted Data [High Severity][https://snyk.io/vuln/SNYK-JAVA-COMFASTERXMLJACKSONCORE-561587] in com.fasterxml.jackson.core:jackson-databind@2.9.8\n" +
-              "   io.dropwizard.metrics:metrics-servlets")
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.2") {
+      because("Multiple vulnerabilities")
     }
-    implementation("commons-codec:commons-codec:1.13") {
+    implementation("commons-codec:commons-codec:1.15") {
       because("version 1.12 has a vulnerability https://snyk.io/vuln/SNYK-JAVA-COMMONSCODEC-561518")
     }
   }
 
-  testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.13.3")
-  testImplementation("org.junit.jupiter:junit-jupiter:5.6.2")
-  testImplementation("org.mockito:mockito-core:3.3.3")
-  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.18.v20190429:tests")
-  testImplementation("org.eclipse.jetty:jetty-http:9.4.18.v20190429:tests")
+  testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.14.1")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
+  testImplementation("org.mockito:mockito-core:3.8.0")
+  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.39.v20210325:tests")
+  testImplementation("org.eclipse.jetty:jetty-http:9.4.39.v20210325:tests")
 }
