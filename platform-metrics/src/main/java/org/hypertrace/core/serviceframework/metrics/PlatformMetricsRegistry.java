@@ -13,6 +13,7 @@ import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
@@ -334,7 +335,8 @@ public class PlatformMetricsRegistry {
    * See https://micrometer.io/docs/concepts#_gauges for more details on the Gauges.
    */
   public static <T extends Number> T registerGauge(String name, Map<String, String> tags, T number) {
-    return METER_REGISTRY.gauge(name, addDefaultTags(tags), number);
+    Gauge.builder(name, number, Number::doubleValue).tags(addDefaultTags(tags)).strongReference(true).register(METER_REGISTRY);
+    return number;
   }
 
   /**
