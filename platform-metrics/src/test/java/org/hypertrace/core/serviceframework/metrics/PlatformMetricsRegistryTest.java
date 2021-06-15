@@ -132,7 +132,7 @@ public class PlatformMetricsRegistryTest {
     assertEquals(1, distribution.count());
     assertEquals(100, distribution.totalAmount());
 
-    // Try to register the same timer again and we should get the same instance.
+    // Try to register the same summary again and we should get the same instance.
     distribution = PlatformMetricsRegistry
         .registerDistributionSummary("my.distribution", Map.of("foo", "bar"));
     distribution.record(50);
