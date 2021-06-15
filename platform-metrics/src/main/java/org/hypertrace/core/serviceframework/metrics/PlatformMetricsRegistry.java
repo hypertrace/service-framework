@@ -13,6 +13,7 @@ import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -337,6 +338,40 @@ public class PlatformMetricsRegistry {
   public static <T extends Number> T registerGauge(String name, Map<String, String> tags, T number) {
     Gauge.builder(name, number, Number::doubleValue).tags(addDefaultTags(tags)).strongReference(true).register(METER_REGISTRY);
     return number;
+  }
+
+  /**
+   * Registers a DistributionSummary (with predefined percentiles computed locally) for the given
+   * name with the service's metric registry and reports it periodically to the configured
+   * reporters. Apart from the provided tags, the reporting service's default tags also will be
+   * reported with the metrics.
+   * <p>
+   * See https://micrometer.io/docs/concepts#_distribution_summaries for more details.
+   */
+  public static DistributionSummary registerDistributionSummary(String name,
+      Map<String, String> tags) {
+    return registerDistributionSummary(name, tags, false);
+  }
+
+  /**
+   * Registers a DistributionSummary for the given name with the service's metric registry and
+   * reports it periodically to the configured reporters Apart from the provided tags, the reporting
+   * service's default tags also will be reported with the metrics.
+   * <p>
+   * Param histogram – Determines whether percentile histograms should be published.
+   * <p>
+   * For more details refer - https://micrometer.io/docs/concepts#_distribution_summaries for more
+   * details, https://micrometer.io/docs/concepts#_histograms_and_percentiles
+   */
+  public static DistributionSummary registerDistributionSummary(String name,
+      Map<String, String> tags, boolean histogram) {
+    DistributionSummary.Builder builder = DistributionSummary.builder(name)
+        .publishPercentiles(0.5, 0.95, 0.99)
+        .tags(addDefaultTags(tags));
+    if (histogram) {
+      builder = builder.publishPercentileHistogram();
+    }
+    return builder.register(METER_REGISTRY);
   }
 
   /**

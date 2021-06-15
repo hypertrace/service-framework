@@ -1,16 +1,21 @@
 package org.hypertrace.core.serviceframework.metrics;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -115,6 +120,36 @@ public class PlatformMetricsRegistryTest {
         Map.of("foo", "bar"), newAtomicInteger);
     newAtomicInteger.addAndGet(10);
     assertEquals(11, gauge.get());
+  }
+
+  @Test
+  public void testDistributionSummary() {
+    initializeCustomRegistry(List.of("testing"));
+
+    DistributionSummary distribution = PlatformMetricsRegistry
+        .registerDistributionSummary("my.distribution", Map.of("foo", "bar"));
+    distribution.record(100);
+    assertEquals(1, distribution.count());
+    assertEquals(100, distribution.totalAmount());
+
+    // Try to register the same timer again and we should get the same instance.
+    distribution = PlatformMetricsRegistry
+        .registerDistributionSummary("my.distribution", Map.of("foo", "bar"));
+    distribution.record(50);
+    assertEquals(2, distribution.count());
+    assertEquals(150, distribution.totalAmount());
+    assertEquals(75, distribution.mean());
+    assertTrue(
+        Arrays.stream(distribution.takeSnapshot().percentileValues()).map(m -> m.percentile())
+            .collect(
+                Collectors.toList()).containsAll(List.of(0.5, 0.95, 0.99)));
+
+    // Create a new distribution
+    distribution = PlatformMetricsRegistry
+        .registerDistributionSummary("my.distribution", new HashMap<>());
+    distribution.record(100);
+    assertEquals(1, distribution.count());
+    assertEquals(100, distribution.totalAmount());
   }
 
   @Test
