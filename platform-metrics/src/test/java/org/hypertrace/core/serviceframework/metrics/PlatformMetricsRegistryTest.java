@@ -144,12 +144,16 @@ public class PlatformMetricsRegistryTest {
             .collect(
                 Collectors.toList()).containsAll(List.of(0.5, 0.95, 0.99)));
 
-    // Create a new distribution
+    // Create a new distribution with histogram enabled
     distribution = PlatformMetricsRegistry
-        .registerDistributionSummary("my.distribution", new HashMap<>());
+        .registerDistributionSummary("my.distribution", new HashMap<>(), true);
     distribution.record(100);
     assertEquals(1, distribution.count());
     assertEquals(100, distribution.totalAmount());
+    assertTrue(
+        Arrays.stream(distribution.takeSnapshot().percentileValues()).map(m -> m.percentile())
+            .collect(
+                Collectors.toList()).containsAll(List.of(0.5, 0.95, 0.99)));
   }
 
   @Test
