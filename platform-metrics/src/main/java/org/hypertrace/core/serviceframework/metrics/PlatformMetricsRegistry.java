@@ -360,8 +360,8 @@ public class PlatformMetricsRegistry {
    * <p>
    * Param histogram – Determines whether percentile histograms should be published.
    * <p>
-   * For more details refer - https://micrometer.io/docs/concepts#_distribution_summaries for more
-   * details, https://micrometer.io/docs/concepts#_histograms_and_percentiles
+   * For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
+   * https://micrometer.io/docs/concepts#_histograms_and_percentiles
    */
   public static DistributionSummary registerDistributionSummary(String name,
       Map<String, String> tags, boolean histogram) {
