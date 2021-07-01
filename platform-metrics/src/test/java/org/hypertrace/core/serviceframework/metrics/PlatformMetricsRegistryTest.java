@@ -1,5 +1,8 @@
 package org.hypertrace.core.serviceframework.metrics;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.typesafe.config.Config;
@@ -8,10 +11,6 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
-
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -20,9 +19,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /** Unit tests for {@link PlatformMetricsRegistry} */
 public class PlatformMetricsRegistryTest {
@@ -187,8 +186,7 @@ public class PlatformMetricsRegistryTest {
             return -1;
           }
         };
-
-    // Try catch block for cache.get [Note this doesn't catch the error thrown if assertion fails
+    // Checking cache values
     assertEquals(monitor.get("One", loader), 1);
     cache.put("Two", 2);
     assertEquals(monitor.get("Two", loader), 2);
