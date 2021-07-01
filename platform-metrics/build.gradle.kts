@@ -23,6 +23,8 @@ dependencies {
   implementation("io.prometheus:simpleclient_servlet:0.6.0")
   implementation("io.prometheus:simpleclient_pushgateway:0.9.0")
   implementation("org.eclipse.jetty:jetty-servlet:9.4.39.v20210325")
+  implementation ("com.google.guava:guava:30.1.1-jre")
+
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
   testImplementation("org.mockito:mockito-core:3.8.0")
