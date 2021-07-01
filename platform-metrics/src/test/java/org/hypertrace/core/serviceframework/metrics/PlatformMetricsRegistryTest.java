@@ -9,6 +9,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
+import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import java.util.Arrays;
@@ -23,7 +24,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/** Unit tests for {@link PlatformMetricsRegistry} */
+/**
+ * Unit tests for {@link PlatformMetricsRegistry}
+ */
 public class PlatformMetricsRegistryTest {
   private static final String PUSH_GATEWAY_REPORTER_NAME = "pushgateway";
   private static final String PROMETHEUS_REPORTER_NAME = "prometheus";
@@ -161,10 +164,8 @@ public class PlatformMetricsRegistryTest {
   @Test
   public void testCache() throws Exception {
     initializeCustomRegistry(List.of("testing"));
-
     Cache<String, Integer> cache = CacheBuilder.newBuilder().maximumSize(10).recordStats().build();
-    cache.put("One", 1);
-    Cache<String, Integer> monitor = PlatformMetricsRegistry.registerCache("my.cache", cache);
+    PlatformMetricsRegistry.registerCache("my.cache", cache);
     Callable<Integer> loader =
         new Callable<Integer>() {
           @Override
@@ -172,20 +173,52 @@ public class PlatformMetricsRegistryTest {
             return -1;
           }
         };
-    // Checking cache values
-    assertEquals(monitor.get("One", loader), 1);
+
+    // Doing some cache activity
+    cache.put("One", 1);
     cache.put("Two", 2);
-    assertEquals(monitor.get("Two", loader), 2);
-    assertEquals(cache.get("IsNotPresent", loader), -1);
+    cache.get("One", loader);
+    cache.get("Two", loader);
+    cache.get("Two", loader);
+    cache.get("Three", loader);
+    cache.get("Failed", loader);
 
-    // Checking cache stats
-    assertEquals(monitor.stats().hitCount(), 2);
-    assertEquals(monitor.stats().missCount(), 1);
+    // expected hit count = 3.0, miss rate = 2.0
 
-    // Registering new cache, values should change
-    Cache<String, Integer> cache1 = CacheBuilder.newBuilder().maximumSize(10).build();
-    monitor = PlatformMetricsRegistry.registerCache("my.cache", cache1);
-    assertEquals(monitor.get("First", loader), -1);
+    // Checking Cache Stats from registry
+    double hits = 0, misses = 0;
+    List<Meter> meterList = PlatformMetricsRegistry.getMeterRegistry().getMeters();
+    // Fetching the hits, misses registered in the registry by browsing through all the registered
+    // meters
+    for (int i = 0; i < meterList.size(); i++) {
+      Meter elem = meterList.get(i);
+      if (elem.getId().getName().contains("cache")) {
+        if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "hit")
+          hits = elem.measure().iterator().next().getValue();
+        else if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "miss")
+          misses = elem.measure().iterator().next().getValue();
+      }
+    }
+    assertEquals(3.0, hits);
+    assertEquals(2.0, misses);
+
+    // Doing some more cache activity
+    cache.get("NotPresent", loader);
+
+    // expected hit=3.0, miss=3.0
+    // Fetching the hits, misses registered in the registry by browsing through all the registered
+    // meters
+    for (int i = 0; i < meterList.size(); i++) {
+      Meter elem = meterList.get(i);
+      if (elem.getId().getName().contains("cache")) {
+        if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "hit")
+          hits = elem.measure().iterator().next().getValue();
+        else if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "miss")
+          misses = elem.measure().iterator().next().getValue();
+      }
+    }
+    assertEquals(3.0, hits);
+    assertEquals(3.0, misses);
   }
 
   @Test

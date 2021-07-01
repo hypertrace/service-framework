@@ -380,9 +380,8 @@ public class PlatformMetricsRegistry {
    * Registers metrics for GuavaCaches using micrometer's GuavaCacheMetrics under the given
    * cacheName for the given guavaCache
    */
-  public static <K, V> Cache<K, V> registerCache(String cacheName, Cache<K, V> guavaCache) {
-    Cache<K, V> monitor = GuavaCacheMetrics.monitor(METER_REGISTRY, guavaCache, cacheName);
-    return monitor;
+  public static <K, V> void registerCache(String cacheName, Cache<K, V> guavaCache) {
+    GuavaCacheMetrics.monitor(METER_REGISTRY, guavaCache, cacheName);
   }
 
   /**
