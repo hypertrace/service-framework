@@ -165,6 +165,7 @@ public class PlatformMetricsRegistryTest {
   public void testCache() throws Exception {
     initializeCustomRegistry(List.of("testing"));
     Cache<String, Integer> cache = CacheBuilder.newBuilder().maximumSize(10).recordStats().build();
+
     PlatformMetricsRegistry.registerCache("my.cache", cache);
     Callable<Integer> loader =
         new Callable<Integer>() {
@@ -182,43 +183,34 @@ public class PlatformMetricsRegistryTest {
     cache.get("Two", loader);
     cache.get("Three", loader);
     cache.get("Failed", loader);
-
-    // expected hit count = 3.0, miss rate = 2.0
+    // expected hit count = 3.0, miss rate = 2.0, cache size = 2 + 2 (misses) = 4.0
 
     // Checking Cache Stats from registry
-    double hits = 0, misses = 0;
+    double hits = 0, misses = 0,size = 0;
     List<Meter> meterList = PlatformMetricsRegistry.getMeterRegistry().getMeters();
     // Fetching the hits, misses registered in the registry by browsing through all the registered
     // meters
-    for (int i = 0; i < meterList.size(); i++) {
-      Meter elem = meterList.get(i);
-      if (elem.getId().getName().contains("cache")) {
-        if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "hit")
-          hits = elem.measure().iterator().next().getValue();
-        else if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "miss")
-          misses = elem.measure().iterator().next().getValue();
-      }
-    }
+    hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
+    misses = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","miss").meter().measure().iterator().next().getValue();
+    size = PlatformMetricsRegistry.getMeterRegistry().get("cache.size").meter().measure().iterator().next().getValue();
+
     assertEquals(3.0, hits);
     assertEquals(2.0, misses);
+    assertEquals(4.0,size);
 
     // Doing some more cache activity
     cache.get("NotPresent", loader);
 
-    // expected hit=3.0, miss=3.0
+    // expected hit=3.0, miss=3.0, size=5.0
     // Fetching the hits, misses registered in the registry by browsing through all the registered
     // meters
-    for (int i = 0; i < meterList.size(); i++) {
-      Meter elem = meterList.get(i);
-      if (elem.getId().getName().contains("cache")) {
-        if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "hit")
-          hits = elem.measure().iterator().next().getValue();
-        else if (elem.getId().getTag("result") != null && elem.getId().getTag("result") == "miss")
-          misses = elem.measure().iterator().next().getValue();
-      }
-    }
+    hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
+    misses = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","miss").meter().measure().iterator().next().getValue();
+    size = PlatformMetricsRegistry.getMeterRegistry().get("cache.size").meter().measure().iterator().next().getValue();
+
     assertEquals(3.0, hits);
     assertEquals(3.0, misses);
+    assertEquals(5.0,size);
   }
 
   @Test
