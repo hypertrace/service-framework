@@ -381,7 +381,6 @@ public class PlatformMetricsRegistry {
    * cacheName for the given guavaCache
    */
   public static <K, V> void registerCache(String cacheName, Cache<K, V> guavaCache, Map<String, String> tags) {
-
     GuavaCacheMetrics.monitor(METER_REGISTRY, guavaCache, cacheName, addDefaultTags(tags));
 
   }
