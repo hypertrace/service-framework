@@ -182,7 +182,11 @@ public class PlatformMetricsRegistryTest {
     cache.get("Two", loader);
     cache.get("Three", loader);
     cache.get("Failed", loader);
-    // expected hit count = 3.0, miss rate = 2.0, cache size = 2 + 2 (misses) = 4.0
+    /*
+    Expected hit count = 3.0, miss rate = 2.0
+    The way cache.get works is that if there is a cache miss then the entry is loaded from the loader and included in the cache,
+    hence the cache size due to the above activity would be 2 (already put One,Two) + 2 (cache miss on Three, Failed) = 4
+     */
 
     // Checking Cache Stats from registry
     double hits = 0, misses = 0,size = 0;
