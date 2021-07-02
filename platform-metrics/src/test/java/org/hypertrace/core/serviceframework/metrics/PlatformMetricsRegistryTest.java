@@ -166,6 +166,7 @@ public class PlatformMetricsRegistryTest {
     Cache<String, Integer> cache = CacheBuilder.newBuilder().maximumSize(10).recordStats().build();
 
     PlatformMetricsRegistry.registerCache("my.cache", cache, Map.of("foo","bar"));
+
     Callable<Integer> loader =
         new Callable<Integer>() {
           @Override
