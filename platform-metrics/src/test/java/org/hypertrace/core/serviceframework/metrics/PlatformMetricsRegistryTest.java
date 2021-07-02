@@ -165,7 +165,7 @@ public class PlatformMetricsRegistryTest {
     initializeCustomRegistry(List.of("testing"));
     Cache<String, Integer> cache = CacheBuilder.newBuilder().maximumSize(10).recordStats().build();
 
-    PlatformMetricsRegistry.registerCache("my.cache", cache);
+    PlatformMetricsRegistry.registerCache("my.cache", Map.of("foo","bar"),cache);
     Callable<Integer> loader =
         new Callable<Integer>() {
           @Override
@@ -214,6 +214,7 @@ public class PlatformMetricsRegistryTest {
     assertEquals(3.0, hits);
     assertEquals(3.0, misses);
     assertEquals(5.0,size);
+
   }
 
   @Test
