@@ -9,7 +9,6 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
-import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import java.util.Arrays;
@@ -187,7 +186,6 @@ public class PlatformMetricsRegistryTest {
 
     // Checking Cache Stats from registry
     double hits = 0, misses = 0,size = 0;
-    List<Meter> meterList = PlatformMetricsRegistry.getMeterRegistry().getMeters();
     // Fetching the hits, misses registered in the registry by browsing through all the registered
     // meters
     hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
