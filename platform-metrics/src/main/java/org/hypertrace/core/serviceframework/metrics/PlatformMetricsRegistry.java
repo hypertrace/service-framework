@@ -8,6 +8,7 @@ import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
 import com.codahale.metrics.jvm.JvmAttributeGaugeSet;
 import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
 import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
+import com.google.common.cache.Cache;
 import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
@@ -19,6 +20,7 @@ import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
@@ -375,9 +377,17 @@ public class PlatformMetricsRegistry {
   }
 
   /**
-   * Registers metrics for the given executor service with the service's metric registry and
-   * reports them periodically to the configured reporters. Apart from the given tags, the
-   * reporting service's default tags also will be reported with the metrics.
+   * Registers metrics for GuavaCaches using micrometer's GuavaCacheMetrics under the given
+   * cacheName for the given guavaCache
+   */
+  public static <K, V> void registerCache(String cacheName, Cache<K, V> guavaCache) {
+    GuavaCacheMetrics.monitor(METER_REGISTRY, guavaCache, cacheName);
+  }
+
+  /**
+   * Registers metrics for the given executor service with the service's metric registry and reports
+   * them periodically to the configured reporters. Apart from the given tags, the reporting
+   * service's default tags also will be reported with the metrics.
    *
    * See https://micrometer.io/docs/ref/jvm for more details on the metrics.
    */
