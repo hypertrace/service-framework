@@ -177,21 +177,23 @@ public class PlatformMetricsRegistryTest {
     // Doing some cache activity
     cache.put("One", 1);
     cache.put("Two", 2);
-    cache.get("One", loader);
-    cache.get("Two", loader);
-    cache.get("Two", loader);
-    cache.get("Three", loader);
-    cache.get("Failed", loader);
+    cache.get("One", loader); // hit
+    cache.get("Two", loader); // hit
+    cache.get("Two", loader); // hit
+    cache.get("Three", loader); // miss hence loaded from loader
+    cache.get("Failed", loader); // miss hence loaded from loader
     /*
-    Expected hit count = 3.0, miss rate = 2.0
-    The way cache.get works is that if there is a cache miss then the entry is loaded from the loader and included in the cache,
+    * Cache = {One,Two, Three, Failed}
+    * Cache Hit is basically the number of times cache.get returned an entry which was present in the cache, hence hit = 3
+    * Cache Miss is basically the number of times cache.get returned an entry not present in the cache (hence loaded from loader), hence miss = 2
+    * The way cache.get works is that if there is a cache miss then the entry is loaded from the loader and included in the cache,
     hence the cache size due to the above activity would be 2 (already put One,Two) + 2 (cache miss on Three, Failed) = 4
+
+    Expected hit count = 3.0, miss count = 2.0, cache size = 4
      */
 
     // Checking Cache Stats from registry
     double hits = 0, misses = 0,size = 0;
-    // Fetching the hits, misses registered in the registry by browsing through all the registered
-    // meters
     hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
     misses = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","miss").meter().measure().iterator().next().getValue();
     size = PlatformMetricsRegistry.getMeterRegistry().get("cache.size").meter().measure().iterator().next().getValue();
@@ -201,11 +203,10 @@ public class PlatformMetricsRegistryTest {
     assertEquals(4.0,size);
 
     // Doing some more cache activity
-    cache.get("NotPresent", loader);
+    cache.get("NotPresent", loader); // miss hence loaded from loader
 
+    // Cache = {One,Two,Three,Failed,NotPresent}
     // expected hit=3.0, miss=3.0, size=5.0
-    // Fetching the hits, misses registered in the registry by browsing through all the registered
-    // meters
     hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
     misses = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","miss").meter().measure().iterator().next().getValue();
     size = PlatformMetricsRegistry.getMeterRegistry().get("cache.size").meter().measure().iterator().next().getValue();
