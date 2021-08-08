@@ -1,6 +1,5 @@
 package org.hypertrace.core.serviceframework;
 
-import java.io.IOException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -63,7 +62,7 @@ public class PlatformServiceLauncher {
     try {
       httpclient.execute(httppost);
       LOGGER.info("Request to pilot succeeded");
-    } catch (IOException e) {
+    } catch (Exception e) {
       LOGGER.error("Error while calling quitquitquit", e);
     }
   }
