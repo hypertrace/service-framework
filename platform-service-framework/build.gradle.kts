@@ -21,7 +21,7 @@ dependencies {
   implementation("org.eclipse.jetty:jetty-servlet:9.4.42.v20210604")
 
   // Use for metrics servlet
-  implementation("io.prometheus:simpleclient_servlet:0.6.0")
+  implementation("io.prometheus:simpleclient_servlet:0.12.0")
 
   // http client
   implementation("org.apache.httpcomponents:httpclient:4.5.13")
