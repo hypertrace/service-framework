@@ -15,7 +15,7 @@ dependencies {
   api("io.micrometer:micrometer-core:1.5.3")
   api("javax.servlet:javax.servlet-api:3.1.0")
 
-  implementation("io.micrometer:micrometer-registry-prometheus:1.7.4")
+  implementation("io.micrometer:micrometer-registry-prometheus:1.7.5")
 
   implementation("io.github.mweirauch:micrometer-jvm-extras:0.2.0")
   implementation("org.slf4j:slf4j-api:1.7.30")
