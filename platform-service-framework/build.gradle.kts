@@ -35,7 +35,7 @@ dependencies {
     }
   }
 
-  testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.15.0")
+  testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
   testImplementation("org.mockito:mockito-core:3.8.0")
   testImplementation("org.eclipse.jetty:jetty-servlet:9.4.44.v20210927:tests")
