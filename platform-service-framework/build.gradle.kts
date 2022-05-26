@@ -17,8 +17,8 @@ dependencies {
   api("com.typesafe:config:1.4.1")
 
   // Use for thread dump servlet
-  implementation("io.dropwizard.metrics:metrics-servlets:4.2.8")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.44.v20210927")
+  implementation("io.dropwizard.metrics:metrics-servlets:4.2.9")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.46.v20220331")
 
   // Use for metrics servlet
   implementation("io.prometheus:simpleclient_servlet:0.12.0")
@@ -30,11 +30,15 @@ dependencies {
     implementation("commons-codec:commons-codec:1.15") {
       because("version 1.12 has a vulnerability https://snyk.io/vuln/SNYK-JAVA-COMMONSCODEC-561518")
     }
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.12.6.1") {
+      because("version 2.12.6 has vulnerability https://snyk.io/vuln/SNYK-JAVA-COMFASTERXMLJACKSONCORE-2421244")
+    }
+
   }
 
   testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
   testImplementation("org.mockito:mockito-core:3.8.0")
-  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.44.v20210927:tests")
-  testImplementation("org.eclipse.jetty:jetty-http:9.4.44.v20210927:tests")
+  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.46.v20220331:tests")
+  testImplementation("org.eclipse.jetty:jetty-http:9.4.46.v20220331:tests")
 }
