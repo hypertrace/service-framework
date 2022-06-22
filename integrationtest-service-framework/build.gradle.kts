@@ -13,8 +13,8 @@ dependencies {
     implementation(project(":platform-service-framework"))
 
     // Configuration
-    implementation("com.typesafe:config:1.4.1")
+    implementation("com.typesafe:config:1.4.2")
     // Logging
-    implementation("org.slf4j:slf4j-api:1.7.30")
+    implementation("org.slf4j:slf4j-api:1.7.36")
     implementation("org.awaitility:awaitility:4.0.3")
 }
