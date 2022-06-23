@@ -17,7 +17,7 @@ dependencies {
   api("com.typesafe:config:1.4.2")
 
   // Use for thread dump servlet
-  implementation("io.dropwizard.metrics:metrics-servlets:4.2.8")
+  implementation("io.dropwizard.metrics:metrics-servlets:4.2.10")
   implementation("org.eclipse.jetty:jetty-servlet:9.4.44.v20210927")
 
   // Use for metrics servlet
