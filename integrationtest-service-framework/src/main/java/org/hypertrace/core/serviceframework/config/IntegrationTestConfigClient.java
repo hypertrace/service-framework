@@ -32,7 +32,8 @@ public class IntegrationTestConfigClient implements ConfigClient {
         .withFallback(loadConfig(service, cluster, pod))
         .withFallback(loadConfig(service, cluster))
         .withFallback(loadConfig(service))
-        .withFallback(loadConfig(INTEGRATION_TEST_COMMON_DIRECTORY));
+        .withFallback(loadConfig(INTEGRATION_TEST_COMMON_DIRECTORY))
+        .resolve();
   }
 
   private Config loadConfig(String... segments) {
