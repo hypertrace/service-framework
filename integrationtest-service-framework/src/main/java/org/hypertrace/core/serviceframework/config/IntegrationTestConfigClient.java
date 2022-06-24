@@ -2,37 +2,43 @@ package org.hypertrace.core.serviceframework.config;
 
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
- * Config client used for integration tests to load the config from the
- * {@link #resourcePrefix}/application.conf file that's present in the classpath.
+ * Config client used for integration tests to load the config from the {@link
+ * #resourcePrefix}/application.conf file that's present in the classpath.
  */
 public class IntegrationTestConfigClient implements ConfigClient {
-  private static final String APPLICATION_CONFIG_FILE = "application.conf";
-  private static final String INTEGRATION_TEST_COMMON_PREFIX = "configs/common";
-  private static final String INTEGRATION_TEST_ENV = "local";
+  private static final String APPLICATION_CONFIG_FILE_SUFFIX = "/application.conf";
+  private static final String CONFIGS_PREFIX = "configs/";
+  private static final String INTEGRATION_TEST_COMMON_DIRECTORY = "common";
+  private static final String INTEGRATION_TEST_CLUSTER = "local";
 
+  private final String defaultServiceName;
 
-  private final String resourcePrefix;
-
-  public IntegrationTestConfigClient(String resourcePrefix) {
-    this.resourcePrefix = resourcePrefix;
+  public IntegrationTestConfigClient(String defaultServiceName) {
+    this.defaultServiceName = defaultServiceName;
   }
 
   @Override
   public Config getConfig() {
-    Config config = ConfigFactory.parseResources(resourcePrefix + "/" + APPLICATION_CONFIG_FILE);
-    Config commonConfig = ConfigFactory.parseResources(
-        String.format("%s/%s", INTEGRATION_TEST_COMMON_PREFIX, APPLICATION_CONFIG_FILE));
-    Config localConfig = ConfigFactory.parseResources(resourcePrefix + "/" + INTEGRATION_TEST_ENV
-        + "/" + APPLICATION_CONFIG_FILE);
-    return localConfig.withFallback(config).withFallback(commonConfig).resolve();
+    return this.getConfig(this.defaultServiceName, INTEGRATION_TEST_CLUSTER, null, null);
   }
 
   @Override
   public Config getConfig(String service, String cluster, String pod, String container) {
-    throw new UnsupportedOperationException(
-        "Loads from configs/application.conf. "
-            + "Doesn't support different hierarchy of configurations");
+    return loadConfig(service, cluster, pod, container)
+        .withFallback(loadConfig(service, cluster, pod))
+        .withFallback(loadConfig(service, cluster))
+        .withFallback(loadConfig(service))
+        .withFallback(loadConfig(INTEGRATION_TEST_COMMON_DIRECTORY))
+        .resolve();
+  }
+
+  private Config loadConfig(String... segments) {
+    return ConfigFactory.parseResources(
+        Arrays.stream(segments)
+            .collect(Collectors.joining("/", CONFIGS_PREFIX, APPLICATION_CONFIG_FILE_SUFFIX)));
   }
 }
