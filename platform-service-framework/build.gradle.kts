@@ -13,11 +13,11 @@ dependencies {
   api(project(":service-framework-spi"))
   implementation(project(":platform-metrics"))
 
-  api("org.slf4j:slf4j-api:1.7.30")
-  api("com.typesafe:config:1.4.1")
+  api("org.slf4j:slf4j-api:1.7.36")
+  api("com.typesafe:config:1.4.2")
 
   // Use for thread dump servlet
-  implementation("io.dropwizard.metrics:metrics-servlets:4.2.8")
+  implementation("io.dropwizard.metrics:metrics-servlets:4.2.10")
   implementation("org.eclipse.jetty:jetty-servlet:9.4.44.v20210927")
 
   // Use for metrics servlet

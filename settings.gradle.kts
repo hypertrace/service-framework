@@ -12,6 +12,7 @@ plugins {
   id("org.hypertrace.version-settings") version "0.2.0"
 }
 
+include(":platform-grpc-service-framework")
 include(":platform-service-framework")
 include(":platform-metrics")
 include(":integrationtest-service-framework")
