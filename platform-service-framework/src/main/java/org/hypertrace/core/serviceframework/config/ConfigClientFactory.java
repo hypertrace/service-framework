@@ -10,8 +10,7 @@ public class ConfigClientFactory {
 
   private static Map<String, ConfigClient> configClientMap = new HashMap<>();
 
-  private ConfigClientFactory() {
-  }
+  private ConfigClientFactory() {}
 
   public static synchronized ConfigClient getClient() {
     String bootstrapUri = ConfigUtils.getEnvironmentProperty("bootstrap.config.uri");
@@ -42,10 +41,18 @@ public class ConfigClientFactory {
                 "Not yet supported ConfigClient bootstrap URI scheme: " + scheme);
         }
       } catch (URISyntaxException e) {
-        throw new RuntimeException("Failed to init ConfigClient with a bad URI: " + bootstrapUri,
-            e);
+        throw new RuntimeException(
+            "Failed to init ConfigClient with a bad URI: " + bootstrapUri, e);
       }
     }
     return configClientMap.get(bootstrapUri);
+  }
+
+  public static ConfigClient getClientForService(String serviceName) {
+    return getClient(
+        ConfigClientFactory.class
+            .getClassLoader()
+            .getResource("configs/" + serviceName)
+            .toExternalForm());
   }
 }

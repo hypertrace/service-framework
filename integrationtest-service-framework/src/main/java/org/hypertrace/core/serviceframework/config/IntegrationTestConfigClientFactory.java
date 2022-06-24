@@ -8,8 +8,7 @@ import org.hypertrace.core.serviceframework.IntegrationTestServiceLauncher;
  * Config is loaded from resources/config/application.conf
  */
 public class IntegrationTestConfigClientFactory {
-  public static synchronized ConfigClient getConfigClientForService(String serviceName) {
-    String resourcePrefix = "configs" + "/" + serviceName;
-    return new IntegrationTestConfigClient(resourcePrefix);
+  public static ConfigClient getConfigClientForService(String serviceName) {
+    return new IntegrationTestConfigClient(serviceName);
   }
 }
