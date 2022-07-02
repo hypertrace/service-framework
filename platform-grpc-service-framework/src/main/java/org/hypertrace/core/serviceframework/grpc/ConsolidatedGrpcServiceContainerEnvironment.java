@@ -5,14 +5,16 @@ import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 import io.grpc.protobuf.services.HealthStatusManager;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import org.hypertrace.core.grpcutils.client.GrpcChannelRegistry;
+import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.config.ConfigClientFactory;
 
 @AllArgsConstructor
 class ConsolidatedGrpcServiceContainerEnvironment implements GrpcServiceContainerEnvironment {
 
-  @Getter private final GrpcChannelRegistry channelRegistry;
+  @Getter private final InProcessGrpcChannelRegistry channelRegistry;
   private final HealthStatusManager healthStatusManager;
+
+  @Getter private final String inProcessChannelName;
 
   @Override
   public void reportServiceStatus(String serviceName, ServingStatus status) {

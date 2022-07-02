@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.hypertrace.core.grpcutils.client.GrpcChannelRegistry;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 
@@ -28,8 +27,9 @@ public abstract class ConsolidatedGrpcPlatformServiceContainer
 
   @Override
   protected GrpcServiceContainerEnvironment buildContainerEnvironment(
-      GrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
-    return new ConsolidatedGrpcServiceContainerEnvironment(channelRegistry, healthStatusManager);
+      InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
+    return new ConsolidatedGrpcServiceContainerEnvironment(
+        channelRegistry, healthStatusManager, this.getInProcessServerName());
   }
 
   protected Collection<String> getAuthoritiesToTreatAsInProcess() {

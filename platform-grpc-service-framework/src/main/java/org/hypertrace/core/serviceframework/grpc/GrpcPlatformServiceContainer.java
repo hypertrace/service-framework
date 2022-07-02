@@ -15,7 +15,6 @@ import io.grpc.protobuf.services.HealthStatusManager;
 import java.io.IOException;
 import java.util.Collection;
 import lombok.extern.slf4j.Slf4j;
-import org.hypertrace.core.grpcutils.client.GrpcChannelRegistry;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.grpcutils.server.InterceptorUtil;
 import org.hypertrace.core.grpcutils.server.ServerManagementUtil;
@@ -118,5 +117,5 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   protected abstract Collection<GrpcPlatformServiceFactory> getServiceFactories();
 
   protected abstract GrpcServiceContainerEnvironment buildContainerEnvironment(
-      GrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager);
+      InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager);
 }
