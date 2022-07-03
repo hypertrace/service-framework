@@ -54,7 +54,6 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
               inProcessServerBuilder.addService(service);
             });
     inProcessServerBuilder.addService(this.healthStatusManager.getHealthService());
-    networkedServerBuilder.addService(this.healthStatusManager.getHealthService());
     this.networkedServer = networkedServerBuilder.build();
     this.inProcessServer = inProcessServerBuilder.build();
     this.healthClient =
