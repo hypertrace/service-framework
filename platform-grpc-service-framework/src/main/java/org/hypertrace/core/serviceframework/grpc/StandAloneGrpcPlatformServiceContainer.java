@@ -4,7 +4,7 @@ import io.grpc.protobuf.services.HealthStatusManager;
 import java.util.Collection;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.hypertrace.core.grpcutils.client.GrpcChannelRegistry;
+import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 
 @Slf4j
@@ -22,8 +22,8 @@ public abstract class StandAloneGrpcPlatformServiceContainer extends GrpcPlatfor
 
   @Override
   protected GrpcServiceContainerEnvironment buildContainerEnvironment(
-      GrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
+      InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
     return new StandAloneGrpcServiceContainerEnvironment(
-        channelRegistry, healthStatusManager, this.configClient);
+        channelRegistry, healthStatusManager, this.configClient, this.getInProcessServerName());
   }
 }
