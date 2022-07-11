@@ -9,7 +9,7 @@ import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 
 @AllArgsConstructor
-public class StandAloneGrpcServiceContainerEnvironment implements GrpcServiceContainerEnvironment {
+class StandAloneGrpcServiceContainerEnvironment implements GrpcServiceContainerEnvironment {
 
   @Getter private final InProcessGrpcChannelRegistry channelRegistry;
   private final HealthStatusManager healthStatusManager;
