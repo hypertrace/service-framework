@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -81,6 +80,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
       ServerBuilder<?> networkedBuilder,
       ServerBuilder<?> inProcessServerBuilder,
       GrpcServiceContainerEnvironment containerEnvironment) {
+    log.info(
+        "Building server {} on port {}", serverDefinition.getName(), serverDefinition.getPort());
     serverDefinition.getServiceFactories().stream()
         .map(factory -> factory.buildServices(containerEnvironment))
         .flatMap(Collection::stream)
@@ -99,8 +100,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   protected void doStart() {
     log.info("Starting: {}", getServiceName());
     this.startManagedPeriodicTasks();
-    this.servers.stream().map(ConstructedServer::getServer).forEach(this::startServer);
-    this.servers.stream().map(ConstructedServer::getServer).forEach(this::awaitServerTermination);
+    this.servers.forEach(this::startServer);
+    this.servers.forEach(this::awaitServerTermination);
   }
 
   private void startManagedPeriodicTasks() {
@@ -109,6 +110,11 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   }
 
   private void startManagedPeriodicTask(PlatformPeriodicTaskDefinition taskDefinition) {
+    log.info(
+        "Starting managed periodic task {} with an initial delay of {} and period of {}",
+        taskDefinition.getName(),
+        taskDefinition.getInitialDelay(),
+        taskDefinition.getPeriod());
     this.scheduledFutures.add(
         this.periodicTaskExecutor.scheduleAtFixedRate(
             taskDefinition.getRunnable(),
@@ -117,18 +123,19 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
             MILLISECONDS));
   }
 
-  private void startServer(Server server) {
+  private void startServer(ConstructedServer constructedServer) {
     try {
-      server.start();
+      log.info("Starting server {}", constructedServer.getName());
+      constructedServer.getServer().start();
     } catch (IOException e) {
       log.error("Fail to start the server.");
       throw new RuntimeException(e);
     }
   }
 
-  private void awaitServerTermination(Server server) {
+  private void awaitServerTermination(ConstructedServer constructedServer) {
     try {
-      server.awaitTermination();
+      constructedServer.getServer().awaitTermination();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       throw new RuntimeException(e);

@@ -10,4 +10,5 @@ public class PlatformPeriodicTaskDefinition {
   Runnable runnable;
   Duration initialDelay;
   Duration period;
+  String name;
 }
