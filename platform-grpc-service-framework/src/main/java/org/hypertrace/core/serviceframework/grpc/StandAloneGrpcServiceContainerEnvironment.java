@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
 @AllArgsConstructor
 class StandAloneGrpcServiceContainerEnvironment implements GrpcServiceContainerEnvironment {
@@ -17,6 +18,8 @@ class StandAloneGrpcServiceContainerEnvironment implements GrpcServiceContainerE
   private final ConfigClient configClient;
 
   @Getter private final String inProcessChannelName;
+
+  @Getter private final PlatformServiceLifecycle lifecycle;
 
   @Override
   public void reportServiceStatus(String serviceName, ServingStatus status) {
