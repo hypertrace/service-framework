@@ -127,6 +127,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   private void startManagedPeriodicTasks() {
     this.periodicTaskExecutor = this.buildTaskExecutor(this.taskDefinitions.size());
     this.taskDefinitions.forEach(this::startManagedPeriodicTask);
+    this.taskDefinitions.clear();
   }
 
   private void startManagedPeriodicTask(PlatformPeriodicTaskDefinition taskDefinition) {
