@@ -40,6 +40,10 @@ public abstract class StandAloneGrpcPlatformServiceContainer extends GrpcPlatfor
   protected GrpcServiceContainerEnvironment buildContainerEnvironment(
       InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
     return new StandAloneGrpcServiceContainerEnvironment(
-        channelRegistry, healthStatusManager, this.configClient, this.getInProcessServerName());
+        channelRegistry,
+        healthStatusManager,
+        this.configClient,
+        this.getInProcessServerName(),
+        this.getLifecycle());
   }
 }

@@ -31,7 +31,7 @@ public abstract class ConsolidatedGrpcPlatformServiceContainer
   protected GrpcServiceContainerEnvironment buildContainerEnvironment(
       InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
     return new ConsolidatedGrpcServiceContainerEnvironment(
-        channelRegistry, healthStatusManager, this.getInProcessServerName());
+        channelRegistry, healthStatusManager, this.getInProcessServerName(), this.getLifecycle());
   }
 
   @Override
@@ -51,7 +51,6 @@ public abstract class ConsolidatedGrpcPlatformServiceContainer
     return Collections.emptySet();
   }
 
-  @Deprecated
   protected int getServicePort() {
     return this.getAppConfig().getInt(DEFAULT_PORT_PATH);
   }
