@@ -23,7 +23,7 @@ dependencies {
   implementation("io.prometheus:simpleclient_dropwizard:0.12.0")
   implementation("io.prometheus:simpleclient_servlet:0.12.0")
   implementation("io.prometheus:simpleclient_pushgateway:0.12.0")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.44.v20210927")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.48.v20220622")
   implementation ("com.google.guava:guava:30.1.1-jre")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
