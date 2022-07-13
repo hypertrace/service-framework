@@ -22,6 +22,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
@@ -61,7 +62,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
             .addService(this.healthStatusManager.getHealthService());
     final GrpcServiceContainerEnvironment serviceContainerEnvironment =
         this.buildContainerEnvironment(this.grpcChannelRegistry, this.healthStatusManager);
-    this.servers =
+    List<ConstructedServer> providedServers =
         serverBuilderMap.entrySet().stream()
             .map(
                 entry ->
@@ -71,6 +72,15 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
                         inProcessServerBuilder,
                         serviceContainerEnvironment))
             .collect(Collectors.toUnmodifiableList());
+
+    this.servers =
+        Stream.concat(
+                Stream.of(
+                    new ConstructedServer(
+                        this.getInProcessServerName(), inProcessServerBuilder.build())),
+                providedServers.stream())
+            .collect(Collectors.toUnmodifiableList());
+
     this.healthClient =
         HealthGrpc.newBlockingStub(this.grpcChannelRegistry.forName(this.getInProcessServerName()));
   }
@@ -81,7 +91,9 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
       ServerBuilder<?> inProcessServerBuilder,
       GrpcServiceContainerEnvironment containerEnvironment) {
     log.info(
-        "Building server {} on port {}", serverDefinition.getName(), serverDefinition.getPort());
+        "Building server [{}] on port [{}]",
+        serverDefinition.getName(),
+        serverDefinition.getPort());
     serverDefinition.getServiceFactories().stream()
         .map(factory -> factory.buildServices(containerEnvironment))
         .flatMap(Collection::stream)
@@ -89,7 +101,15 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
         .map(InterceptorUtil::wrapInterceptors)
         .forEach(
             service -> {
+              log.info(
+                  "Adding service [{}] to server [{}]",
+                  service.getServiceDescriptor().getName(),
+                  serverDefinition.getName());
               networkedBuilder.addService(service);
+              log.info(
+                  "Adding service [{}] to in-process server [{}]",
+                  service.getServiceDescriptor().getName(),
+                  getInProcessServerName());
               inProcessServerBuilder.addService(service);
             });
 
@@ -98,7 +118,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   @Override
   protected void doStart() {
-    log.info("Starting: {}", getServiceName());
+    log.info("Starting all services: [{}]", getServiceName());
     this.startManagedPeriodicTasks();
     this.servers.forEach(this::startServer);
     this.servers.forEach(this::awaitServerTermination);
@@ -111,7 +131,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   private void startManagedPeriodicTask(PlatformPeriodicTaskDefinition taskDefinition) {
     log.info(
-        "Starting managed periodic task {} with an initial delay of {} and period of {}",
+        "Starting managed periodic task [{}] with an initial delay of {} and period of {}",
         taskDefinition.getName(),
         taskDefinition.getInitialDelay(),
         taskDefinition.getPeriod());
@@ -125,7 +145,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   private void startServer(ConstructedServer constructedServer) {
     try {
-      log.info("Starting server {}", constructedServer.getName());
+      log.info("Starting server [{}]", constructedServer.getName());
       constructedServer.getServer().start();
     } catch (IOException e) {
       log.error("Fail to start the server.");
@@ -162,7 +182,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
           .getStatus()
           .equals(ServingStatus.SERVING);
     } catch (Exception e) {
-      log.debug("health check error", e);
+      log.error("Health check error", e);
       return false;
     }
   }

@@ -31,7 +31,9 @@ public abstract class StandAloneGrpcPlatformServiceContainer extends GrpcPlatfor
   protected List<GrpcPlatformServerDefinition> getServerDefinitions() {
     return List.of(
         new GrpcPlatformServerDefinition(
-            this.getServiceName(), this.getServicePort(), Set.of(this.getServiceFactory())));
+            "networked-" + this.getServiceName(),
+            this.getServicePort(),
+            Set.of(this.getServiceFactory())));
   }
 
   @Override
