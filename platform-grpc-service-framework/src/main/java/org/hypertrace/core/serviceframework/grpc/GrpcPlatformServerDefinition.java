@@ -11,6 +11,5 @@ public class GrpcPlatformServerDefinition {
   String name;
   int port;
   int maxInboundMessageSize;
-  @Singular
-  Collection<GrpcPlatformServiceFactory> serviceFactories;
+  @Singular Collection<GrpcPlatformServiceFactory> serviceFactories;
 }

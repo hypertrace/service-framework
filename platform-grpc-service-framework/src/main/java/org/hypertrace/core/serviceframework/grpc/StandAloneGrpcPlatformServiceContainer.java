@@ -2,7 +2,6 @@ package org.hypertrace.core.serviceframework.grpc;
 
 import io.grpc.protobuf.services.HealthStatusManager;
 import java.util.List;
-import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
@@ -30,10 +29,11 @@ public abstract class StandAloneGrpcPlatformServiceContainer extends GrpcPlatfor
 
   protected List<GrpcPlatformServerDefinition> getServerDefinitions() {
     return List.of(
-        new GrpcPlatformServerDefinition(
-            "networked-" + this.getServiceName(),
-            this.getServicePort(),
-            Set.of(this.getServiceFactory())));
+        GrpcPlatformServerDefinition.builder()
+            .name("networked-" + this.getServiceName())
+            .port(this.getServicePort())
+            .serviceFactory(this.getServiceFactory())
+            .build());
   }
 
   @Override

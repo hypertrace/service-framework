@@ -37,10 +37,11 @@ public abstract class ConsolidatedGrpcPlatformServiceContainer
   @Override
   protected List<GrpcPlatformServerDefinition> getServerDefinitions() {
     return List.of(
-        new GrpcPlatformServerDefinition(
-            "networked-" + this.getServiceName(),
-            this.getServicePort(),
-            this.getServiceFactories()));
+        GrpcPlatformServerDefinition.builder()
+            .name("networked-" + this.getServiceName())
+            .port(this.getServicePort())
+            .serviceFactories(this.getServiceFactories())
+            .build());
   }
 
   /**
