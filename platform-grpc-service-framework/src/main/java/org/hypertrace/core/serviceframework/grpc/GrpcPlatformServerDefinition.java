@@ -10,6 +10,6 @@ import lombok.Value;
 public class GrpcPlatformServerDefinition {
   String name;
   int port;
-  @Singular
-  Collection<GrpcPlatformServiceFactory> serviceFactories;
+  int maxInboundMessageSize;
+  @Singular Collection<GrpcPlatformServiceFactory> serviceFactories;
 }

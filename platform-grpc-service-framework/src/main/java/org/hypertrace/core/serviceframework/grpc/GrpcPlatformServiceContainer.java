@@ -53,10 +53,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     this.grpcChannelRegistry = this.buildChannelRegistry();
     Map<GrpcPlatformServerDefinition, ServerBuilder<?>> serverBuilderMap =
         this.getServerDefinitions().stream()
-            .collect(
-                Collectors.toUnmodifiableMap(
-                    Function.identity(),
-                    definition -> ServerBuilder.forPort(definition.getPort())));
+            .collect(Collectors.toUnmodifiableMap(Function.identity(), this::initializeBuilder));
     final ServerBuilder<?> inProcessServerBuilder =
         InProcessServerBuilder.forName(this.getInProcessServerName())
             .addService(this.healthStatusManager.getHealthService());
@@ -218,6 +215,16 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   protected abstract GrpcServiceContainerEnvironment buildContainerEnvironment(
       InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager);
+
+  private ServerBuilder<?> initializeBuilder(GrpcPlatformServerDefinition serverDefinition) {
+    ServerBuilder<?> builder = ServerBuilder.forPort(serverDefinition.getPort());
+
+    if (serverDefinition.getMaxInboundMessageSize() > 0) {
+      builder.maxInboundMessageSize(serverDefinition.getMaxInboundMessageSize());
+    }
+
+    return builder;
+  }
 
   @Value
   private static class ConstructedServer {
