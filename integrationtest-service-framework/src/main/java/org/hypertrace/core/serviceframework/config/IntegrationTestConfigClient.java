@@ -36,7 +36,8 @@ public class IntegrationTestConfigClient implements ConfigClient {
 
   @Override
   public Config getConfig(String service, String cluster, String pod, String container) {
-    return defaultTestName.map(testName -> loadConfig(service, testName)).orElse(ConfigFactory.empty())
+    return defaultTestName.map(testName -> loadConfig(service, testName))
+        .orElse(ConfigFactory.empty())
         .withFallback(loadConfig(service, cluster, pod))
         .withFallback(loadConfig(service, cluster))
         .withFallback(loadConfig(service))
