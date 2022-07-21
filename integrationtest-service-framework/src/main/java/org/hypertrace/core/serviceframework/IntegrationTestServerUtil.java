@@ -40,6 +40,22 @@ public class IntegrationTestServerUtil {
     }
   }
 
+  public static void startServices(String testName, String[] services) {
+    executorService = Executors.newFixedThreadPool(services.length);
+    IntegrationTestServerUtil.services = services;
+    for (String service:services) {
+      executorService.submit(() -> {
+        try {
+          IntegrationTestServiceLauncher.launchService(testName, service);
+        } catch (Throwable t) {
+          System.out.println("Error starting the service with these message: "
+                  + t.getMessage());
+        }
+      });
+      waitTillServerReady(service);
+    }
+  }
+
   public static void shutdownServices() {
     for (String service:services) {
       IntegrationTestServiceLauncher.shutdown();
