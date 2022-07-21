@@ -30,4 +30,10 @@ class StandAloneGrpcServiceContainerEnvironment implements GrpcServiceContainerE
   public Config getConfig(String serviceName) {
     return this.configClient.getConfig(serviceName, null, null, null);
   }
+
+  @Override
+  public String getServiceName(String defaultServiceName) {
+    String definedServiceName = this.configClient.getConfig().getString("service.name");
+    return definedServiceName != null ? definedServiceName : defaultServiceName;
+  }
 }

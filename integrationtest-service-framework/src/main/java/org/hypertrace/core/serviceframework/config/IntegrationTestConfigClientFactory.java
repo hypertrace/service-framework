@@ -11,4 +11,8 @@ public class IntegrationTestConfigClientFactory {
   public static ConfigClient getConfigClientForService(String serviceName) {
     return new IntegrationTestConfigClient(serviceName);
   }
+
+  public static ConfigClient getConfigClientForService(String serviceName, String clusterName) {
+    return new IntegrationTestConfigClient(serviceName, clusterName);
+  }
 }

@@ -16,14 +16,21 @@ public class IntegrationTestConfigClient implements ConfigClient {
   private static final String INTEGRATION_TEST_CLUSTER = "local";
 
   private final String defaultServiceName;
+  private final String defaultClusterName;
 
   public IntegrationTestConfigClient(String defaultServiceName) {
     this.defaultServiceName = defaultServiceName;
+    this.defaultClusterName = INTEGRATION_TEST_CLUSTER;
+  }
+
+  public IntegrationTestConfigClient(String defaultServiceName, String clusterName) {
+    this.defaultServiceName = defaultServiceName;
+    this.defaultClusterName = clusterName;
   }
 
   @Override
   public Config getConfig() {
-    return this.getConfig(this.defaultServiceName, INTEGRATION_TEST_CLUSTER, null, null);
+    return this.getConfig(this.defaultServiceName, defaultClusterName, null, null);
   }
 
   @Override

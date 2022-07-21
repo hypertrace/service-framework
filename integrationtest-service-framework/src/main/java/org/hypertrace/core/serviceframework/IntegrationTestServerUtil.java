@@ -1,5 +1,6 @@
 package org.hypertrace.core.serviceframework;
 
+import java.util.Map;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.IntegrationTestConfigClientFactory;
 import java.io.IOException;
@@ -25,8 +26,8 @@ public class IntegrationTestServerUtil {
   private static String[] services;
 
   public static void startServices(String[] services) {
-    executorService = Executors.newFixedThreadPool(services.length);
     IntegrationTestServerUtil.services = services;
+    executorService = Executors.newFixedThreadPool(IntegrationTestServerUtil.services.length);
     for (String service:services) {
       executorService.submit(() -> {
         try {
@@ -38,6 +39,20 @@ public class IntegrationTestServerUtil {
       });
       waitTillServerReady(service);
     }
+  }
+
+  public static void startService(String service, String cluster) {
+    executorService = Executors.newFixedThreadPool(1);
+    IntegrationTestServerUtil.services = new String[] {service};
+    executorService.submit(() -> {
+      try {
+        IntegrationTestServiceLauncher.launchService(service, cluster);
+      } catch (Throwable t) {
+        System.out.println("Error starting the service with these message: "
+            + t.getMessage());
+      }
+    });
+    waitTillServerReady(service);
   }
 
   public static void shutdownServices() {

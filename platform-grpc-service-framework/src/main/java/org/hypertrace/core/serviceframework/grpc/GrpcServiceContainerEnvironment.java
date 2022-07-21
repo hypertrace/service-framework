@@ -15,4 +15,6 @@ public interface GrpcServiceContainerEnvironment {
   String getInProcessChannelName();
 
   PlatformServiceLifecycle getLifecycle();
+
+  String getServiceName(String defaultServiceName);
 }

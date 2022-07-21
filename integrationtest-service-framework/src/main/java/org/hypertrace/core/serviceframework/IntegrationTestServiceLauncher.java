@@ -38,6 +38,21 @@ public class IntegrationTestServiceLauncher {
     }
   }
 
+  public static void launchService(String serviceName, String cluster) {
+    try {
+      LOGGER.info("Trying to start PlatformService: {}", serviceName);
+      final ConfigClient configClient =
+          IntegrationTestConfigClientFactory.getConfigClientForService(serviceName, cluster);
+      PlatformService app = PlatformServiceFactory.get(configClient);
+      app.initialize();
+      Runtime.getRuntime().addShutdownHook(new Thread(app::shutdown));
+      PLATFORM_SERVICES.add(app);
+      app.start();
+    } catch (Exception e) {
+      LOGGER.error("Got exception while starting PlatformService: " + serviceName, e);
+    }
+  }
+
   static void shutdown() {
     PLATFORM_SERVICES.forEach(PlatformService::shutdown);
   }

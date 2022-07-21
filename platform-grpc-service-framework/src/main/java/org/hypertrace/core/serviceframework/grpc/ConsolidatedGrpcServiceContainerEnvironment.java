@@ -29,4 +29,9 @@ class ConsolidatedGrpcServiceContainerEnvironment implements GrpcServiceContaine
     return ConfigClientFactory.getClientForService(serviceName)
         .getConfig("consolidated", "helm-overrides", null, null);
   }
+
+  @Override
+  public String getServiceName(String defaultServiceName) {
+    return defaultServiceName;
+  }
 }
