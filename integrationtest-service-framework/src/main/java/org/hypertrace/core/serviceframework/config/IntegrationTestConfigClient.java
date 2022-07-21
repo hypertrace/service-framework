@@ -36,22 +36,12 @@ public class IntegrationTestConfigClient implements ConfigClient {
 
   @Override
   public Config getConfig(String service, String cluster, String pod, String container) {
-    if (defaultTestName.isPresent()) {
-      return loadConfig(service, defaultTestName.get())
-              .withFallback(loadConfig(service, cluster, pod, container))
-              .withFallback(loadConfig(service, cluster, pod))
-              .withFallback(loadConfig(service, cluster))
-              .withFallback(loadConfig(service))
-              .withFallback(loadConfig(INTEGRATION_TEST_COMMON_DIRECTORY))
-              .resolve();
-    } else {
-      return loadConfig(service, cluster, pod, container)
-              .withFallback(loadConfig(service, cluster, pod))
-              .withFallback(loadConfig(service, cluster))
-              .withFallback(loadConfig(service))
-              .withFallback(loadConfig(INTEGRATION_TEST_COMMON_DIRECTORY))
-              .resolve();
-    }
+    return defaultTestName.map(testName -> loadConfig(service, testName)).orElse(ConfigFactory.empty())
+        .withFallback(loadConfig(service, cluster, pod))
+        .withFallback(loadConfig(service, cluster))
+        .withFallback(loadConfig(service))
+        .withFallback(loadConfig(INTEGRATION_TEST_COMMON_DIRECTORY))
+        .resolve();
   }
 
   private Config loadConfig(String... segments) {

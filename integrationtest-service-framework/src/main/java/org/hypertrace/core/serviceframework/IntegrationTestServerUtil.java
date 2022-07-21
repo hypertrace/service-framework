@@ -33,7 +33,7 @@ public class IntegrationTestServerUtil {
     startServices(Optional.of(testName), services);
   }
 
-  public static void startServices(Optional<String> testName, String[] services) {
+  private static void startServices(Optional<String> testName, String[] services) {
     executorService = Executors.newFixedThreadPool(services.length);
     IntegrationTestServerUtil.services = services;
     for (String service:services) {
