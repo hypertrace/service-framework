@@ -8,6 +8,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -25,12 +26,20 @@ public class IntegrationTestServerUtil {
   private static String[] services;
 
   public static void startServices(String[] services) {
+    startServices(Optional.empty(), services);
+  }
+
+  public static void startServices(String testName, String[] services) {
+    startServices(Optional.of(testName), services);
+  }
+
+  private static void startServices(Optional<String> testName, String[] services) {
     executorService = Executors.newFixedThreadPool(services.length);
     IntegrationTestServerUtil.services = services;
     for (String service:services) {
       executorService.submit(() -> {
         try {
-          IntegrationTestServiceLauncher.main(new String[] {service});
+          IntegrationTestServiceLauncher.launchService(testName, service);
         } catch (Throwable t) {
           System.out.println("Error starting the service with these message: "
               + t.getMessage());

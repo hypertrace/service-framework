@@ -3,6 +3,7 @@ package org.hypertrace.core.serviceframework.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -16,9 +17,16 @@ public class IntegrationTestConfigClient implements ConfigClient {
   private static final String INTEGRATION_TEST_CLUSTER = "local";
 
   private final String defaultServiceName;
+  private final Optional<String> defaultTestName;
 
   public IntegrationTestConfigClient(String defaultServiceName) {
     this.defaultServiceName = defaultServiceName;
+    this.defaultTestName = Optional.empty();
+  }
+
+  public IntegrationTestConfigClient(Optional<String> testName, String serviceName) {
+    this.defaultTestName = testName;
+    this.defaultServiceName = serviceName;
   }
 
   @Override
@@ -28,7 +36,8 @@ public class IntegrationTestConfigClient implements ConfigClient {
 
   @Override
   public Config getConfig(String service, String cluster, String pod, String container) {
-    return loadConfig(service, cluster, pod, container)
+    return defaultTestName.map(testName -> loadConfig(service, testName))
+        .orElse(ConfigFactory.empty())
         .withFallback(loadConfig(service, cluster, pod))
         .withFallback(loadConfig(service, cluster))
         .withFallback(loadConfig(service))
