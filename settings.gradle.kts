@@ -13,6 +13,7 @@ plugins {
 }
 
 include(":platform-grpc-service-framework")
+include(":platform-http-service-framework")
 include(":platform-service-framework")
 include(":platform-metrics")
 include(":integrationtest-service-framework")
