@@ -57,6 +57,11 @@ public abstract class PlatformService {
     this.serviceName = appConfig.getString(SERVICE_NAME_CONFIG);
   }
 
+  public PlatformService(Config appConfig){
+    this.appConfig = appConfig;
+    this.serviceName = appConfig.getString(SERVICE_NAME_CONFIG);
+  }
+
   // initialize the service. This method will always be called before start.
   protected abstract void doInit();
 
