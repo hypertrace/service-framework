@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -130,6 +131,9 @@ public class JettyHttpServerBuilder implements ServerBuilder<JettyHttpServerBuil
       return Optional.empty();
     }
     ServletHolder servletHolder = new ServletHolder(handlerDefinition.getServlet());
+    Optional.of(handlerDefinition.getServletInitParameters())
+        .orElse(Map.of())
+        .forEach(servletHolder::setInitParameter);
     Optional.ofNullable(handlerDefinition.getMultipartConfig())
         .ifPresent(servletHolder.getRegistration()::setMultipartConfig);
     return Optional.of(servletHolder);
