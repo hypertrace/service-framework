@@ -1,5 +1,6 @@
 package org.hypertrace.core.serviceframework;
 
+import com.typesafe.config.Config;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -61,9 +62,8 @@ public class PlatformServiceLauncher {
     HttpPost httppost = new HttpPost(istioPilotQuitEndpoint);
     try {
       httpclient.execute(httppost);
-      LOGGER.info("Request to pilot succeeded");
+      LOGGER.debug("Request to pilot succeeded");
     } catch (Exception e) {
-      LOGGER.error("Error while calling quitquitquit", e);
     }
   }
 }
