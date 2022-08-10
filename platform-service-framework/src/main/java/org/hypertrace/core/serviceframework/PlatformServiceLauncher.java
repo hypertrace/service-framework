@@ -1,5 +1,6 @@
 package org.hypertrace.core.serviceframework;
 
+import com.typesafe.config.Config;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -14,6 +15,7 @@ import org.slf4j.LoggerFactory;
 public class PlatformServiceLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformServiceLauncher.class);
+  private static final String INVOKE_ISTIO_PILOT_QUIT_CONFIG_KEY = "invoke.istio.pilot.quit";
   private static PlatformService app;
 
   public static void main(String[] argv) {
@@ -56,14 +58,20 @@ public class PlatformServiceLauncher {
   }
 
   private static void finalizeService() {
-    String istioPilotQuitEndpoint = "http://127.0.0.1:15020/quitquitquit";
-    HttpClient httpclient = HttpClients.createDefault();
-    HttpPost httppost = new HttpPost(istioPilotQuitEndpoint);
-    try {
-      httpclient.execute(httppost);
-      LOGGER.info("Request to pilot succeeded");
-    } catch (Exception e) {
-      LOGGER.error("Error while calling quitquitquit", e);
+    final ConfigClient configClient = ConfigClientFactory.getClient();
+    Config config = configClient.getConfig();
+    // if config value exists then use it else default to 'true' i.e invoke
+    boolean invokeQuit = !config.hasPath(INVOKE_ISTIO_PILOT_QUIT_CONFIG_KEY) || config.getBoolean(INVOKE_ISTIO_PILOT_QUIT_CONFIG_KEY);
+    if(invokeQuit) {
+      String istioPilotQuitEndpoint = "http://127.0.0.1:15020/quitquitquit";
+      HttpClient httpclient = HttpClients.createDefault();
+      HttpPost httppost = new HttpPost(istioPilotQuitEndpoint);
+      try {
+        httpclient.execute(httppost);
+        LOGGER.info("Request to pilot succeeded");
+      } catch (Exception e) {
+        LOGGER.error("Error while calling quitquitquit", e);
+      }
     }
   }
 }
