@@ -61,9 +61,8 @@ public class PlatformServiceLauncher {
     HttpPost httppost = new HttpPost(istioPilotQuitEndpoint);
     try {
       httpclient.execute(httppost);
-      LOGGER.info("Request to pilot succeeded");
+      LOGGER.debug("Request to pilot succeeded");
     } catch (Exception e) {
-      LOGGER.error("Error while calling quitquitquit", e);
     }
   }
 }
