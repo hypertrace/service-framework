@@ -1,5 +1,6 @@
 package org.hypertrace.core.serviceframework;
 
+import com.typesafe.config.Config;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
