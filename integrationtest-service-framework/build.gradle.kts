@@ -10,11 +10,11 @@ tasks.test {
 }
 
 dependencies {
-    implementation(project(":platform-service-framework"))
+    implementation(projects.platformServiceFramework)
 
     // Configuration
-    implementation("com.typesafe:config:1.4.2")
+    implementation(libs.typesafe.config)
     // Logging
-    implementation("org.slf4j:slf4j-api:1.7.36")
-    implementation("org.awaitility:awaitility:4.0.3")
+    implementation(libs.slf4j.api)
+    implementation(libs.awaitility)
 }
