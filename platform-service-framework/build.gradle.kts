@@ -10,6 +10,14 @@ tasks.test {
 }
 
 dependencies {
+  constraints {
+    implementation(libs.jackson.databind) {
+      because("""
+        [https://nvd.nist.gov/vuln/detail/CVE-2022-42004] [https://nvd.nist.gov/vuln/detail/CVE-2022-42003]
+          in 'com.fasterxml.jackson.core:jackson-databind:2.12.7' > 'io.dropwizard.metrics:metrics-servlets:4.2.10'
+      """)
+    }
+  }
   api(projects.serviceFrameworkSpi)
   implementation(projects.platformMetrics)
 

@@ -6,6 +6,7 @@ plugins {
   id("org.hypertrace.ci-utils-plugin") version "0.3.0"
   id("org.hypertrace.publish-plugin") version "1.0.2" apply false
   id("org.hypertrace.jacoco-report-plugin") version "0.2.0" apply false
+  id("org.owasp.dependencycheck") version "7.1.1"
 }
 
 subprojects {
@@ -15,4 +16,11 @@ subprojects {
       license.set(License.APACHE_2_0)
     }
   }
+}
+
+dependencyCheck {
+  format = org.owasp.dependencycheck.reporting.ReportGenerator.Format.valueOf("ALL")
+  suppressionFile = "owasp-suppressions.xml"
+  scanConfigurations.add("runtimeClasspath")
+  failBuildOnCVSS = 7.0F
 }
