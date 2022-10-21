@@ -7,6 +7,7 @@ plugins {
 
 dependencies {
   api(projects.platformServiceFramework)
+  api(platform(libs.grpc.bom))
   api(libs.grpc.api)
   api(libs.grpc.services)
   api(libs.hypertrace.grpc.client.utils)
