@@ -1,0 +1,51 @@
+[versions]
+hypertrace-grpcUtils = "0.9.0"
+
+guice = "5.1.0"
+grpc = "1.48.0"
+jetty = "9.4.48.v20220622"
+micrometer = "1.9.5"
+dropwizardMetrics = "4.2.10"
+prometheus = "0.12.0"
+mockito = "4.8.1"
+
+[libraries]
+hypertrace-grpc-client-utils = { module = "org.hypertrace.core.grpcutils:grpc-client-utils", version.ref = "hypertrace-grpcUtils"}
+hypertrace-grpc-server-utils = { module = "org.hypertrace.core.grpcutils:grpc-server-utils", version.ref = "hypertrace-grpcUtils"}
+
+grpc-api = { module = "io.grpc:grpc-api", version.ref = "grpc" }
+grpc-core = { module = "io.grpc:grpc-core", version.ref = "grpc" }
+grpc-services = { module = "io.grpc:grpc-services", version.ref = "grpc" }
+
+google-guice = { module = "com.google.inject:guice", version.ref = "guice" }
+google-guice-servlet = { module = "com.google.inject.extensions:guice-servlet", version.ref = "guice" }
+jetty-servlet = { module = "org.eclipse.jetty:jetty-servlet", version.ref = "jetty" }
+jetty-servlets = { module = "org.eclipse.jetty:jetty-servlets", version.ref = "jetty" }
+jetty-server = { module = "org.eclipse.jetty:jetty-server", version.ref = "jetty" }
+jetty-http = { module = "org.eclipse.jetty:jetty-http", version.ref = "jetty" }
+javax-servlet-api = { module = "javax.servlet:javax.servlet-api", version = "4.0.1" }
+dropwizard-metrics-core = {module = "io.dropwizard.metrics:metrics-core", version.ref = "dropwizardMetrics" }
+dropwizard-metrics-jvm = { module = "io.dropwizard.metrics:metrics-jvm", version.ref = "dropwizardMetrics" }
+dropwizard-metrics-servlets = { module = "io.dropwizard.metrics:metrics-servlets", version.ref = "dropwizardMetrics" }
+prometheus-dropwizard = { module = "io.prometheus:simpleclient_dropwizard", version.ref = "prometheus" }
+prometheus-servlet = { module = "io.prometheus:simpleclient_servlet", version.ref = "prometheus" }
+prometheus-pushgateway = { module = "io.prometheus:simpleclient_pushgateway", version.ref = "prometheus" }
+
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
+micrometer-jvm-extras = { module = "io.github.mweirauch:micrometer-jvm-extras", version = "0.2.2" }
+
+awaitility = { module = "org.awaitility:awaitility", version = "4.0.3" }
+google-guava = { module = "com.google.guava:guava", version = "31.1-jre" }
+typesafe-config = { module = "com.typesafe:config", version = "1.4.2" }
+lombok = { module = "org.projectlombok:lombok", version = "1.18.22" }
+slf4j-api = { module = "org.slf4j:slf4j-api", version = "1.7.32" }
+apache-log4j-slf4jImpl = { module = "org.apache.logging.log4j:log4j-slf4j-impl", version = "2.17.1" }
+apache-httpclient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.13" }
+
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version = "5.8.2" }
+mockito-core = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+mockito-junit = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
+
+[bundles]
+mockito = ["mockito-core", "mockito-junit"]

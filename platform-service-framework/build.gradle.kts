@@ -10,31 +10,33 @@ tasks.test {
 }
 
 dependencies {
-  api(project(":service-framework-spi"))
-  implementation(project(":platform-metrics"))
+  api(projects.serviceFrameworkSpi)
+  implementation(projects.platformMetrics)
 
-  api("org.slf4j:slf4j-api:1.7.36")
-  api("com.typesafe:config:1.4.2")
+  api(libs.slf4j.api)
+  api(libs.typesafe.config)
 
   // Use for thread dump servlet
-  implementation("io.dropwizard.metrics:metrics-servlets:4.2.10")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.48.v20220622")
+  implementation(libs.dropwizard.metrics.servlets)
+  implementation(libs.jetty.servlet)
 
   // Use for metrics servlet
-  implementation("io.prometheus:simpleclient_servlet:0.12.0")
+  implementation(libs.prometheus.servlet)
 
   // http client
-  implementation("org.apache.httpcomponents:httpclient:4.5.13")
+  implementation(libs.apache.httpclient)
 
-  constraints {
-    implementation("commons-codec:commons-codec:1.15") {
-      because("version 1.12 has a vulnerability https://snyk.io/vuln/SNYK-JAVA-COMMONSCODEC-561518")
+  testImplementation(libs.apache.log4j.slf4jImpl)
+  testImplementation(libs.junit.jupiter)
+  testImplementation(libs.bundles.mockito)
+  testImplementation(libs.jetty.servlet) {
+    artifact {
+      classifier = "tests"
     }
   }
-
-  testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.0")
-  testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
-  testImplementation("org.mockito:mockito-core:3.8.0")
-  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.48.v20220622:tests")
-  testImplementation("org.eclipse.jetty:jetty-http:9.4.48.v20220622:tests")
+  testImplementation(libs.jetty.http) {
+    artifact {
+      classifier = "tests"
+    }
+  }
 }

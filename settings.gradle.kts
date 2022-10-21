@@ -12,6 +12,9 @@ plugins {
   id("org.hypertrace.version-settings") version "0.2.0"
 }
 
+enableFeaturePreview("VERSION_CATALOGS")
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 include(":platform-grpc-service-framework")
 include(":platform-http-service-framework")
 include(":platform-service-framework")
