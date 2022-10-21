@@ -148,6 +148,8 @@ public abstract class PlatformService {
       adminServer.join();
     } catch (Exception e) {
       LOGGER.error("Failed to start service servlet.");
+      this.shutdown();
+      System.exit(1);
     }
   }
 
@@ -175,12 +177,6 @@ public abstract class PlatformService {
     } catch (Exception ex) {
       LOGGER.error("Error stopping admin server");
     }
-    if (getServiceState() != State.STARTED) {
-      LOGGER.info(
-          "Service - {} is at state: {}. Expecting state: STARTED. Skipping shutdown...",
-          getServiceName(), getServiceState());
-      return;
-    }
     LOGGER.info("Trying to shutdown service - {}...", getServiceName());
     serviceLifecycle.setState(State.STOPPING);
     doStop();
@@ -189,5 +185,4 @@ public abstract class PlatformService {
     PlatformMetricsRegistry.stop();
     LOGGER.info("Service - {} is shutdown.", getServiceName());
   }
-
 }
