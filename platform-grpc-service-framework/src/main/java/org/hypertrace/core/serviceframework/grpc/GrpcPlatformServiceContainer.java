@@ -223,6 +223,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
       builder.maxInboundMessageSize(serverDefinition.getMaxInboundMessageSize());
     }
 
+    serverDefinition.getServerInterceptors().forEach(builder::intercept);
     return builder;
   }
 
