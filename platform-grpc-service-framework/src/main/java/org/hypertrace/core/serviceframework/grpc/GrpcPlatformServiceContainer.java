@@ -94,7 +94,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     serverDefinition.getServiceFactories().stream()
         .map(factory -> factory.buildServices(containerEnvironment))
         .flatMap(Collection::stream)
-        .map(GrpcPlatformService::getGrpcService)
+        .map(GrpcPlatformService::getGrpcServiceDefinition)
         .map(InterceptorUtil::wrapInterceptors)
         .forEach(
             service -> {
