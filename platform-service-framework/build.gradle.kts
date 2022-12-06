@@ -17,7 +17,7 @@ dependencies {
   api("com.typesafe:config:1.4.2")
 
   // Use for thread dump servlet
-  implementation("io.dropwizard.metrics:metrics-servlets:4.2.10")
+  implementation("io.dropwizard.metrics:metrics-servlets:4.2.13")
   implementation("org.eclipse.jetty:jetty-servlet:9.4.48.v20220622")
 
   // Use for metrics servlet
@@ -33,8 +33,8 @@ dependencies {
   }
 
   testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.17.0")
-  testImplementation("org.junit.jupiter:junit-jupiter:5.7.1")
-  testImplementation("org.mockito:mockito-core:3.8.0")
+  testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
+  testImplementation("org.mockito:mockito-core:4.8.0")
   testImplementation("org.eclipse.jetty:jetty-servlet:9.4.48.v20220622:tests")
   testImplementation("org.eclipse.jetty:jetty-http:9.4.48.v20220622:tests")
 }
