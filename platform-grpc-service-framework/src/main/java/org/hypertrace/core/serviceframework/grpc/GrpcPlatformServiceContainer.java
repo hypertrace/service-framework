@@ -23,6 +23,8 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
@@ -30,6 +32,7 @@ import org.hypertrace.core.grpcutils.server.InterceptorUtil;
 import org.hypertrace.core.grpcutils.server.ServerManagementUtil;
 import org.hypertrace.core.serviceframework.PlatformService;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
+import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 
 @Slf4j
@@ -218,6 +221,9 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   private ServerBuilder<?> initializeBuilder(GrpcPlatformServerDefinition serverDefinition) {
     ServerBuilder<?> builder = ServerBuilder.forPort(serverDefinition.getPort());
+
+    // add micrometer-grpc interceptor to collect server metrics.
+    builder.intercept(new MetricCollectingServerInterceptor(PlatformMetricsRegistry.getMeterRegistry()));
 
     if (serverDefinition.getMaxInboundMessageSize() > 0) {
       builder.maxInboundMessageSize(serverDefinition.getMaxInboundMessageSize());
