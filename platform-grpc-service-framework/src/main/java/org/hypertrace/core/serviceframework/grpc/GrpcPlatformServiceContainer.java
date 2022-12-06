@@ -12,8 +12,10 @@ import io.grpc.health.v1.HealthGrpc;
 import io.grpc.health.v1.HealthGrpc.HealthBlockingStub;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.protobuf.services.HealthStatusManager;
+import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientInterceptor;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import java.util.stream.Stream;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
+import org.hypertrace.core.grpcutils.client.GrpcRegistryConfig;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.grpcutils.server.InterceptorUtil;
 import org.hypertrace.core.grpcutils.server.ServerManagementUtil;
@@ -59,6 +62,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
             .collect(Collectors.toUnmodifiableMap(Function.identity(), this::initializeBuilder));
     final ServerBuilder<?> inProcessServerBuilder =
         InProcessServerBuilder.forName(this.getInProcessServerName())
+            .intercept(
+                new MetricCollectingServerInterceptor(PlatformMetricsRegistry.getMeterRegistry()))
             .addService(this.healthStatusManager.getHealthService());
     final GrpcServiceContainerEnvironment serviceContainerEnvironment =
         this.buildContainerEnvironment(this.grpcChannelRegistry, this.healthStatusManager);
@@ -189,7 +194,12 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   }
 
   protected InProcessGrpcChannelRegistry buildChannelRegistry() {
-    return new InProcessGrpcChannelRegistry();
+    return new InProcessGrpcChannelRegistry(
+        this.getAuthorityInProcessOverrideMap(),
+        GrpcRegistryConfig.builder()
+            .defaultInterceptor(
+                new MetricCollectingClientInterceptor(PlatformMetricsRegistry.getMeterRegistry()))
+            .build());
   }
 
   protected String getInProcessServerName() {
@@ -214,6 +224,10 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     }
   }
 
+  protected Map<String, String> getAuthorityInProcessOverrideMap() {
+    return Collections.emptyMap();
+  }
+
   protected abstract List<GrpcPlatformServerDefinition> getServerDefinitions();
 
   protected abstract GrpcServiceContainerEnvironment buildContainerEnvironment(
@@ -222,12 +236,12 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   private ServerBuilder<?> initializeBuilder(GrpcPlatformServerDefinition serverDefinition) {
     ServerBuilder<?> builder = ServerBuilder.forPort(serverDefinition.getPort());
 
-    // add micrometer-grpc interceptor to collect server metrics.
-    builder.intercept(new MetricCollectingServerInterceptor(PlatformMetricsRegistry.getMeterRegistry()));
-
     if (serverDefinition.getMaxInboundMessageSize() > 0) {
       builder.maxInboundMessageSize(serverDefinition.getMaxInboundMessageSize());
     }
+    // add micrometer-grpc interceptor to collect server metrics.
+    builder.intercept(
+        new MetricCollectingServerInterceptor(PlatformMetricsRegistry.getMeterRegistry()));
 
     serverDefinition.getServerInterceptors().forEach(builder::intercept);
     return builder;
