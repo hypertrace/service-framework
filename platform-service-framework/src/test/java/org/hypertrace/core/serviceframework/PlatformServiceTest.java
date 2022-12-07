@@ -92,11 +92,11 @@ public class PlatformServiceTest {
 
   @Test
   public void testMetricInitialization() {
-    PlatformService service = getService(Map.of("service.name", "test-service",
+    PlatformService service = getService(Map.of("service.name", "sample-app",
         "service.admin.port", "59001"));
     startService(service);
 
-    assertEquals("test-service", service.getServiceName());
+    assertEquals("sample-app", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
 
     // Verify that the metric registry is initialized and `/metrics` endpoint is working.
@@ -109,7 +109,7 @@ public class PlatformServiceTest {
       EntityUtils.consume(response.getEntity());
 
       // Verify that some key JVM metrics are present in the response.
-      Assertions.assertTrue(responseStr.contains("jvm_memory_used_bytes{app=\"test-service\",area=\"heap\""));
+      Assertions.assertTrue(responseStr.contains("jvm_memory_used_bytes{app=\"sample-app\",area=\"heap\""));
     } catch (IOException e) {
       e.printStackTrace();
       Assertions.fail("Unexpected exception: " + e.getMessage());
@@ -129,13 +129,13 @@ public class PlatformServiceTest {
   @Test
   public void testMetricInitializationWithDefaultTags() {
     PlatformService service = getService(
-        Map.of("service.name", "test-service2",
+        Map.of("service.name", "sample-app",
             "service.admin.port", "59002",
             "metrics.defaultTags", List.of("foo", "bar", "k1", "v1", "k2"))
     );
     startService(service);
 
-    assertEquals("test-service2", service.getServiceName());
+    assertEquals("sample-app", service.getServiceName());
     Assertions.assertTrue(service.healthCheck());
 
     // Verify that the metric registry is initialized and `/metrics` endpoint is working.
@@ -149,7 +149,7 @@ public class PlatformServiceTest {
       System.out.println(responseStr);
 
       // Verify that some key JVM metrics are present in the response.
-      Assertions.assertTrue(responseStr.contains("jvm_memory_used_bytes{app=\"test-service2\",area=\"heap\",foo=\"bar\""));
+      Assertions.assertTrue(responseStr.contains("jvm_memory_used_bytes{app=\"sample-app\",area=\"heap\",foo=\"bar\""));
     } catch (IOException e) {
       e.printStackTrace();
       Assertions.fail("Unexpected exception: " + e.getMessage());
@@ -190,7 +190,7 @@ public class PlatformServiceTest {
   @Test
   void testLifecycle() {
     PlatformService service = getService(
-        Map.of("service.name", "test-service2",
+        Map.of("service.name", "sample-app",
             "service.admin.port", "59002")
     );
     assertEquals(State.NOT_STARTED, service.getServiceState());

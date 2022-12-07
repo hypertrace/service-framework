@@ -12,6 +12,7 @@ import com.google.common.cache.Cache;
 import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
+import io.micrometer.common.util.StringUtils;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
@@ -33,7 +34,6 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.core.instrument.util.StringUtils;
 import io.micrometer.core.lang.NonNull;
 import io.micrometer.core.lang.Nullable;
 import io.micrometer.prometheus.PrometheusConfig;
@@ -98,7 +98,6 @@ public class PlatformMetricsRegistry {
 
   }};
   private static boolean isInit = false;
-  private static final Set<Tag> DEFAULT_TAGS = new HashSet<>();
 
   /**
    * Main MetricMeter registry, with which all the metrics should be registered. We use
@@ -261,16 +260,18 @@ public class PlatformMetricsRegistry {
     }
 
     LOGGER.info("Setting default tags for all metrics to: {}", defaultTags);
-    defaultTags.forEach((key, value) -> DEFAULT_TAGS.add(new ImmutableTag(key, value)));
+    defaultTags.forEach((key, value) -> {
+      METER_REGISTRY.config().commonTags(List.of((new ImmutableTag(key, value))));
+    });
 
     // Register different metrics with the registry.
-    new ClassLoaderMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
-    new JvmGcMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
-    new ProcessorMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
-    new JvmThreadMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
-    new JvmMemoryMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
-    new UptimeMetrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
-    new Log4j2Metrics(DEFAULT_TAGS).bindTo(METER_REGISTRY);
+    new ClassLoaderMetrics().bindTo(METER_REGISTRY);
+    new JvmGcMetrics().bindTo(METER_REGISTRY);
+    new ProcessorMetrics().bindTo(METER_REGISTRY);
+    new JvmThreadMetrics().bindTo(METER_REGISTRY);
+    new JvmMemoryMetrics().bindTo(METER_REGISTRY);
+    new UptimeMetrics().bindTo(METER_REGISTRY);
+    new Log4j2Metrics().bindTo(METER_REGISTRY);
 
     new ProcessMemoryMetrics().bindTo(METER_REGISTRY);
     new ProcessThreadMetrics().bindTo(METER_REGISTRY);
@@ -302,7 +303,7 @@ public class PlatformMetricsRegistry {
    * See https://micrometer.io/docs/concepts#_counters for more details on the Counter.
    */
   public static Counter registerCounter(String name, Map<String, String> tags) {
-    return METER_REGISTRY.counter(name, addDefaultTags(tags));
+    return METER_REGISTRY.counter(name, toIterable(tags));
   }
 
   /**
@@ -326,7 +327,8 @@ public class PlatformMetricsRegistry {
   public static Timer registerTimer(String name, Map<String, String> tags, boolean histogram) {
     Timer.Builder builder = Timer.builder(name)
         .publishPercentiles(0.5, 0.95, 0.99)
-        .tags(addDefaultTags(tags));
+        .tags(toIterable(tags));
+
     if (histogram) {
       builder = builder.publishPercentileHistogram();
     }
@@ -341,7 +343,7 @@ public class PlatformMetricsRegistry {
    * See https://micrometer.io/docs/concepts#_gauges for more details on the Gauges.
    */
   public static <T extends Number> T registerGauge(String name, Map<String, String> tags, T number) {
-    Gauge.builder(name, number, Number::doubleValue).tags(addDefaultTags(tags)).strongReference(true).register(METER_REGISTRY);
+    Gauge.builder(name, number, Number::doubleValue).tags(toIterable(tags)).strongReference(true).register(METER_REGISTRY);
     return number;
   }
 
@@ -372,7 +374,7 @@ public class PlatformMetricsRegistry {
       Map<String, String> tags, boolean histogram) {
     DistributionSummary.Builder builder = DistributionSummary.builder(name)
         .publishPercentiles(0.5, 0.95, 0.99)
-        .tags(addDefaultTags(tags));
+        .tags(toIterable(tags));
     if (histogram) {
       builder = builder.publishPercentileHistogram();
     }
@@ -384,7 +386,7 @@ public class PlatformMetricsRegistry {
    * cacheName for the given guavaCache
    */
   public static <K, V> void registerCache(String cacheName, Cache<K, V> guavaCache, Map<String, String> tags) {
-    GuavaCacheMetrics.monitor(METER_REGISTRY, guavaCache, cacheName, addDefaultTags(tags));
+    GuavaCacheMetrics.monitor(METER_REGISTRY, guavaCache, cacheName, toIterable(tags));
 
   }
 
@@ -397,16 +399,16 @@ public class PlatformMetricsRegistry {
    */
   public static void monitorExecutorService(String name, ExecutorService executorService,
       @Nullable Map<String, String> tags) {
-    new ExecutorServiceMetrics(executorService, name, addDefaultTags(tags)).bindTo(METER_REGISTRY);
+    new ExecutorServiceMetrics(executorService, name, toIterable(tags)).bindTo(METER_REGISTRY);
   }
 
-  private static Iterable<Tag> addDefaultTags(Map<String, String> tags) {
-    if (tags == null || tags.isEmpty()) {
-      return DEFAULT_TAGS;
+  private static Iterable<Tag> toIterable(Map<String, String> tags) {
+    Set<Tag> newTags = new HashSet<>();
+
+    if (tags != null) {
+      tags.forEach((k, v) -> newTags.add(new ImmutableTag(k, v)));
     }
 
-    Set<Tag> newTags = new HashSet<>(DEFAULT_TAGS);
-    tags.forEach((k, v) -> newTags.add(new ImmutableTag(k, v)));
     return newTags;
   }
 
@@ -422,7 +424,6 @@ public class PlatformMetricsRegistry {
     stopConsoleMetricsReporter();
     METRIC_REGISTRY.getNames().forEach(METRIC_REGISTRY::remove);
 
-    DEFAULT_TAGS.clear();
     /* For each meter registry in this composite, it will call the close function */
     METER_REGISTRY.getRegistries().forEach(MeterRegistry::close);
     METER_REGISTRY.forEachMeter(METER_REGISTRY::remove);
