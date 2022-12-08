@@ -22,12 +22,6 @@ public abstract class ConsolidatedGrpcPlatformServiceContainer
   }
 
   @Override
-  protected InProcessGrpcChannelRegistry buildChannelRegistry() {
-    return new InProcessGrpcChannelRegistry(
-        this.getAuthorityInProcessOverrideMap(this.getInProcessServerName()));
-  }
-
-  @Override
   protected GrpcServiceContainerEnvironment buildContainerEnvironment(
       InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
     return new ConsolidatedGrpcServiceContainerEnvironment(
@@ -63,8 +57,10 @@ public abstract class ConsolidatedGrpcPlatformServiceContainer
     return Collections.emptySet();
   }
 
-  private Map<String, String> getAuthorityInProcessOverrideMap(String inProcessName) {
+  protected Map<String, String> getAuthorityInProcessOverrideMap() {
     return this.getAuthoritiesToTreatAsInProcess().stream()
-        .collect(Collectors.toUnmodifiableMap(Function.identity(), unused -> inProcessName));
+        .collect(
+            Collectors.toUnmodifiableMap(
+                Function.identity(), unused -> this.getInProcessServerName()));
   }
 }
