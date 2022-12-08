@@ -3,11 +3,6 @@ package org.hypertrace.core.serviceframework.metrics;
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.MetricSet;
-import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
-import com.codahale.metrics.jvm.JvmAttributeGaugeSet;
-import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
-import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.cache.Cache;
 import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
@@ -25,9 +20,12 @@ import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmGcMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmHeapPressureMetrics;
+import io.micrometer.core.instrument.binder.jvm.JvmInfoMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmMemoryMetrics;
 import io.micrometer.core.instrument.binder.jvm.JvmThreadMetrics;
 import io.micrometer.core.instrument.binder.logging.Log4j2Metrics;
+import io.micrometer.core.instrument.binder.system.FileDescriptorMetrics;
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics;
 import io.micrometer.core.instrument.binder.system.UptimeMetrics;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
@@ -88,16 +86,10 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "defaultTags";
 
   private static final MetricRegistry METRIC_REGISTRY = new MetricRegistry();
+  public static final List<String> DEFAULT_METRICS_REPORTERS = List.of("prometheus");
+
   private static ConsoleReporter consoleReporter;
   private static String metricsPrefix;
-  public static final List<String> DEFAULT_METRICS_REPORTERS = List.of("prometheus");
-  private static final Map<String, MetricSet> DEFAULT_METRIC_SET = new HashMap<>() {{
-    put("gc", new GarbageCollectorMetricSet());
-    put("jvm", new JvmAttributeGaugeSet());
-    put("memory", new MemoryUsageGaugeSet());
-    put("thread", new ThreadStatesGaugeSet());
-
-  }};
   private static boolean isInit = false;
 
   /**
@@ -266,21 +258,27 @@ public class PlatformMetricsRegistry {
     });
 
     // Register different metrics with the registry.
+
+    // JVM metrics
+    new JvmInfoMetrics().bindTo(meterRegistry);
     new ClassLoaderMetrics().bindTo(meterRegistry);
-    new JvmGcMetrics().bindTo(meterRegistry);
-    new ProcessorMetrics().bindTo(meterRegistry);
     new JvmThreadMetrics().bindTo(meterRegistry);
     new JvmMemoryMetrics().bindTo(meterRegistry);
+    new JvmGcMetrics().bindTo(meterRegistry);
+    new JvmHeapPressureMetrics().bindTo(meterRegistry);
+
+    // process metrics - micrometer builtin
     new UptimeMetrics().bindTo(meterRegistry);
+    new ProcessorMetrics().bindTo(meterRegistry);
+    new FileDescriptorMetrics().bindTo(meterRegistry);
+
+    // logging metrics
     new Log4j2Metrics().bindTo(meterRegistry);
 
+    // process metrics - third party
     new ProcessMemoryMetrics().bindTo(meterRegistry);
     new ProcessThreadMetrics().bindTo(meterRegistry);
 
-    for (String key : DEFAULT_METRIC_SET.keySet()) {
-      METRIC_REGISTRY
-          .registerAll(String.format("%s.%s", metricsPrefix, key), DEFAULT_METRIC_SET.get(key));
-    }
     isInit = true;
   }
 
@@ -324,14 +322,27 @@ public class PlatformMetricsRegistry {
    * default tags also will be reported with the metrics.
    *
    * See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
+   *
+   * Defaults the timer range from 1 second to 60 seconds (both inclusive)
    */
   public static Timer registerTimer(String name, Map<String, String> tags, boolean histogram) {
+    return registerTimer(name, tags, histogram, Duration.ofSeconds(1), Duration.ofSeconds(60));
+  }
+
+  /**
+   * Registers a Timer with the given name with the service's metric registry and reports it
+   * periodically to the configured reporters. Apart from the given tags, the reporting service's
+   * default tags also will be reported with the metrics.
+   *
+   * See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
+   */
+  public static Timer registerTimer(String name, Map<String, String> tags, boolean histogram, Duration minExpectedValue, Duration maxExpectedValue) {
     Timer.Builder builder = Timer.builder(name)
-        .publishPercentiles(0.5, 0.95, 0.99)
-        .tags(toIterable(tags));
+            .publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99)
+            .tags(toIterable(tags));
 
     if (histogram) {
-      builder = builder.publishPercentileHistogram();
+      builder = builder.minimumExpectedValue(minExpectedValue).maximumExpectedValue(maxExpectedValue).publishPercentileHistogram();
     }
     return builder.register(meterRegistry);
   }
@@ -356,8 +367,7 @@ public class PlatformMetricsRegistry {
    * <p>
    * See https://micrometer.io/docs/concepts#_distribution_summaries for more details.
    */
-  public static DistributionSummary registerDistributionSummary(String name,
-      Map<String, String> tags) {
+  public static DistributionSummary registerDistributionSummary(String name, Map<String, String> tags) {
     return registerDistributionSummary(name, tags, false);
   }
 
@@ -371,13 +381,26 @@ public class PlatformMetricsRegistry {
    * For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
    * https://micrometer.io/docs/concepts#_histograms_and_percentiles
    */
-  public static DistributionSummary registerDistributionSummary(String name,
-      Map<String, String> tags, boolean histogram) {
+  public static DistributionSummary registerDistributionSummary(String name, Map<String, String> tags, boolean histogram) {
+    return registerDistributionSummary(name, tags, histogram, null, null);
+  }
+
+  /**
+   * Registers a DistributionSummary for the given name with the service's metric registry and
+   * reports it periodically to the configured reporters Apart from the provided tags, the reporting
+   * service's default tags also will be reported with the metrics.
+   * <p>
+   * Param histogram – Determines whether percentile histograms should be published.
+   * <p>
+   * For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
+   * https://micrometer.io/docs/concepts#_histograms_and_percentiles
+   */
+  public static DistributionSummary registerDistributionSummary(String name, Map<String, String> tags, boolean histogram, Double minExpectedValue, Double maxExpectedValue) {
     DistributionSummary.Builder builder = DistributionSummary.builder(name)
-        .publishPercentiles(0.5, 0.95, 0.99)
-        .tags(toIterable(tags));
+            .publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99)
+            .tags(toIterable(tags));
     if (histogram) {
-      builder = builder.publishPercentileHistogram();
+      builder = builder.minimumExpectedValue(minExpectedValue).maximumExpectedValue(maxExpectedValue).publishPercentileHistogram();
     }
     return builder.register(meterRegistry);
   }
