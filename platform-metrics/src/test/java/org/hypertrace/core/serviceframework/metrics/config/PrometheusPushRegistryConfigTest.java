@@ -24,9 +24,8 @@ public class PrometheusPushRegistryConfigTest {
     assertThrows(ValidationException.class, () -> config.requireValid());
   }
 
-  public PrometheusPushRegistryConfig create(String urlAddress,
-      int intervalReportSec,
-      String jobName) {
+  public PrometheusPushRegistryConfig create(
+      String urlAddress, int intervalReportSec, String jobName) {
     return new PrometheusPushRegistryConfig() {
       @Override
       public String jobName() {
@@ -49,5 +48,4 @@ public class PrometheusPushRegistryConfigTest {
       }
     };
   }
-
 }

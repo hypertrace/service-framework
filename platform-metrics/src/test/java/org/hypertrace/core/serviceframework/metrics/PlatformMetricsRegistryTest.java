@@ -23,20 +23,24 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-/**
- * Unit tests for {@link PlatformMetricsRegistry}
- */
+/** Unit tests for {@link PlatformMetricsRegistry} */
 public class PlatformMetricsRegistryTest {
   private static final String PUSH_GATEWAY_REPORTER_NAME = "pushgateway";
   private static final String PROMETHEUS_REPORTER_NAME = "prometheus";
+
   private static void initializeCustomRegistry(List<String> reporters) {
-    PlatformMetricsRegistry.initMetricsRegistry("test-service",
-        ConfigFactory.parseMap(Map.of(
-            "reporter.names", reporters,
-            "reporter.prefix", "test-service",
-            "reportInterval", "10",
-            "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest")
-        )));
+    PlatformMetricsRegistry.initMetricsRegistry(
+        "test-service",
+        ConfigFactory.parseMap(
+            Map.of(
+                "reporter.names",
+                reporters,
+                "reporter.prefix",
+                "test-service",
+                "reportInterval",
+                "10",
+                "defaultTags",
+                List.of("test.name", "PlatformMetricsRegistryTest"))));
   }
 
   @AfterEach
@@ -65,7 +69,11 @@ public class PlatformMetricsRegistryTest {
     timer.record(1, TimeUnit.SECONDS);
 
     PlatformMetricsRegistry.stop();
-    assertEquals(0, ((CompositeMeterRegistry)PlatformMetricsRegistry.getMeterRegistry()).getRegistries().size());
+    assertEquals(
+        0,
+        ((CompositeMeterRegistry) PlatformMetricsRegistry.getMeterRegistry())
+            .getRegistries()
+            .size());
   }
 
   @Test
@@ -112,15 +120,15 @@ public class PlatformMetricsRegistryTest {
     initializeCustomRegistry(List.of("testing"));
 
     AtomicInteger atomicInteger = new AtomicInteger(1);
-    AtomicInteger gauge = PlatformMetricsRegistry.registerGauge("my.gauge",
-        Map.of("foo", "bar"), atomicInteger);
+    AtomicInteger gauge =
+        PlatformMetricsRegistry.registerGauge("my.gauge", Map.of("foo", "bar"), atomicInteger);
     atomicInteger.incrementAndGet();
     assertEquals(2, gauge.get());
 
     // Register a new instance as a Gauge and the value changes though the tags haven't changed.
     AtomicInteger newAtomicInteger = new AtomicInteger(1);
-    gauge = PlatformMetricsRegistry.registerGauge("my.gauge",
-        Map.of("foo", "bar"), newAtomicInteger);
+    gauge =
+        PlatformMetricsRegistry.registerGauge("my.gauge", Map.of("foo", "bar"), newAtomicInteger);
     newAtomicInteger.addAndGet(10);
     assertEquals(11, gauge.get());
   }
@@ -129,27 +137,31 @@ public class PlatformMetricsRegistryTest {
   public void testDistributionSummary() {
     initializeCustomRegistry(List.of("testing"));
 
-    DistributionSummary distribution = PlatformMetricsRegistry
-        .registerDistributionSummary("my.distribution", Map.of("foo", "bar"));
+    DistributionSummary distribution =
+        PlatformMetricsRegistry.registerDistributionSummary(
+            "my.distribution", Map.of("foo", "bar"));
     distribution.record(100);
     assertEquals(1, distribution.count());
     assertEquals(100, distribution.totalAmount());
 
     // Try to register the same summary again and we should get the same instance.
-    distribution = PlatformMetricsRegistry
-        .registerDistributionSummary("my.distribution", Map.of("foo", "bar"));
+    distribution =
+        PlatformMetricsRegistry.registerDistributionSummary(
+            "my.distribution", Map.of("foo", "bar"));
     distribution.record(50);
     assertEquals(2, distribution.count());
     assertEquals(150, distribution.totalAmount());
     assertEquals(75, distribution.mean());
     assertTrue(
-        Arrays.stream(distribution.takeSnapshot().percentileValues()).map(m -> m.percentile())
-            .collect(
-                Collectors.toList()).containsAll(List.of(0.5, 0.95, 0.99)));
+        Arrays.stream(distribution.takeSnapshot().percentileValues())
+            .map(m -> m.percentile())
+            .collect(Collectors.toList())
+            .containsAll(List.of(0.5, 0.95, 0.99)));
 
     // Create a new distribution with histogram enabled
-    distribution = PlatformMetricsRegistry
-        .registerDistributionSummary("my.distribution", new HashMap<>(), true);
+    distribution =
+        PlatformMetricsRegistry.registerDistributionSummary(
+            "my.distribution", new HashMap<>(), true);
     distribution.record(100);
     assertEquals(1, distribution.count());
     assertEquals(100, distribution.totalAmount());
@@ -164,7 +176,7 @@ public class PlatformMetricsRegistryTest {
   public void testCache() throws Exception {
     initializeCustomRegistry(List.of("testing"));
     Cache<String, Integer> cache = CacheBuilder.newBuilder().maximumSize(10).recordStats().build();
-    PlatformMetricsRegistry.registerCache("my.cache", cache, Map.of("foo","bar"));
+    PlatformMetricsRegistry.registerCache("my.cache", cache, Map.of("foo", "bar"));
     Callable<Integer> loader =
         new Callable<Integer>() {
           @Override
@@ -192,50 +204,101 @@ public class PlatformMetricsRegistryTest {
      */
 
     // Checking Cache Stats from registry
-    double hits = 0, misses = 0,size = 0;
-    hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
-    misses = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","miss").meter().measure().iterator().next().getValue();
-    size = PlatformMetricsRegistry.getMeterRegistry().get("cache.size").meter().measure().iterator().next().getValue();
+    double hits = 0, misses = 0, size = 0;
+    hits =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "hit")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    misses =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "miss")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    size =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.size")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
 
     assertEquals(3.0, hits);
     assertEquals(2.0, misses);
-    assertEquals(4.0,size);
+    assertEquals(4.0, size);
 
     // Doing some more cache activity
     cache.get("NotPresent", loader); // miss hence loaded from loader
 
     // Cache = {One,Two,Three,Failed,NotPresent}
     // expected hit=3.0, miss=3.0, size=5.0
-    hits = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","hit").meter().measure().iterator().next().getValue();
-    misses = PlatformMetricsRegistry.getMeterRegistry().get("cache.gets").tag("result","miss").meter().measure().iterator().next().getValue();
-    size = PlatformMetricsRegistry.getMeterRegistry().get("cache.size").meter().measure().iterator().next().getValue();
+    hits =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "hit")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    misses =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "miss")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    size =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.size")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
 
     assertEquals(3.0, hits);
     assertEquals(3.0, misses);
-    assertEquals(5.0,size);
+    assertEquals(5.0, size);
   }
 
   @Test
   public void test_initializePrometheusPushGateway_withNullUrlAddress_throwsException() {
-    Assertions.assertThrows(IllegalArgumentException.class,
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
         () -> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME)));
   }
 
   @Test
   public void test_init_withBothPromethuesAndPushGateway_throwsException() {
-    Assertions.assertThrows(IllegalArgumentException.class,
-        ()-> initializeCustomRegistry(List.of(PUSH_GATEWAY_REPORTER_NAME, PROMETHEUS_REPORTER_NAME)));
+    Assertions.assertThrows(
+        IllegalArgumentException.class,
+        () ->
+            initializeCustomRegistry(
+                List.of(PUSH_GATEWAY_REPORTER_NAME, PROMETHEUS_REPORTER_NAME)));
   }
 
   @Test
   public void test_pushMetrics() throws InterruptedException {
-    Config config = ConfigFactory.parseMap(Map.of(
-        "reporter.names", List.of(PUSH_GATEWAY_REPORTER_NAME),
-        "reporter.prefix", "ines-service",
-        "reportInterval", "10",
-        "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
-        "pushUrlAddress", "localhost:9091"
-    ));
+    Config config =
+        ConfigFactory.parseMap(
+            Map.of(
+                "reporter.names", List.of(PUSH_GATEWAY_REPORTER_NAME),
+                "reporter.prefix", "ines-service",
+                "reportInterval", "10",
+                "defaultTags", List.of("test.name", "PlatformMetricsRegistryTest"),
+                "pushUrlAddress", "localhost:9091"));
 
     PlatformMetricsRegistry.initMetricsRegistry("ines-service", config);
     Counter counter = PlatformMetricsRegistry.registerCounter("my.counter", Map.of("foo", "bar"));

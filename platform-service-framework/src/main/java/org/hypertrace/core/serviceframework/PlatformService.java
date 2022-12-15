@@ -4,20 +4,20 @@ import com.codahale.metrics.servlets.CpuProfileServlet;
 import com.codahale.metrics.servlets.ThreadDumpServlet;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
+import io.prometheus.client.exporter.MetricsServlet;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
-import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.ConfigClientFactory;
-import io.prometheus.client.exporter.MetricsServlet;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.service.servlets.HealthCheckServlet;
 import org.hypertrace.core.serviceframework.service.servlets.JVMDiagnosticServlet;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,10 +38,10 @@ public abstract class PlatformService {
   private static final String SERVICE_NAME_CONFIG = "service.name";
   protected ConfigClient configClient;
   private final Config appConfig;
-  private final DefaultPlatformServiceLifecycle serviceLifecycle = new DefaultPlatformServiceLifecycle();
+  private final DefaultPlatformServiceLifecycle serviceLifecycle =
+      new DefaultPlatformServiceLifecycle();
   private Server adminServer;
   private final String serviceName;
-
 
   public PlatformService() {
     this(ConfigClientFactory.getClient());
@@ -89,13 +89,16 @@ public abstract class PlatformService {
     if (getServiceState() != State.NOT_STARTED) {
       LOGGER.info(
           "Service - {} is at state: {}. Expecting state: NOT_STARTED. Skipping initialize...",
-          getServiceName(), getServiceState());
+          getServiceName(),
+          getServiceState());
       return;
     }
     serviceLifecycle.setState(State.INITIALIZING);
 
-    Config metricsConfig = appConfig.hasPath(METRICS_CONFIG_KEY) ?
-        appConfig.getConfig(METRICS_CONFIG_KEY) : ConfigFactory.empty();
+    Config metricsConfig =
+        appConfig.hasPath(METRICS_CONFIG_KEY)
+            ? appConfig.getConfig(METRICS_CONFIG_KEY)
+            : ConfigFactory.empty();
 
     LOGGER.info("Starting the service by using this metrics configuration {}", metricsConfig);
     PlatformMetricsRegistry.initMetricsRegistry(getServiceName(), metricsConfig);
@@ -107,8 +110,10 @@ public abstract class PlatformService {
 
   public void start() {
     if (getServiceState() != State.INITIALIZED) {
-      LOGGER.info("Service - {} is at state: {}. Expecting state: INITIALIZED. Skipping start...",
-          getServiceName(), getServiceState());
+      LOGGER.info(
+          "Service - {} is at state: {}. Expecting state: INITIALIZED. Skipping start...",
+          getServiceName(),
+          getServiceState());
       return;
     }
     LOGGER.info("Trying to start service - {}...", getServiceName());

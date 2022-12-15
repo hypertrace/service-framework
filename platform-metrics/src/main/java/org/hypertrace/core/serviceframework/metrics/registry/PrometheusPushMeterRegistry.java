@@ -14,19 +14,18 @@ import org.hypertrace.core.serviceframework.metrics.config.PrometheusPushRegistr
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Metric Registry for Prometheus Push Gateway
- */
+/** Metric Registry for Prometheus Push Gateway */
 public class PrometheusPushMeterRegistry extends PrometheusMeterRegistry {
   private static final Logger logger = LoggerFactory.getLogger(PlatformMetricsRegistry.class);
   private final PrometheusPushRegistryConfig pushConfig;
   private final PushGateway pushGateway;
 
-  @Nullable
-  private ScheduledExecutorService scheduledExecutorService;
+  @Nullable private ScheduledExecutorService scheduledExecutorService;
 
   public PrometheusPushMeterRegistry(
-      PrometheusPushRegistryConfig pushConfig, ThreadFactory threadFactory, PushGateway pushGateway) {
+      PrometheusPushRegistryConfig pushConfig,
+      ThreadFactory threadFactory,
+      PushGateway pushGateway) {
     super(pushConfig::get);
 
     pushConfig.requireValid();
@@ -38,32 +37,37 @@ public class PrometheusPushMeterRegistry extends PrometheusMeterRegistry {
   }
 
   public void publish() throws IOException {
-      pushGateway.pushAdd(getPrometheusRegistry(), pushConfig.jobName());
+    pushGateway.pushAdd(getPrometheusRegistry(), pushConfig.jobName());
   }
 
-  /**
-   * Catch uncaught exceptions thrown from {@link #publish()}.
-   */
+  /** Catch uncaught exceptions thrown from {@link #publish()}. */
   private void publishSafely() {
     try {
       publish();
     } catch (Throwable e) {
-      logger.warn("Unexpected exception thrown while publishing metrics for " + this.getClass()
-          .getSimpleName(), e);
+      logger.warn(
+          "Unexpected exception thrown while publishing metrics for "
+              + this.getClass().getSimpleName(),
+          e);
     }
   }
 
   public void start(ThreadFactory threadFactory) {
-    if (scheduledExecutorService != null)
-      return;
+    if (scheduledExecutorService != null) return;
 
     if (pushConfig.enabled()) {
-      logger.info("publishing metrics for " + this.getClass().getSimpleName() + " every " + TimeUtils
-          .format(pushConfig.step()));
+      logger.info(
+          "publishing metrics for "
+              + this.getClass().getSimpleName()
+              + " every "
+              + TimeUtils.format(pushConfig.step()));
 
       scheduledExecutorService = Executors.newSingleThreadScheduledExecutor(threadFactory);
-      scheduledExecutorService.scheduleAtFixedRate(this::publishSafely, pushConfig.step()
-          .toMillis(), pushConfig.step().toMillis(), TimeUnit.MILLISECONDS);
+      scheduledExecutorService.scheduleAtFixedRate(
+          this::publishSafely,
+          pushConfig.step().toMillis(),
+          pushConfig.step().toMillis(),
+          TimeUnit.MILLISECONDS);
     }
   }
 
@@ -82,5 +86,4 @@ public class PrometheusPushMeterRegistry extends PrometheusMeterRegistry {
     stop();
     super.close();
   }
-
 }

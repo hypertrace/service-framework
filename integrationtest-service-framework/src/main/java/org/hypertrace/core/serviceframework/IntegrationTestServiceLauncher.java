@@ -3,7 +3,6 @@ package org.hypertrace.core.serviceframework;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.IntegrationTestConfigClientFactory;
 import org.slf4j.Logger;
@@ -26,7 +25,7 @@ public class IntegrationTestServiceLauncher {
     try {
       LOGGER.info("Trying to start PlatformService: {}", serviceName);
       final ConfigClient configClient =
-              IntegrationTestConfigClientFactory.getConfigClientForService(testName, serviceName);
+          IntegrationTestConfigClientFactory.getConfigClientForService(testName, serviceName);
       PlatformService app = PlatformServiceFactory.get(configClient);
       app.initialize();
       Runtime.getRuntime().addShutdownHook(new Thread(app::shutdown));

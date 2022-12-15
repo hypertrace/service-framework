@@ -42,7 +42,8 @@ public class JVMDiagnosticServletTest {
 
     Assertions.assertEquals(HttpStatus.OK_200, response.getStatus());
     Assertions.assertNotNull(response.getContent());
-    Assertions.assertTrue(response.getContent().contains("version"),
+    Assertions.assertTrue(
+        response.getContent().contains("version"),
         "Response doesn't contain word 'version'. Response received: " + response.getContent());
   }
 
@@ -52,9 +53,9 @@ public class JVMDiagnosticServletTest {
 
     // Unknown command returns 200 but with with error message
     Assertions.assertEquals(HttpStatus.OK_200, response.getStatus());
-    Assertions.assertTrue(response.getContent().startsWith("Error"),
+    Assertions.assertTrue(
+        response.getContent().startsWith("Error"),
         "Response expected to contain error message. Response received: " + response.getContent());
-
   }
 
   private Response processRequest(String uri) throws Exception {

@@ -13,6 +13,7 @@ import io.grpc.health.v1.HealthGrpc.HealthBlockingStub;
 import io.grpc.inprocess.InProcessServerBuilder;
 import io.grpc.protobuf.services.HealthStatusManager;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientInterceptor;
+import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
@@ -25,8 +26,6 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-
-import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.grpcutils.client.GrpcRegistryConfig;

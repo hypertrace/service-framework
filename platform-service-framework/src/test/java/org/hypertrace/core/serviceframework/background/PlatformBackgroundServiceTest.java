@@ -1,5 +1,8 @@
 package org.hypertrace.core.serviceframework.background;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import com.typesafe.config.Config;
 import java.util.ArrayList;
 import java.util.List;
@@ -7,9 +10,6 @@ import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class PlatformBackgroundServiceTest {
   @Test
