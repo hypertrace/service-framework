@@ -75,13 +75,12 @@ public class PlatformMetricsRegistry {
   private static final String CONSOLE_REPORTER_NAME = "console";
 
   /**
-   * List of tags that need to be reported for all the metrics reported by this service.
-   * The tags are given as a list with tag key followed by corresponding value.
-   * Any key without a value will be ignored.
-   * Example: defaultTags = ["k1", "v1", "k2", "v2"]
+   * List of tags that need to be reported for all the metrics reported by this service. The tags
+   * are given as a list with tag key followed by corresponding value. Any key without a value will
+   * be ignored. Example: defaultTags = ["k1", "v1", "k2", "v2"]
    *
-   * Please note "app:serviceName" will be reported by default for all metrics, and hence
-   * needn't be included in this list.
+   * <p>Please note "app:serviceName" will be reported by default for all metrics, and hence needn't
+   * be included in this list.
    */
   private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "defaultTags";
 
@@ -93,9 +92,9 @@ public class PlatformMetricsRegistry {
   private static boolean isInit = false;
 
   /**
-   * Main MetricMeter registry, with which all the metrics should be registered. We use
-   * a {@link CompositeMeterRegistry} here so that we can even registry multiple registries
-   * like Prometheus and Logging registries, if needed.
+   * Main MetricMeter registry, with which all the metrics should be registered. We use a {@link
+   * CompositeMeterRegistry} here so that we can even registry multiple registries like Prometheus
+   * and Logging registries, if needed.
    */
   private static CompositeMeterRegistry meterRegistry = new CompositeMeterRegistry();
 
@@ -103,46 +102,53 @@ public class PlatformMetricsRegistry {
     LOGGER.info("Trying to init PrometheusReporter");
 
     // Add Prometheus registry to the composite registry.
-    meterRegistry.add(new PrometheusMeterRegistry(new PrometheusConfig() {
-      @Override
-      @NonNull
-      public Duration step() {
-        return Duration.ofSeconds(reportInterval);
-      }
+    meterRegistry.add(
+        new PrometheusMeterRegistry(
+            new PrometheusConfig() {
+              @Override
+              @NonNull
+              public Duration step() {
+                return Duration.ofSeconds(reportInterval);
+              }
 
-      @Override
-      @io.micrometer.core.lang.Nullable
-      public String get(String k) {
-        return null;
-      }
-    }, CollectorRegistry.defaultRegistry, Clock.SYSTEM));
+              @Override
+              @io.micrometer.core.lang.Nullable
+              public String get(String k) {
+                return null;
+              }
+            },
+            CollectorRegistry.defaultRegistry,
+            Clock.SYSTEM));
 
     CollectorRegistry.defaultRegistry.register(new DropwizardExports(METRIC_REGISTRY));
   }
 
   private static void initConsoleMetricsReporter(final int reportIntervalSec) {
     consoleReporter = ConsoleReporter.forRegistry(METRIC_REGISTRY).build();
-    LOGGER
-        .info("Trying to init ConsoleReporter with reporter interval=[{}] seconds", reportIntervalSec);
+    LOGGER.info(
+        "Trying to init ConsoleReporter with reporter interval=[{}] seconds", reportIntervalSec);
     consoleReporter.start(reportIntervalSec, TimeUnit.SECONDS);
   }
 
   private static void initLoggingMetricsReporter(int reportIntervalSec) {
     LOGGER.info("Initializing the logging metric reporter.");
 
-    meterRegistry.add(new LoggingMeterRegistry(new LoggingRegistryConfig() {
-      @Override
-      @NonNull
-      public Duration step() {
-        return Duration.ofSeconds(reportIntervalSec);
-      }
+    meterRegistry.add(
+        new LoggingMeterRegistry(
+            new LoggingRegistryConfig() {
+              @Override
+              @NonNull
+              public Duration step() {
+                return Duration.ofSeconds(reportIntervalSec);
+              }
 
-      @Override
-      @io.micrometer.core.lang.Nullable
-      public String get(String key) {
-        return null;
-      }
-    }, Clock.SYSTEM));
+              @Override
+              @io.micrometer.core.lang.Nullable
+              public String get(String key) {
+                return null;
+              }
+            },
+            Clock.SYSTEM));
   }
 
   private static void initTestingMetricsReporter() {
@@ -151,40 +157,45 @@ public class PlatformMetricsRegistry {
     meterRegistry.add(new SimpleMeterRegistry());
   }
 
-  private static void initPrometheusPushGatewayReporter(String serviceName,
-      int reportIntervalSec,
-      String pushUrlAddress) {
-    LOGGER.info("Initializing Prometheus PushGateway Reporter with urlAddress: {}, jobName: {}. "
-        + "Metric is configured get pushed for every {} seconds", pushUrlAddress, serviceName,
+  private static void initPrometheusPushGatewayReporter(
+      String serviceName, int reportIntervalSec, String pushUrlAddress) {
+    LOGGER.info(
+        "Initializing Prometheus PushGateway Reporter with urlAddress: {}, jobName: {}. "
+            + "Metric is configured get pushed for every {} seconds",
+        pushUrlAddress,
+        serviceName,
         reportIntervalSec);
 
     if (pushUrlAddress == null || pushUrlAddress.isEmpty()) {
       throw new IllegalArgumentException("pushUrlAddress configuration is not specified.");
     }
 
-    meterRegistry.add(new PrometheusPushMeterRegistry(
-    new PrometheusPushRegistryConfig() {
-      @Override
-      public String jobName() {
-        return serviceName;
-      }
+    meterRegistry.add(
+        new PrometheusPushMeterRegistry(
+            new PrometheusPushRegistryConfig() {
+              @Override
+              public String jobName() {
+                return serviceName;
+              }
 
-      @Override
-      public String prefix() {
-        return PUSH_GATEWAY_REPORTER_NAME;
-      }
+              @Override
+              public String prefix() {
+                return PUSH_GATEWAY_REPORTER_NAME;
+              }
 
-      @Override
-      @io.micrometer.core.lang.Nullable
-      public String get(String key) {
-        return null;
-      }
+              @Override
+              @io.micrometer.core.lang.Nullable
+              public String get(String key) {
+                return null;
+              }
 
-      @Override
-      public Duration step() {
-        return Duration.ofSeconds(reportIntervalSec);
-      }
-    }, Executors.defaultThreadFactory(), new PushGateway(pushUrlAddress)));
+              @Override
+              public Duration step() {
+                return Duration.ofSeconds(reportIntervalSec);
+              }
+            },
+            Executors.defaultThreadFactory(),
+            new PushGateway(pushUrlAddress)));
   }
 
   private static List<String> getStringList(Config config, String path, List<String> defaultVal) {
@@ -194,15 +205,15 @@ public class PlatformMetricsRegistry {
     return defaultVal;
   }
 
-  public synchronized static void initMetricsRegistry(String serviceName, Config config) {
+  public static synchronized void initMetricsRegistry(String serviceName, Config config) {
     if (isInit) {
       return;
     }
 
     validate(config);
 
-    List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
-        DEFAULT_METRICS_REPORTERS);
+    List<String> reporters =
+        getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY, DEFAULT_METRICS_REPORTERS);
 
     metricsPrefix = DEFAULT_METRICS_PREFIX;
     if (config.hasPath(METRICS_REPORTER_PREFIX_CONFIG_KEY)) {
@@ -225,7 +236,8 @@ public class PlatformMetricsRegistry {
       defaultTags.put("app", serviceName);
     }
 
-    List<String> defaultTagsList = getStringList(config, METRICS_DEFAULT_TAGS_CONFIG_KEY, List.of());
+    List<String> defaultTagsList =
+        getStringList(config, METRICS_DEFAULT_TAGS_CONFIG_KEY, List.of());
     for (int i = 0; i + 1 < defaultTagsList.size(); i += 2) {
       defaultTags.put(defaultTagsList.get(i), defaultTagsList.get(i + 1));
     }
@@ -253,9 +265,10 @@ public class PlatformMetricsRegistry {
     }
 
     LOGGER.info("Setting default tags for all metrics to: {}", defaultTags);
-    defaultTags.forEach((key, value) -> {
-      meterRegistry.config().commonTags(List.of((new ImmutableTag(key, value))));
-    });
+    defaultTags.forEach(
+        (key, value) -> {
+          meterRegistry.config().commonTags(List.of((new ImmutableTag(key, value))));
+        });
 
     // Register different metrics with the registry.
 
@@ -283,8 +296,8 @@ public class PlatformMetricsRegistry {
   }
 
   /**
-   * This method is deprecated since we'll be removing the Dropwizard metrics support in
-   * future releases.
+   * This method is deprecated since we'll be removing the Dropwizard metrics support in future
+   * releases.
    */
   @Deprecated
   public static void register(String metricName, Metric metric) {
@@ -299,7 +312,7 @@ public class PlatformMetricsRegistry {
    * periodically to the configured reporters. Apart from the given tags, the reporting service's
    * default tags also will be reported with the metrics.
    *
-   * See https://micrometer.io/docs/concepts#_counters for more details on the Counter.
+   * <p>See https://micrometer.io/docs/concepts#_counters for more details on the Counter.
    */
   public static Counter registerCounter(String name, Map<String, String> tags) {
     return meterRegistry.counter(name, toIterable(tags));
@@ -310,7 +323,7 @@ public class PlatformMetricsRegistry {
    * and reports it periodically to the configured reporters. Apart from the given tags, the
    * reporting service's default tags also will be reported with the metrics.
    *
-   * See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
+   * <p>See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
    */
   public static Timer registerTimer(String name, Map<String, String> tags) {
     return registerTimer(name, tags, false);
@@ -321,9 +334,9 @@ public class PlatformMetricsRegistry {
    * periodically to the configured reporters. Apart from the given tags, the reporting service's
    * default tags also will be reported with the metrics.
    *
-   * See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
+   * <p>See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
    *
-   * Defaults the timer range from 1 second to 60 seconds (both inclusive)
+   * <p>Defaults the timer range from 1 second to 60 seconds (both inclusive)
    */
   public static Timer registerTimer(String name, Map<String, String> tags, boolean histogram) {
     return registerTimer(name, tags, histogram, Duration.ofSeconds(1), Duration.ofSeconds(60));
@@ -334,15 +347,23 @@ public class PlatformMetricsRegistry {
    * periodically to the configured reporters. Apart from the given tags, the reporting service's
    * default tags also will be reported with the metrics.
    *
-   * See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
+   * <p>See https://micrometer.io/docs/concepts#_timers for more details on the Timer.
    */
-  public static Timer registerTimer(String name, Map<String, String> tags, boolean histogram, Duration minExpectedValue, Duration maxExpectedValue) {
-    Timer.Builder builder = Timer.builder(name)
-            .publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99)
-            .tags(toIterable(tags));
+  public static Timer registerTimer(
+      String name,
+      Map<String, String> tags,
+      boolean histogram,
+      Duration minExpectedValue,
+      Duration maxExpectedValue) {
+    Timer.Builder builder =
+        Timer.builder(name).publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99).tags(toIterable(tags));
 
     if (histogram) {
-      builder = builder.minimumExpectedValue(minExpectedValue).maximumExpectedValue(maxExpectedValue).publishPercentileHistogram();
+      builder =
+          builder
+              .minimumExpectedValue(minExpectedValue)
+              .maximumExpectedValue(maxExpectedValue)
+              .publishPercentileHistogram();
     }
     return builder.register(meterRegistry);
   }
@@ -352,10 +373,14 @@ public class PlatformMetricsRegistry {
    * periodically to the configured reporters. Apart from the given tags, the reporting service's
    * default tags also will be reported with the metrics.
    *
-   * See https://micrometer.io/docs/concepts#_gauges for more details on the Gauges.
+   * <p>See https://micrometer.io/docs/concepts#_gauges for more details on the Gauges.
    */
-  public static <T extends Number> T registerGauge(String name, Map<String, String> tags, T number) {
-    Gauge.builder(name, number, Number::doubleValue).tags(toIterable(tags)).strongReference(true).register(meterRegistry);
+  public static <T extends Number> T registerGauge(
+      String name, Map<String, String> tags, T number) {
+    Gauge.builder(name, number, Number::doubleValue)
+        .tags(toIterable(tags))
+        .strongReference(true)
+        .register(meterRegistry);
     return number;
   }
 
@@ -364,10 +389,11 @@ public class PlatformMetricsRegistry {
    * name with the service's metric registry and reports it periodically to the configured
    * reporters. Apart from the provided tags, the reporting service's default tags also will be
    * reported with the metrics.
-   * <p>
-   * See https://micrometer.io/docs/concepts#_distribution_summaries for more details.
+   *
+   * <p>See https://micrometer.io/docs/concepts#_distribution_summaries for more details.
    */
-  public static DistributionSummary registerDistributionSummary(String name, Map<String, String> tags) {
+  public static DistributionSummary registerDistributionSummary(
+      String name, Map<String, String> tags) {
     return registerDistributionSummary(name, tags, false);
   }
 
@@ -375,13 +401,14 @@ public class PlatformMetricsRegistry {
    * Registers a DistributionSummary for the given name with the service's metric registry and
    * reports it periodically to the configured reporters Apart from the provided tags, the reporting
    * service's default tags also will be reported with the metrics.
-   * <p>
-   * Param histogram – Determines whether percentile histograms should be published.
-   * <p>
-   * For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
+   *
+   * <p>Param histogram – Determines whether percentile histograms should be published.
+   *
+   * <p>For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
    * https://micrometer.io/docs/concepts#_histograms_and_percentiles
    */
-  public static DistributionSummary registerDistributionSummary(String name, Map<String, String> tags, boolean histogram) {
+  public static DistributionSummary registerDistributionSummary(
+      String name, Map<String, String> tags, boolean histogram) {
     return registerDistributionSummary(name, tags, histogram, null, null);
   }
 
@@ -389,18 +416,28 @@ public class PlatformMetricsRegistry {
    * Registers a DistributionSummary for the given name with the service's metric registry and
    * reports it periodically to the configured reporters Apart from the provided tags, the reporting
    * service's default tags also will be reported with the metrics.
-   * <p>
-   * Param histogram – Determines whether percentile histograms should be published.
-   * <p>
-   * For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
+   *
+   * <p>Param histogram – Determines whether percentile histograms should be published.
+   *
+   * <p>For more details - https://micrometer.io/docs/concepts#_distribution_summaries,
    * https://micrometer.io/docs/concepts#_histograms_and_percentiles
    */
-  public static DistributionSummary registerDistributionSummary(String name, Map<String, String> tags, boolean histogram, Double minExpectedValue, Double maxExpectedValue) {
-    DistributionSummary.Builder builder = DistributionSummary.builder(name)
+  public static DistributionSummary registerDistributionSummary(
+      String name,
+      Map<String, String> tags,
+      boolean histogram,
+      Double minExpectedValue,
+      Double maxExpectedValue) {
+    DistributionSummary.Builder builder =
+        DistributionSummary.builder(name)
             .publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99)
             .tags(toIterable(tags));
     if (histogram) {
-      builder = builder.minimumExpectedValue(minExpectedValue).maximumExpectedValue(maxExpectedValue).publishPercentileHistogram();
+      builder =
+          builder
+              .minimumExpectedValue(minExpectedValue)
+              .maximumExpectedValue(maxExpectedValue)
+              .publishPercentileHistogram();
     }
     return builder.register(meterRegistry);
   }
@@ -409,9 +446,9 @@ public class PlatformMetricsRegistry {
    * Registers metrics for GuavaCaches using micrometer's GuavaCacheMetrics under the given
    * cacheName for the given guavaCache
    */
-  public static <K, V> void registerCache(String cacheName, Cache<K, V> guavaCache, Map<String, String> tags) {
+  public static <K, V> void registerCache(
+      String cacheName, Cache<K, V> guavaCache, Map<String, String> tags) {
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
-
   }
 
   /**
@@ -419,10 +456,10 @@ public class PlatformMetricsRegistry {
    * them periodically to the configured reporters. Apart from the given tags, the reporting
    * service's default tags also will be reported with the metrics.
    *
-   * See https://micrometer.io/docs/ref/jvm for more details on the metrics.
+   * <p>See https://micrometer.io/docs/ref/jvm for more details on the metrics.
    */
-  public static void monitorExecutorService(String name, ExecutorService executorService,
-      @Nullable Map<String, String> tags) {
+  public static void monitorExecutorService(
+      String name, ExecutorService executorService, @Nullable Map<String, String> tags) {
     new ExecutorServiceMetrics(executorService, name, toIterable(tags)).bindTo(meterRegistry);
   }
 
@@ -461,9 +498,9 @@ public class PlatformMetricsRegistry {
   }
 
   /*
-  * This is needed because ConsoleMetricReporter.stop() doesn't call report for the last time
-  * before closing the scheduled thread
-  */
+   * This is needed because ConsoleMetricReporter.stop() doesn't call report for the last time
+   * before closing the scheduled thread
+   */
   private static void stopConsoleMetricsReporter() {
     if (consoleReporter == null) {
       return;
@@ -475,13 +512,15 @@ public class PlatformMetricsRegistry {
   }
 
   private static void validate(Config config) {
-    List<String> reporters = getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY,
-        DEFAULT_METRICS_REPORTERS);
+    List<String> reporters =
+        getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY, DEFAULT_METRICS_REPORTERS);
     /* can't contain both prometheus pull and push mechanism */
-    if (reporters.contains(PROMETHEUS_REPORTER_NAME) &&
-        reporters.contains(PUSH_GATEWAY_REPORTER_NAME)) {
-      throw new IllegalArgumentException("Both prometheus and pushgateway are included in the "
-          + METRICS_REPORTER_NAMES_CONFIG_KEY + " configuration. Please choose one of them.");
+    if (reporters.contains(PROMETHEUS_REPORTER_NAME)
+        && reporters.contains(PUSH_GATEWAY_REPORTER_NAME)) {
+      throw new IllegalArgumentException(
+          "Both prometheus and pushgateway are included in the "
+              + METRICS_REPORTER_NAMES_CONFIG_KEY
+              + " configuration. Please choose one of them.");
     }
   }
 }

@@ -1,6 +1,5 @@
 package org.hypertrace.core.serviceframework;
 
-import com.typesafe.config.Config;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClients;
@@ -9,9 +8,7 @@ import org.hypertrace.core.serviceframework.config.ConfigClientFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Main class to launch any Platform service.
- */
+/** Main class to launch any Platform service. */
 public class PlatformServiceLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformServiceLauncher.class);
@@ -33,19 +30,23 @@ public class PlatformServiceLauncher {
   }
 
   private static void updateRuntime() {
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-      try {
-        PlatformService platformService = PlatformServiceLauncher.getPlatFormServiceApp();
-        if (platformService != null) {
-          platformService.shutdown();
-        }
-      } catch (Throwable e) {
-        System.err.println("Got exception while stopping PlatformService.");
-        e.printStackTrace();
-      } finally {
-        PlatformServiceLauncher.finalizeService();
-      }
-    }));
+    Runtime.getRuntime()
+        .addShutdownHook(
+            new Thread(
+                () -> {
+                  try {
+                    PlatformService platformService =
+                        PlatformServiceLauncher.getPlatFormServiceApp();
+                    if (platformService != null) {
+                      platformService.shutdown();
+                    }
+                  } catch (Throwable e) {
+                    System.err.println("Got exception while stopping PlatformService.");
+                    e.printStackTrace();
+                  } finally {
+                    PlatformServiceLauncher.finalizeService();
+                  }
+                }));
   }
 
   private static PlatformService getPlatFormServiceApp() {

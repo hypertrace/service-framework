@@ -13,5 +13,4 @@ public abstract class DynamicConfigClient implements ConfigClient {
    * @param callback the callback registered to the given configs change.
    */
   abstract void subscribeConfigChange(String configName, ConfigChangeCallback callback);
-
 }

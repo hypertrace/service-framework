@@ -7,15 +7,11 @@ import io.micrometer.core.instrument.config.validate.Validated;
 import io.micrometer.core.instrument.push.PushRegistryConfig;
 
 public interface PrometheusPushRegistryConfig extends PushRegistryConfig {
-  /**
-   * Batch job name as groupingKey for metrics in PushGateway
-   */
+  /** Batch job name as groupingKey for metrics in PushGateway */
   String jobName();
 
   @Override
   default Validated<?> validate() {
-    return checkAll(this,
-        checkRequired("jobName", PrometheusPushRegistryConfig::jobName)
-    );
+    return checkAll(this, checkRequired("jobName", PrometheusPushRegistryConfig::jobName));
   }
 }

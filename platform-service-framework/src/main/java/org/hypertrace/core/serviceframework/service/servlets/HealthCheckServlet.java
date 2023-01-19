@@ -1,10 +1,10 @@
 package org.hypertrace.core.serviceframework.service.servlets;
 
-import org.hypertrace.core.serviceframework.PlatformService;
 import java.io.IOException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.hypertrace.core.serviceframework.PlatformService;
 
 public class HealthCheckServlet extends HttpServlet {
 
@@ -17,8 +17,7 @@ public class HealthCheckServlet extends HttpServlet {
   }
 
   @Override
-  protected void doGet(HttpServletRequest req, HttpServletResponse resp)
-      throws IOException {
+  protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
     final boolean b = platformService.healthCheck();
     int status = b ? 200 : 500;
     String respStr = b ? "OK" : " BAD";
@@ -26,5 +25,4 @@ public class HealthCheckServlet extends HttpServlet {
     resp.setContentType(PLAIN_TEXT_UTF_8);
     resp.getOutputStream().print(respStr);
   }
-
 }

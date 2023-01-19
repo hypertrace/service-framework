@@ -9,10 +9,9 @@ import javax.management.ObjectName;
  */
 public class JVMDiagnosticCommand {
 
-  /**
-   * Object Name of DiagnosticCommandMBean.
-   */
-  public final static String DIAGNOSTIC_COMMAND_MBEAN_OBJECT_NAME = "com.sun.management:type=DiagnosticCommand";
+  /** Object Name of DiagnosticCommandMBean. */
+  public static final String DIAGNOSTIC_COMMAND_MBEAN_OBJECT_NAME =
+      "com.sun.management:type=DiagnosticCommand";
 
   private final MBeanServer server;
   private final ObjectName objectName;
@@ -41,8 +40,13 @@ public class JVMDiagnosticCommand {
   public String invoke(final Op operation, final String[] args) {
     String result;
     try {
-      result = (String) server.invoke(objectName, operation.apiOpName, new Object[]{args},
-          new String[]{String[].class.getName()});
+      result =
+          (String)
+              server.invoke(
+                  objectName,
+                  operation.apiOpName,
+                  new Object[] {args},
+                  new String[] {String[].class.getName()});
     } catch (Exception exception) {
       throw new RuntimeException(exception);
     }
@@ -50,8 +54,8 @@ public class JVMDiagnosticCommand {
   }
 
   /**
-   * Maintains the mapping between command-line and api operation names.
-   * If needed, this can be extended as well for other operation attributes like args types.
+   * Maintains the mapping between command-line and api operation names. If needed, this can be
+   * extended as well for other operation attributes like args types.
    */
   public enum Op {
     JVM_THREADS("threadPrint", "Thread.Print"),

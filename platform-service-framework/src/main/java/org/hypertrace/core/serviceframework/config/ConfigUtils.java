@@ -59,9 +59,8 @@ public class ConfigUtils {
   }
 
   /**
-   * Utility method to fetch the configuration at a given path as simple java properties.
-   * Assumes there is no nesting at the given path.
-   * All the values are converted to strings
+   * Utility method to fetch the configuration at a given path as simple java properties. Assumes
+   * there is no nesting at the given path. All the values are converted to strings
    *
    * @param config
    * @param path
@@ -71,16 +70,15 @@ public class ConfigUtils {
   public static Properties getPropertiesConfig(Config config, String path) {
     Properties properties = new Properties();
     Config subconfig = config.getConfig(path);
-    subconfig.entrySet().stream().forEach(
-        entry -> properties.setProperty(entry.getKey(), subconfig.getString(entry.getKey()))
-    );
+    subconfig.entrySet().stream()
+        .forEach(
+            entry -> properties.setProperty(entry.getKey(), subconfig.getString(entry.getKey())));
     return properties;
   }
 
   /**
-   * Utility method to fetch the configuration at a given path as simple flat java map of key value pairs.
-   * All the values are converted to strings.
-   * Assumes there is no nesting at the given path.
+   * Utility method to fetch the configuration at a given path as simple flat java map of key value
+   * pairs. All the values are converted to strings. Assumes there is no nesting at the given path.
    *
    * @param config
    * @param path
@@ -90,9 +88,8 @@ public class ConfigUtils {
   public static Map<String, String> getFlatMapConfig(Config config, String path) {
     Map<String, String> propertiesMap = new HashMap<>();
     Config subconfig = config.getConfig(path);
-    subconfig.entrySet().stream().forEach(
-        entry -> propertiesMap.put(entry.getKey(), subconfig.getString(entry.getKey()))
-    );
+    subconfig.entrySet().stream()
+        .forEach(entry -> propertiesMap.put(entry.getKey(), subconfig.getString(entry.getKey())));
     return propertiesMap;
   }
 
@@ -115,9 +112,16 @@ public class ConfigUtils {
     PrintWriter pw = new PrintWriter(writer);
     for (Map.Entry<Object, Object> entry : properties.entrySet()) {
       if (entry.getValue() instanceof Config) {
-        pw.println(entry.getKey() + "=" + ((Config) entry.getValue()).root().render(
-            ConfigRenderOptions.concise()
-                .setJson(true).setComments(false).setFormatted(true)));
+        pw.println(
+            entry.getKey()
+                + "="
+                + ((Config) entry.getValue())
+                    .root()
+                    .render(
+                        ConfigRenderOptions.concise()
+                            .setJson(true)
+                            .setComments(false)
+                            .setFormatted(true)));
       } else {
         pw.println(entry.getKey() + "=" + entry.getValue());
       }

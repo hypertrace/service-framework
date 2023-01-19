@@ -20,5 +20,4 @@ dependencies {
 
   annotationProcessor("org.projectlombok:lombok:1.18.24")
   compileOnly("org.projectlombok:lombok:1.18.24")
-
 }

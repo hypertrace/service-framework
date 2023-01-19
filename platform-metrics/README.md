@@ -4,13 +4,13 @@ Platform metrics library is a utility library to help with:
  * Make it easy to collect custom metrics in the service code very easily
  * Report all the metrics to either monitoring backends like Prometheus or
    log them to files, so that we can have access to metrics in all environments
-   
+
 The metric backends, report interval, and the default tags for all the metrics
 are configurable. Different reporters supported are:
  * prometheus
  * logging --> to log metrics into log files or console
  * testing --> in-memory reporter. Purely for unit tests.
- 
+
 The default metrics backend is "prometheus" with 30s reporting interval.
 
 ## Usage

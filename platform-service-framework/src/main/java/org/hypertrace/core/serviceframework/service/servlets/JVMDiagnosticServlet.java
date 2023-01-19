@@ -60,8 +60,8 @@ public class JVMDiagnosticServlet extends HttpServlet {
 
     final PrintWriter responseWriter = resp.getWriter();
     if (command == null) {
-      responseWriter
-          .println("Error: runtime environment does not allow to run diagnostic commands.");
+      responseWriter.println(
+          "Error: runtime environment does not allow to run diagnostic commands.");
       return;
     }
 
@@ -81,8 +81,7 @@ public class JVMDiagnosticServlet extends HttpServlet {
     processOp(operation, args, responseWriter);
   }
 
-  private void processHelpCommand(HttpServletRequest req,
-      PrintWriter responseWriter) {
+  private void processHelpCommand(HttpServletRequest req, PrintWriter responseWriter) {
     for (Entry<String, Op> entry : URI_TO_OP.entrySet()) {
       String relativePath = entry.getKey();
       Op op = entry.getValue();
@@ -93,7 +92,7 @@ public class JVMDiagnosticServlet extends HttpServlet {
       responseWriter.println("=================================================================");
       responseWriter.println("URI: " + req.getServletPath() + relativePath);
       responseWriter.println("=================================================================");
-      processOp(Op.HELP, new String[]{op.getCmdlineOpName()}, responseWriter);
+      processOp(Op.HELP, new String[] {op.getCmdlineOpName()}, responseWriter);
     }
   }
 

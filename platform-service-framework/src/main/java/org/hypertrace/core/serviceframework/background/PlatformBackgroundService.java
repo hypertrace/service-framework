@@ -1,13 +1,13 @@
 package org.hypertrace.core.serviceframework.background;
 
+import com.typesafe.config.Config;
 import org.hypertrace.core.serviceframework.PlatformService;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
-import com.typesafe.config.Config;
 import org.slf4j.Logger;
 
 /**
- * Abstract class for long running background services usually that consume from a Kafka topic and produce into
- * another. The workhorse is wrapped in an implementation of PlatformBackgroundJob.
+ * Abstract class for long running background services usually that consume from a Kafka topic and
+ * produce into another. The workhorse is wrapped in an implementation of PlatformBackgroundJob.
  */
 public abstract class PlatformBackgroundService extends PlatformService {
 
@@ -19,7 +19,6 @@ public abstract class PlatformBackgroundService extends PlatformService {
 
   @Override
   protected void doInit() {
-
 
     try {
       this.job = createBackgroundJob(getAppConfig());

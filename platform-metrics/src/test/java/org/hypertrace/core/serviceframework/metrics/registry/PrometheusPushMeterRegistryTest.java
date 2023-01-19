@@ -27,13 +27,18 @@ public class PrometheusPushMeterRegistryTest {
   public void test_init_metric_pushed() throws InterruptedException, IOException {
     PushGateway mockPushGateway = Mockito.mock(PushGateway.class);
     pushMeterRegistry = createDefault(mockPushGateway);
-    verifyWithRetry(200, 200, 3, () -> {
-      try {
-        verify(mockPushGateway, atLeastOnce()).pushAdd(any(CollectorRegistry.class), eq(JOB_NAME));
-      } catch (IOException e) {
-        fail("IOException is thrown when verifying metric push");
-      }
-    });
+    verifyWithRetry(
+        200,
+        200,
+        3,
+        () -> {
+          try {
+            verify(mockPushGateway, atLeastOnce())
+                .pushAdd(any(CollectorRegistry.class), eq(JOB_NAME));
+          } catch (IOException e) {
+            fail("IOException is thrown when verifying metric push");
+          }
+        });
     pushMeterRegistry.stop();
   }
 
@@ -47,30 +52,34 @@ public class PrometheusPushMeterRegistryTest {
   }
 
   private PrometheusPushMeterRegistry createDefault(PushGateway mockPushGateway) {
-    return new PrometheusPushMeterRegistry(new PrometheusPushRegistryConfig() {
-      @Override
-      public String jobName() {
-        return JOB_NAME;
-      }
+    return new PrometheusPushMeterRegistry(
+        new PrometheusPushRegistryConfig() {
+          @Override
+          public String jobName() {
+            return JOB_NAME;
+          }
 
-      @Override
-      public String prefix() {
-        return "test";
-      }
+          @Override
+          public String prefix() {
+            return "test";
+          }
 
-      @Override
-      public String get(String key) {
-        return null;
-      }
+          @Override
+          public String get(String key) {
+            return null;
+          }
 
-      @Override
-      public Duration step() {
-        return Duration.ofMillis(pushIntervalInMillis);
-      }
-     }, Executors.defaultThreadFactory(), mockPushGateway);
+          @Override
+          public Duration step() {
+            return Duration.ofMillis(pushIntervalInMillis);
+          }
+        },
+        Executors.defaultThreadFactory(),
+        mockPushGateway);
   }
 
-  private void verifyWithRetry(long initialDelayInMillis, long intervalInMillis, int maxRetries, Runnable runnable) {
+  private void verifyWithRetry(
+      long initialDelayInMillis, long intervalInMillis, int maxRetries, Runnable runnable) {
     try {
       sleep(initialDelayInMillis);
     } catch (InterruptedException e) {
@@ -78,7 +87,7 @@ public class PrometheusPushMeterRegistryTest {
     }
 
     int runCount = 0;
-    while (runCount <= maxRetries){
+    while (runCount <= maxRetries) {
       try {
         runnable.run();
         /* break immediately if it's successful */
@@ -96,6 +105,5 @@ public class PrometheusPushMeterRegistryTest {
       }
       runCount++;
     }
-
   }
 }
