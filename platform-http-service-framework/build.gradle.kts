@@ -11,6 +11,7 @@ dependencies {
   api("com.google.inject:guice:5.1.0")
   api(project(":service-framework-spi"))
 
+  implementation(project(":platform-metrics"))
   implementation("org.slf4j:slf4j-api:1.7.36")
   implementation("com.google.inject.extensions:guice-servlet:5.1.0")
   implementation("com.google.guava:guava:31.1-jre")
