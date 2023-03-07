@@ -3,21 +3,31 @@ package org.hypertrace.core.serviceframework.http;
 import static io.grpc.Deadline.after;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientInterceptor;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.grpcutils.client.GrpcChannelRegistry;
+import org.hypertrace.core.grpcutils.client.GrpcRegistryConfig;
 import org.hypertrace.core.serviceframework.PlatformService;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.http.jetty.JettyHttpServerBuilder;
+import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 
 @Slf4j
 public abstract class StandAloneHttpPlatformServiceContainer extends PlatformService {
   private HttpContainer container;
-  private final GrpcChannelRegistry grpcChannelRegistry = new GrpcChannelRegistry();
+  private final GrpcChannelRegistry grpcChannelRegistry;
 
   public StandAloneHttpPlatformServiceContainer(ConfigClient config) {
     super(config);
+    grpcChannelRegistry =
+        new GrpcChannelRegistry(
+            GrpcRegistryConfig.builder()
+                .defaultInterceptor(
+                    new MetricCollectingClientInterceptor(
+                        PlatformMetricsRegistry.getMeterRegistry()))
+                .build());
   }
 
   protected abstract List<HttpHandlerFactory> getHandlerFactories();
