@@ -24,6 +24,8 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.ErrorHandler;
+import org.eclipse.jetty.servlet.ErrorPageErrorHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
@@ -82,6 +84,7 @@ public class JettyHttpServerBuilder implements ServerBuilder<JettyHttpServerBuil
 
   private HttpConnectionFactory buildConnectionFactory(HttpHandlerDefinition handlerDefinition) {
     HttpConfiguration httpConfig = new HttpConfiguration();
+    httpConfig.setSendServerVersion(false);
     if (handlerDefinition.getMaxHeaderSizeBytes() > 0) {
       httpConfig.setRequestHeaderSize(handlerDefinition.getMaxHeaderSizeBytes());
     }
@@ -102,6 +105,10 @@ public class JettyHttpServerBuilder implements ServerBuilder<JettyHttpServerBuil
             ? ServletContextHandler.SESSIONS
             : ServletContextHandler.NO_SESSIONS;
     ServletContextHandler context = new ServletContextHandler(options);
+    ErrorHandler errorHandler = new ErrorPageErrorHandler();
+    errorHandler.setShowServlet(false);
+    errorHandler.setShowStacks(false);
+    context.setErrorHandler(errorHandler);
     this.buildCorsFilterIfRequired(handlerDefinition.getCorsConfig())
         .ifPresent(
             corsFilter ->
