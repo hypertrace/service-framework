@@ -1,14 +1,14 @@
 name: Publish artifacts
 on:
-# Will only run when release is published. 
+  # Will only run when release is published.
   release:
-    types: 
+    types:
       - created
   workflow_dispatch:
 
 jobs:
   publish-artifacts:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
@@ -16,21 +16,9 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: create checksum file
-        uses: hypertrace/github-actions/checksum@main
-
-      - name: Cache packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.gradle
-          key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
-          restore-keys: |
-            gradle-packages-${{ runner.os }}-${{ github.job }}
-            gradle-packages-${{ runner.os }}
-
       - name: publish java artifacts
         uses: hypertrace/github-actions/gradle@main
-        with: 
+        with:
           args: publish
         env:
           ORG_GRADLE_PROJECT_artifactory_contextUrl: ${{ secrets.ARTIFACTORY_CONTEXT_URL }}
