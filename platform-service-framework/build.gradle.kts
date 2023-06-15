@@ -23,7 +23,7 @@ dependencies {
       because("version 2.12.7.1 has a vulnerability https://snyk.io/vuln/SNYK-JAVA-COMFASTERXMLJACKSONCORE-3038424")
     }
   }
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.50.v20221201")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217")
 
   // Use for metrics servlet
   implementation("io.prometheus:simpleclient_servlet:0.12.0")
@@ -40,6 +40,6 @@ dependencies {
   testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.19.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")
-  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.50.v20221201:tests")
-  testImplementation("org.eclipse.jetty:jetty-http:9.4.50.v20221201:tests")
+  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217:tests")
+  testImplementation("org.eclipse.jetty:jetty-http:9.4.51.v20230217:tests")
 }

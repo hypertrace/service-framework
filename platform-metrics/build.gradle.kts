@@ -24,8 +24,8 @@ dependencies {
   implementation("io.prometheus:simpleclient_dropwizard:0.12.0")
   implementation("io.prometheus:simpleclient_servlet:0.12.0")
   implementation("io.prometheus:simpleclient_pushgateway:0.12.0")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.50.v20221201")
-  implementation("com.google.guava:guava:31.1-jre")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217")
+  implementation("com.google.guava:guava:32.0.1-jre")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")

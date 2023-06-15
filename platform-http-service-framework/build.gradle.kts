@@ -15,9 +15,9 @@ dependencies {
   implementation("org.slf4j:slf4j-api:1.7.36")
   implementation("com.google.inject.extensions:guice-servlet:5.1.0")
   implementation("com.google.guava:guava:31.1-jre")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.50.v20221201")
-  implementation("org.eclipse.jetty:jetty-server:9.4.50.v20221201")
-  implementation("org.eclipse.jetty:jetty-servlets:9.4.50.v20221201")
+  implementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217")
+  implementation("org.eclipse.jetty:jetty-server:9.4.51.v20230217")
+  implementation("org.eclipse.jetty:jetty-servlets:9.4.51.v20230217")
 
   annotationProcessor("org.projectlombok:lombok:1.18.24")
   compileOnly("org.projectlombok:lombok:1.18.24")
