@@ -11,7 +11,7 @@ jobs:
     steps:
        # Set fetch-depth: 0 to fetch commit history and tags for use in version calculation
       - name: Check out code
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
       
@@ -20,7 +20,7 @@ jobs:
 
       - name: Cache packages
         id: cache-packages
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.gradle
           key: gradle-packages-${{ runner.os }}-${{ github.job }}-${{ hashFiles('**/checksum.txt') }}
@@ -34,7 +34,7 @@ jobs:
           args: jacocoTestReport
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v3
         with:
           name: unit test reports
           fail_ci_if_error: true
@@ -46,7 +46,7 @@ jobs:
           args: copyAllReports --output-dir=/tmp/test-reports
 
       - name: Archive test reports
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v3
         with:
           name: test-reports
           path: /tmp/test-reports
