@@ -1,5 +1,7 @@
 name: test
 on:
+  schedule:
+    - cron: '18 12 * * 2'
   push:
     branches:
       - main
@@ -15,10 +17,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Unit test
+      - name: Build and test
         uses: hypertrace/github-actions/gradle@main
         with:
-          args: jacocoTestReport
+          args: build jacocoTestReport
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
@@ -29,6 +31,7 @@ jobs:
 
       - name: copy test reports
         uses: hypertrace/github-actions/gradle@main
+        if: failure()
         with:
           args: copyAllReports --output-dir=/tmp/test-reports
 
@@ -37,11 +40,11 @@ jobs:
         with:
           name: test-reports
           path: /tmp/test-reports
-        if: always()
+        if: failure()
 
       - name: Publish Unit Test Results
-        uses: docker://ghcr.io/enricomi/publish-unit-test-result-action:v1.6
-        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: (success() || failure()) && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           files: ./**/build/test-results/**/*.xml
