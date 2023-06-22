@@ -13,7 +13,7 @@ dependencies {
   api(project(":service-framework-spi"))
   implementation(project(":platform-metrics"))
 
-  api("org.slf4j:slf4j-api:1.7.36")
+  api("org.slf4j:slf4j-api:2.0.7")
   api("com.typesafe:config:1.4.2")
 
   // Use for thread dump servlet
@@ -37,7 +37,7 @@ dependencies {
     }
   }
 
-  testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.19.0")
+  testImplementation("org.apache.logging.log4j:log4j-slf4j2-impl:2.20.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")
   testImplementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217:tests")

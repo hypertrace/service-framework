@@ -18,6 +18,6 @@ dependencies {
   compileOnly("org.projectlombok:lombok:1.18.24")
 
   implementation(project(":platform-metrics"))
-  implementation("org.slf4j:slf4j-api:1.7.36")
+  implementation("org.slf4j:slf4j-api:2.0.7")
   implementation("org.hypertrace.core.grpcutils:grpc-server-utils:0.12.1")
 }

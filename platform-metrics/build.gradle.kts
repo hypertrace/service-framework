@@ -18,8 +18,7 @@ dependencies {
   implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
 
   implementation("io.github.mweirauch:micrometer-jvm-extras:0.2.2")
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  implementation("org.apache.logging.log4j:log4j-slf4j-impl:2.19.0")
+  implementation("org.slf4j:slf4j-api:2.0.7")
   implementation("io.dropwizard.metrics:metrics-jvm:4.2.16")
   implementation("io.prometheus:simpleclient_dropwizard:0.12.0")
   implementation("io.prometheus:simpleclient_servlet:0.12.0")

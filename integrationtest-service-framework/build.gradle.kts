@@ -15,6 +15,6 @@ dependencies {
   // Configuration
   implementation("com.typesafe:config:1.4.2")
   // Logging
-  implementation("org.slf4j:slf4j-api:1.7.36")
+  implementation("org.slf4j:slf4j-api:2.0.7")
   implementation("org.awaitility:awaitility:4.0.3")
 }
