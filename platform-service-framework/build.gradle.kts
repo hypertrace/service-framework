@@ -19,9 +19,7 @@ dependencies {
   // Use for thread dump servlet
   implementation("io.dropwizard.metrics:metrics-servlets:4.2.16")
   constraints {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.14.2") {
-      because("version 2.12.7.1 has a vulnerability https://snyk.io/vuln/SNYK-JAVA-COMFASTERXMLJACKSONCORE-3038424")
-    }
+    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
   }
   implementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217")
 

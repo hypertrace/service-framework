@@ -8,4 +8,11 @@
     <cpe>cpe:/a:grpc:grpc</cpe>
     <cpe>cpe:/a:utils_project:utils</cpe>
   </suppress>
+  <suppress>
+    <notes><![CDATA[
+   Not a real CVE.
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
+    <cve>CVE-2023-35116</cve>
+  </suppress>
 </suppressions> 
