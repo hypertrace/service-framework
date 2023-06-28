@@ -49,8 +49,9 @@ public class IntegrationTestServerUtil {
   }
 
   public static void shutdownServices() {
+    IntegrationTestServiceLauncher.shutdown();
+
     for (String service : services) {
-      IntegrationTestServiceLauncher.shutdown();
       Awaitility.await()
           .pollInterval(INTERVAL_CHECK_IN_MILLIS, TimeUnit.MILLISECONDS)
           .and()
