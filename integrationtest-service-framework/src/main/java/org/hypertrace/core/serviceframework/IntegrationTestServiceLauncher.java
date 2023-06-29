@@ -1,8 +1,10 @@
 package org.hypertrace.core.serviceframework;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.Queue;
+import java.util.stream.Stream;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.config.IntegrationTestConfigClientFactory;
 import org.slf4j.Logger;
@@ -19,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public class IntegrationTestServiceLauncher {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(PlatformServiceLauncher.class);
-  private static final List<PlatformService> PLATFORM_SERVICES = new ArrayList<>();
+  private static final Queue<PlatformService> PLATFORM_SERVICES = new LinkedList<>();
 
   public static void launchService(Optional<String> testName, String serviceName) {
     try {
@@ -28,7 +30,6 @@ public class IntegrationTestServiceLauncher {
           IntegrationTestConfigClientFactory.getConfigClientForService(testName, serviceName);
       PlatformService app = PlatformServiceFactory.get(configClient);
       app.initialize();
-      Runtime.getRuntime().addShutdownHook(new Thread(app::shutdown));
       PLATFORM_SERVICES.add(app);
       app.start();
     } catch (Exception e) {
@@ -37,6 +38,8 @@ public class IntegrationTestServiceLauncher {
   }
 
   static void shutdown() {
-    PLATFORM_SERVICES.forEach(PlatformService::shutdown);
+    Stream.generate(PLATFORM_SERVICES::poll)
+        .takeWhile(Objects::nonNull)
+        .forEach(PlatformService::shutdown);
   }
 }
