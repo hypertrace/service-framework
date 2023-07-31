@@ -133,12 +133,12 @@ public abstract class PlatformService {
     context.addServlet(new ServletHolder(new JVMDiagnosticServlet()), "/diags/*");
 
     final Thread thread = new Thread(this::doStart);
+    thread.setUncaughtExceptionHandler(
+        (threadWithException, exception) -> this.shutdownWithError(exception));
     try {
       thread.start();
     } catch (Exception e) {
-      LOGGER.error("Failed to start thread for application.", e);
-      System.exit(1);
-      throw e;
+      this.shutdownWithError(e);
     }
 
     // Start the webserver.
@@ -152,9 +152,7 @@ public abstract class PlatformService {
       thread.join();
       adminServer.join();
     } catch (Exception e) {
-      LOGGER.error("Failed to start service servlet.");
-      this.shutdown();
-      System.exit(1);
+      this.shutdownWithError(e);
     }
   }
 
@@ -189,5 +187,15 @@ public abstract class PlatformService {
     LOGGER.info("Stopping metrics registry");
     PlatformMetricsRegistry.stop();
     LOGGER.info("Service - {} is shutdown.", getServiceName());
+  }
+
+  private void shutdownWithError(Throwable exception) {
+    LOGGER.error("Shutting down due to unrecoverable exception", exception);
+    try {
+      this.shutdown();
+    } catch (Exception e) {
+      // Ignore if failed to shut down
+    }
+    System.exit(1);
   }
 }
