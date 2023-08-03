@@ -26,17 +26,6 @@ public class ConfigUtils {
     }
   }
 
-  private static Object redactValueIfRequired(final Entry<String, ConfigValue> entry) {
-    final ConfigValue value = entry.getValue();
-
-    if (value.valueType() == ConfigValueType.STRING
-        && SECRET_KEYS.stream().anyMatch(keyName -> entry.getKey().contains(keyName))) {
-      return "*** REDACTED ***";
-    }
-
-    return value;
-  }
-
   public static String getStringConfig(Config config, String path, String defaultVal) {
     if (config.hasPath(path)) {
       return config.getString(path);
@@ -141,5 +130,19 @@ public class ConfigUtils {
       }
     }
     return writer.toString();
+  }
+
+  private static Object redactValueIfRequired(final Entry<String, ConfigValue> entry) {
+    final ConfigValue value = entry.getValue();
+
+    if (value.valueType() == ConfigValueType.STRING && isSecretKey(entry.getKey())) {
+      return "*** REDACTED ***";
+    }
+
+    return value;
+  }
+
+  private static boolean isSecretKey(final String key) {
+    return SECRET_KEYS.stream().anyMatch(key::contains);
   }
 }
