@@ -3,7 +3,6 @@ package org.hypertrace.core.serviceframework.config;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigRenderOptions;
 import com.typesafe.config.ConfigValue;
-import com.typesafe.config.ConfigValueType;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -11,18 +10,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ConfigUtils {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ConfigUtils.class);
-  private static final Set<String> SECRET_KEYS = Set.of("password", "secret");
+  private static Logger LOGGER = LoggerFactory.getLogger(ConfigUtils.class);
 
   public static void logConfFile(Config configs) {
     for (Entry<String, ConfigValue> entry : configs.entrySet()) {
-      LOGGER.info("{} = {}", entry.getKey(), redactValueIfRequired(entry));
+      LOGGER.info("{} = {}", entry.getKey(), entry.getValue());
     }
   }
 
@@ -130,19 +127,5 @@ public class ConfigUtils {
       }
     }
     return writer.toString();
-  }
-
-  private static Object redactValueIfRequired(final Entry<String, ConfigValue> entry) {
-    final ConfigValue value = entry.getValue();
-
-    if (value.valueType() == ConfigValueType.STRING && isSecretKey(entry.getKey())) {
-      return "*** REDACTED ***";
-    }
-
-    return value;
-  }
-
-  private static boolean isSecretKey(final String key) {
-    return SECRET_KEYS.stream().anyMatch(key::contains);
   }
 }

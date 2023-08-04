@@ -59,13 +59,14 @@ public class DirectoryBasedConfigClient implements ConfigClient {
 
   @Override
   public Config getConfig(String service, String cluster, String pod, String container) {
-    final Config resolvedConfig = loadConfigs(service, cluster, pod, container);
+    final Config unresolvedConfig = loadUnresolvedConfig(service, cluster, pod, container);
     LOGGER.info("Overrided Configs are listed below:");
-    ConfigUtils.logConfFile(resolvedConfig);
-    return resolvedConfig;
+    ConfigUtils.logConfFile(unresolvedConfig);
+    return unresolvedConfig.resolve();
   }
 
-  private Config loadConfigs(String service, String cluster, String pod, String container) {
+  private Config loadUnresolvedConfig(
+      String service, String cluster, String pod, String container) {
     LOGGER.info("Trying to compile configs under directory: {}", baseDir);
     Config serviceLevelConf =
         getConfigFromPath(String.format("%s/%s", baseDir, service))
@@ -89,8 +90,7 @@ public class DirectoryBasedConfigClient implements ConfigClient {
     return containerLevelConf
         .withFallback(podLevelConf)
         .withFallback(clusterLevelConf)
-        .withFallback(serviceLevelConf)
-        .resolve();
+        .withFallback(serviceLevelConf);
   }
 
   private Config getConfigFromPath(String configDir) {
