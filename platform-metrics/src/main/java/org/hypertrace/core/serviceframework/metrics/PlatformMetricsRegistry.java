@@ -454,7 +454,7 @@ public class PlatformMetricsRegistry {
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
   }
 
-  public static void monitorDatabase(
+  public static void monitorDatastore(
       final Datastore datastore,
       final List<CustomMetricReportingConfig> metrics,
       final int numThreadsInPool) {

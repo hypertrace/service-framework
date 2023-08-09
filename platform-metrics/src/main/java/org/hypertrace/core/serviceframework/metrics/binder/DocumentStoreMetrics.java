@@ -2,10 +2,13 @@ package org.hypertrace.core.serviceframework.metrics.binder;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.collectingAndThen;
+import static java.util.stream.Collectors.toUnmodifiableList;
 
 import io.micrometer.common.lang.NonNull;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.binder.MeterBinder;
 import java.time.Duration;
@@ -22,6 +25,7 @@ public class DocumentStoreMetrics implements MeterBinder {
   private final List<CustomMetricReportingConfig> reportingConfigs;
   private final ScheduledExecutorService executors;
   private final Duration connectionCountReportingInterval = Duration.ofDays(1);
+  private final long initialDelay = MINUTES.toSeconds(5);
 
   public DocumentStoreMetrics(
       final Datastore datastore,
@@ -35,11 +39,12 @@ public class DocumentStoreMetrics implements MeterBinder {
   @Override
   public void bindTo(@NonNull final MeterRegistry registry) {
     final DocStoreMetricProvider source = datastore.getDocStoreMetricProvider();
-    executors.scheduleAtFixedRate(
-        () -> report(source.getConnectionCountMetric(), registry),
-        MINUTES.toSeconds(5),
-        connectionCountReportingInterval.toSeconds(),
-        SECONDS);
+    reportCustomMetrics(source, registry);
+    reportConnectionCount(source, registry);
+  }
+
+  private void reportCustomMetrics(
+      final DocStoreMetricProvider source, final MeterRegistry registry) {
     reportingConfigs.forEach(
         reportingConfig ->
             executors.scheduleAtFixedRate(
@@ -47,16 +52,25 @@ public class DocumentStoreMetrics implements MeterBinder {
                     source
                         .getCustomMetrics(reportingConfig.config)
                         .forEach(metric -> report(metric, registry)),
-                MINUTES.toSeconds(5),
+                initialDelay,
                 reportingConfig.reportingInterval.toSeconds(),
                 SECONDS));
+  }
+
+  private void reportConnectionCount(
+      final DocStoreMetricProvider source, final MeterRegistry registry) {
+    executors.scheduleAtFixedRate(
+        () -> report(source.getConnectionCountMetric(), registry),
+        MINUTES.toSeconds(5),
+        connectionCountReportingInterval.toSeconds(),
+        SECONDS);
   }
 
   private void report(final DocStoreMetric metric, final MeterRegistry registry) {
     final Tags tags =
         metric.labels().entrySet().stream()
-            .map(entry -> Tags.of(entry.getKey(), entry.getValue()))
-            .reduce(Tags.empty(), Tags::and);
+            .map(entry -> Tag.of(entry.getKey(), entry.getValue()))
+            .collect(collectingAndThen(toUnmodifiableList(), Tags::of));
     Gauge.builder(metric.name(), metric::value).tags(tags).register(registry);
   }
 
