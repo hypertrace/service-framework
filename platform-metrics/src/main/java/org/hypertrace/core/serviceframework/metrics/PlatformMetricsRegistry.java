@@ -49,6 +49,9 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import org.hypertrace.core.documentstore.Datastore;
+import org.hypertrace.core.serviceframework.metrics.binder.DocumentStoreMetrics;
+import org.hypertrace.core.serviceframework.metrics.binder.DocumentStoreMetrics.CustomMetricReportingConfig;
 import org.hypertrace.core.serviceframework.metrics.config.PrometheusPushRegistryConfig;
 import org.hypertrace.core.serviceframework.metrics.registry.PrometheusPushMeterRegistry;
 import org.slf4j.Logger;
@@ -449,6 +452,13 @@ public class PlatformMetricsRegistry {
   public static <K, V> void registerCache(
       String cacheName, Cache<K, V> guavaCache, Map<String, String> tags) {
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
+  }
+
+  public static void monitorDatabase(
+      final Datastore datastore,
+      final List<CustomMetricReportingConfig> metrics,
+      final int numThreadsInPool) {
+    new DocumentStoreMetrics(datastore, metrics, numThreadsInPool).bindTo(meterRegistry);
   }
 
   /**
