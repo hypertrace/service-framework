@@ -25,7 +25,7 @@ public class DocumentStoreMetrics implements MeterBinder {
   private final List<CustomMetricReportingConfig> reportingConfigs;
   private final ScheduledExecutorService executors;
   private final Duration connectionCountReportingInterval = Duration.ofDays(1);
-  private final long initialDelay = MINUTES.toSeconds(5);
+  private final long initialDelaySeconds = MINUTES.toSeconds(5);
 
   public DocumentStoreMetrics(
       final Datastore datastore,
@@ -40,7 +40,7 @@ public class DocumentStoreMetrics implements MeterBinder {
   public void bindTo(@NonNull final MeterRegistry registry) {
     final DocStoreMetricProvider source = datastore.getDocStoreMetricProvider();
     reportCustomMetrics(source, registry);
-    reportConnectionCount(source, registry);
+    reportConnectionCountMetric(source, registry);
   }
 
   private void reportCustomMetrics(
@@ -52,16 +52,16 @@ public class DocumentStoreMetrics implements MeterBinder {
                     source
                         .getCustomMetrics(reportingConfig.config)
                         .forEach(metric -> report(metric, registry)),
-                initialDelay,
+                initialDelaySeconds,
                 reportingConfig.reportingInterval.toSeconds(),
                 SECONDS));
   }
 
-  private void reportConnectionCount(
+  private void reportConnectionCountMetric(
       final DocStoreMetricProvider source, final MeterRegistry registry) {
     executors.scheduleAtFixedRate(
         () -> report(source.getConnectionCountMetric(), registry),
-        MINUTES.toSeconds(5),
+        initialDelaySeconds,
         connectionCountReportingInterval.toSeconds(),
         SECONDS);
   }
