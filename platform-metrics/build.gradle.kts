@@ -26,7 +26,6 @@ dependencies {
   implementation("io.prometheus:simpleclient_pushgateway:0.12.0")
   implementation("org.eclipse.jetty:jetty-servlet:9.4.51.v20230217")
   implementation("com.google.guava:guava:32.0.1-jre")
-  implementation("org.hypertrace.core.documentstore:document-store:0.7.37-SNAPSHOT")
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")
