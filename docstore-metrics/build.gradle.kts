@@ -9,6 +9,6 @@ dependencies {
   annotationProcessor(libs.lombok)
   compileOnly(libs.lombok)
 
+  api(libs.hypertrace.documentStore)
   implementation(project(":platform-metrics"))
-  implementation(libs.hypertrace.documentStore)
 }
