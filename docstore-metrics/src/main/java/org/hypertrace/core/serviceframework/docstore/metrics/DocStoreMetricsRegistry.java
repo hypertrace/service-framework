@@ -25,7 +25,7 @@ public class DocStoreMetricsRegistry {
    * reported immediately after this method is invoked and subsequently reported once in every 24
    * hours.
    *
-   * <p>The custom metrics are reported at the interval scheduled per metric
+   * <p>The custom metrics are reported at the interval scheduled per metric.
    *
    * @param datastore The datastore to be monitored
    * @param reportingConfigs The custom metric configurations to be reported, if any
@@ -47,7 +47,7 @@ public class DocStoreMetricsRegistry {
   }
 
   /**
-   * Instantly query the datastore and report the custom metric once
+   * Instantly query the datastore and report the custom metric once.
    *
    * @param datastore The datastore to be queried
    * @param customMetricConfig The custom metric configuration to be reported
