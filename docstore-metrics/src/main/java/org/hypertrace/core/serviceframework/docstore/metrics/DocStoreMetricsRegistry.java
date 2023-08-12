@@ -81,7 +81,7 @@ public class DocStoreMetricsRegistry {
     metricProvider.getCustomMetrics(customMetricConfig).forEach(this::report);
   }
 
-  private void addShutdownHook(ScheduledExecutorService executor) {
+  private void addShutdownHook(final ScheduledExecutorService executor) {
     if (platformLifecycle != null) {
       platformLifecycle.shutdownComplete().thenRun(executor::shutdown);
     }
