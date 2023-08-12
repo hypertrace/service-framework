@@ -25,36 +25,49 @@ public class DocStoreMetricsRegistry {
   @Nullable private PlatformServiceLifecycle platformLifecycle;
   private int threadPoolSize;
   private List<DocStoreCustomMetricReportingConfig> customMetricConfigs;
-  private Duration standardMetricReportingInterval;
+  private Duration standardMetricsReportingInterval;
 
   public DocStoreMetricsRegistry(final Datastore datastore) {
     metricProvider = datastore.getDocStoreMetricProvider();
     platformLifecycle = null;
     threadPoolSize = 1;
     customMetricConfigs = emptyList();
-    standardMetricReportingInterval = Duration.ofMinutes(30);
+    standardMetricsReportingInterval = Duration.ofMinutes(30);
   }
 
+  /**
+   * Supply the platform lifecycle to stop monitoring the datastore when the service is shutting
+   * down
+   */
   public DocStoreMetricsRegistry withPlatformLifecycle(
       final PlatformServiceLifecycle platformLifecycle) {
     this.platformLifecycle = platformLifecycle;
     return this;
   }
 
+  /** Define the custom metrics to be reported */
   public DocStoreMetricsRegistry withCustomMetrics(
       final List<DocStoreCustomMetricReportingConfig> customMetricConfigs) {
     this.customMetricConfigs = customMetricConfigs;
     return this;
   }
 
+  /**
+   * Override the number of threads dedicated for datastore metric reporting. The default value is
+   * 1.
+   */
   public DocStoreMetricsRegistry withThreadPoolSize(final int threadPoolSize) {
     this.threadPoolSize = threadPoolSize;
     return this;
   }
 
-  public DocStoreMetricsRegistry withStandardMetricReportingInterval(
-      final Duration standardMetricReportingInterval) {
-    this.standardMetricReportingInterval = standardMetricReportingInterval;
+  /**
+   * Override the reporting interval of the standard datastore metrics. The default value is 30
+   * minutes.
+   */
+  public DocStoreMetricsRegistry withStandardMetricsReportingInterval(
+      final Duration standardMetricsReportingInterval) {
+    this.standardMetricsReportingInterval = standardMetricsReportingInterval;
     return this;
   }
 
@@ -63,9 +76,9 @@ public class DocStoreMetricsRegistry {
    *
    * <p>The standard metrics (like the database connection count this service is holding) are
    * reported immediately after this method is invoked and subsequently reported at the standard
-   * metrics reporting interval (configurable using {@link #withStandardMetricReportingInterval)})
+   * metrics reporting interval (configurable using {@link #withStandardMetricsReportingInterval})
    *
-   * <p>The custom metrics, provided through {@link #withCustomMetrics)}, are reported immediately
+   * <p>The custom metrics, provided through {@link #withCustomMetrics}, are reported immediately
    * after this method is invoked and subsequently reported at the interval scheduled per metric.
    */
   public void monitor() {
@@ -115,7 +128,7 @@ public class DocStoreMetricsRegistry {
       executor.scheduleAtFixedRate(
           this::queryDocStoreAndSetMetricValues,
           INITIAL_DELAY_SECONDS,
-          standardMetricReportingInterval.toSeconds(),
+          standardMetricsReportingInterval.toSeconds(),
           SECONDS);
     }
 
