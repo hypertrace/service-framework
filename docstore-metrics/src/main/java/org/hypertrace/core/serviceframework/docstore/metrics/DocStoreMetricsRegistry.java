@@ -62,10 +62,11 @@ public class DocStoreMetricsRegistry {
    * Continuously monitor a database and periodically report (standard and custom) metrics.
    *
    * <p>The standard metrics (like the database connection count this service is holding) are
-   * reported immediately after this method is invoked and subsequently reported once in every 24
-   * hours.
+   * reported immediately after this method is invoked and subsequently reported at the standard
+   * metrics reporting interval (configurable using {@link #withStandardMetricReportingInterval)})
    *
-   * <p>The custom metrics are reported at the interval scheduled per metric.
+   * <p>The custom metrics, provided through {@link #withCustomMetrics)}, are reported immediately
+   * after this method is invoked and subsequently reported at the interval scheduled per metric.
    */
   public void monitor() {
     final ScheduledExecutorService executor = Executors.newScheduledThreadPool(threadPoolSize);
