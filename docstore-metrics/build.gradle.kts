@@ -10,5 +10,6 @@ dependencies {
   compileOnly(libs.lombok)
 
   api(libs.hypertrace.documentStore)
+  api(project(":service-framework-spi"))
   implementation(project(":platform-metrics"))
 }

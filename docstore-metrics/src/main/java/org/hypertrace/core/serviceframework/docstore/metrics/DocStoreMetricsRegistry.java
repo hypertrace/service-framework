@@ -1,8 +1,10 @@
 package org.hypertrace.core.serviceframework.docstore.metrics;
 
+import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
+import io.micrometer.common.lang.Nullable;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -13,93 +15,111 @@ import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
 import org.hypertrace.core.documentstore.model.config.CustomMetricConfig;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
+import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
 @SuppressWarnings("unused")
 public class DocStoreMetricsRegistry {
-  private static final long initialDelaySeconds = MINUTES.toSeconds(5);
+  private static final long INITIAL_DELAY_SECONDS = MINUTES.toSeconds(5);
+
+  private final DocStoreMetricProvider metricProvider;
+  @Nullable private PlatformServiceLifecycle platformLifecycle;
+  private int threadPoolSize;
+  private List<DocStoreCustomMetricReportingConfig> customMetricConfigs;
+  private Duration standardMetricReportingInterval;
+
+  public DocStoreMetricsRegistry(final Datastore datastore) {
+    metricProvider = datastore.getDocStoreMetricProvider();
+    platformLifecycle = null;
+    threadPoolSize = 1;
+    customMetricConfigs = emptyList();
+    standardMetricReportingInterval = Duration.ofMinutes(30);
+  }
+
+  public DocStoreMetricsRegistry withPlatformLifecycle(
+      final PlatformServiceLifecycle platformLifecycle) {
+    this.platformLifecycle = platformLifecycle;
+    return this;
+  }
+
+  public DocStoreMetricsRegistry withCustomMetrics(
+      final List<DocStoreCustomMetricReportingConfig> customMetricConfigs) {
+    this.customMetricConfigs = customMetricConfigs;
+    return this;
+  }
+
+  public DocStoreMetricsRegistry withThreadPoolSize(final int threadPoolSize) {
+    this.threadPoolSize = threadPoolSize;
+    return this;
+  }
+
+  public DocStoreMetricsRegistry withStandardMetricReportingInterval(
+      final Duration standardMetricReportingInterval) {
+    this.standardMetricReportingInterval = standardMetricReportingInterval;
+    return this;
+  }
 
   /**
-   * To continuously monitor a database and periodically report (standard and custom) metrics.
+   * Continuously monitor a database and periodically report (standard and custom) metrics.
    *
    * <p>The standard metrics (like the database connection count this service is holding) are
    * reported immediately after this method is invoked and subsequently reported once in every 24
    * hours.
    *
    * <p>The custom metrics are reported at the interval scheduled per metric.
-   *
-   * @param datastore The datastore to be monitored
-   * @param reportingConfigs The custom metric configurations to be reported, if any
-   * @param threadPoolSize The number of threads to be allocated for scheduling. Can just be 1 in
-   *     most cases
-   * @return The created scheduled executor pool
    */
-  public static ScheduledExecutorService monitor(
-      final Datastore datastore,
-      final List<DocStoreCustomMetricReportingConfig> reportingConfigs,
-      final int threadPoolSize) {
-    final DocStoreMetricProvider source = datastore.getDocStoreMetricProvider();
+  public void monitor() {
     final ScheduledExecutorService executor = Executors.newScheduledThreadPool(threadPoolSize);
 
-    new StandardDocStoreMetricsRegistry(source, executor).monitor();
-    monitorCustomMetrics(datastore, reportingConfigs, executor);
+    addShutdownHook(executor);
 
-    return executor;
+    new StandardDocStoreMetricsRegistry(executor).monitor();
+    monitorCustomMetrics(executor);
   }
 
-  /**
-   * Instantly query the datastore and report the custom metric once.
-   *
-   * @param datastore The datastore to be queried
-   * @param customMetricConfig The custom metric configuration to be reported
-   */
-  public static void report(
-      final Datastore datastore, final CustomMetricConfig customMetricConfig) {
-    final DocStoreMetricProvider source = datastore.getDocStoreMetricProvider();
-    source.getCustomMetrics(customMetricConfig).forEach(DocStoreMetricsRegistry::report);
+  /** Instantly query the datastore and report the custom metric once */
+  public void report(final CustomMetricConfig customMetricConfig) {
+    metricProvider.getCustomMetrics(customMetricConfig).forEach(this::report);
   }
 
-  private static void monitorCustomMetrics(
-      final Datastore datastore,
-      final List<DocStoreCustomMetricReportingConfig> reportingConfigs,
-      final ScheduledExecutorService executor) {
-    reportingConfigs.forEach(
+  private void addShutdownHook(ScheduledExecutorService executor) {
+    if (platformLifecycle != null) {
+      platformLifecycle.shutdownComplete().thenRun(executor::shutdown);
+    }
+  }
+
+  private void monitorCustomMetrics(final ScheduledExecutorService executor) {
+    customMetricConfigs.forEach(
         reportingConfig ->
             executor.scheduleAtFixedRate(
-                () -> report(datastore, reportingConfig.config()),
-                initialDelaySeconds,
+                () -> report(reportingConfig.config()),
+                INITIAL_DELAY_SECONDS,
                 reportingConfig.reportingInterval().toSeconds(),
                 SECONDS));
   }
 
-  private static void report(final DocStoreMetric metric) {
+  private void report(final DocStoreMetric metric) {
     PlatformMetricsRegistry.registerGauge(metric.name(), metric.labels(), metric.value());
   }
 
-  private static class StandardDocStoreMetricsRegistry {
-    private static final Duration dbMetricReportingInterval = Duration.ofDays(1);
-
-    private final DocStoreMetricProvider source;
+  private class StandardDocStoreMetricsRegistry {
     private final ScheduledExecutorService executor;
     private final AtomicLong connectionCount;
 
-    public StandardDocStoreMetricsRegistry(
-        final DocStoreMetricProvider source, final ScheduledExecutorService executor) {
-      this.source = source;
+    public StandardDocStoreMetricsRegistry(final ScheduledExecutorService executor) {
       this.executor = executor;
-
       this.connectionCount = registerConnectionCountMetric();
     }
 
     private void monitor() {
       executor.scheduleAtFixedRate(
           this::queryDocStoreAndSetMetricValues,
-          initialDelaySeconds,
-          dbMetricReportingInterval.toSeconds(),
+          INITIAL_DELAY_SECONDS,
+          standardMetricReportingInterval.toSeconds(),
           SECONDS);
     }
 
     private AtomicLong registerConnectionCountMetric() {
-      final DocStoreMetric docStoreMetric = source.getConnectionCountMetric();
+      final DocStoreMetric docStoreMetric = metricProvider.getConnectionCountMetric();
       return PlatformMetricsRegistry.registerGauge(
           docStoreMetric.name(),
           docStoreMetric.labels(),
@@ -107,7 +127,7 @@ public class DocStoreMetricsRegistry {
     }
 
     private void queryDocStoreAndSetMetricValues() {
-      connectionCount.set(castToLong(source.getConnectionCountMetric().value()));
+      connectionCount.set(castToLong(metricProvider.getConnectionCountMetric().value()));
     }
 
     private long castToLong(final double value) {
