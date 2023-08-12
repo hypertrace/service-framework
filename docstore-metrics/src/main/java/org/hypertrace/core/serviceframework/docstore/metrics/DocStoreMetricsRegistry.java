@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
+import lombok.NonNull;
 import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
@@ -27,7 +28,7 @@ public class DocStoreMetricsRegistry {
   private List<DocStoreCustomMetricReportingConfig> customMetricConfigs;
   private Duration standardMetricsReportingInterval;
 
-  public DocStoreMetricsRegistry(final Datastore datastore) {
+  public DocStoreMetricsRegistry(@NonNull final Datastore datastore) {
     metricProvider = datastore.getDocStoreMetricProvider();
     platformLifecycle = null;
     threadPoolSize = 1;
@@ -47,7 +48,7 @@ public class DocStoreMetricsRegistry {
 
   /** Define the custom metrics to be reported */
   public DocStoreMetricsRegistry withCustomMetrics(
-      final List<DocStoreCustomMetricReportingConfig> customMetricConfigs) {
+      @NonNull final List<DocStoreCustomMetricReportingConfig> customMetricConfigs) {
     this.customMetricConfigs = customMetricConfigs;
     return this;
   }
@@ -66,7 +67,7 @@ public class DocStoreMetricsRegistry {
    * minutes.
    */
   public DocStoreMetricsRegistry withStandardMetricsReportingInterval(
-      final Duration standardMetricsReportingInterval) {
+      @NonNull final Duration standardMetricsReportingInterval) {
     this.standardMetricsReportingInterval = standardMetricsReportingInterval;
     return this;
   }
