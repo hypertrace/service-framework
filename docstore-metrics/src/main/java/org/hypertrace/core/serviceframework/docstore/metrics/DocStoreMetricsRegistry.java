@@ -27,6 +27,7 @@ public class DocStoreMetricsRegistry {
   private int threadPoolSize;
   private List<DocStoreCustomMetricReportingConfig> customMetricConfigs;
   private Duration standardMetricsReportingInterval;
+  private ScheduledExecutorService executor;
 
   public DocStoreMetricsRegistry(@NonNull final Datastore datastore) {
     metricProvider = datastore.getDocStoreMetricProvider();
@@ -83,12 +84,13 @@ public class DocStoreMetricsRegistry {
    * after this method is invoked and subsequently reported at the interval scheduled per metric.
    */
   public void monitor() {
-    final ScheduledExecutorService executor = Executors.newScheduledThreadPool(threadPoolSize);
+    shutdown();
+    executor = Executors.newScheduledThreadPool(threadPoolSize);
 
-    addShutdownHook(executor);
+    addShutdownHook();
 
-    new StandardDocStoreMetricsRegistry(executor).monitor();
-    monitorCustomMetrics(executor);
+    new StandardDocStoreMetricsRegistry().monitor();
+    monitorCustomMetrics();
   }
 
   /** Instantly query the datastore and report the custom metric once */
@@ -96,13 +98,20 @@ public class DocStoreMetricsRegistry {
     metricProvider.getCustomMetrics(customMetricConfig).forEach(this::report);
   }
 
-  private void addShutdownHook(final ScheduledExecutorService executor) {
-    if (platformLifecycle != null) {
-      platformLifecycle.shutdownComplete().thenRun(executor::shutdown);
+  /** Stop monitoring the database */
+  public void shutdown() {
+    if (executor != null) {
+      executor.shutdown();
     }
   }
 
-  private void monitorCustomMetrics(final ScheduledExecutorService executor) {
+  private void addShutdownHook() {
+    if (platformLifecycle != null) {
+      platformLifecycle.shutdownComplete().thenRun(this::shutdown);
+    }
+  }
+
+  private void monitorCustomMetrics() {
     customMetricConfigs.forEach(
         reportingConfig ->
             executor.scheduleAtFixedRate(
@@ -117,11 +126,9 @@ public class DocStoreMetricsRegistry {
   }
 
   private class StandardDocStoreMetricsRegistry {
-    private final ScheduledExecutorService executor;
     private final AtomicLong connectionCount;
 
-    public StandardDocStoreMetricsRegistry(final ScheduledExecutorService executor) {
-      this.executor = executor;
+    public StandardDocStoreMetricsRegistry() {
       this.connectionCount = registerConnectionCountMetric();
     }
 
