@@ -7,8 +7,8 @@ import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientIntercept
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
-import org.hypertrace.core.grpcutils.client.GrpcChannelRegistry;
 import org.hypertrace.core.grpcutils.client.GrpcRegistryConfig;
+import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
 import org.hypertrace.core.serviceframework.PlatformService;
 import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.http.jetty.JettyHttpServerBuilder;
@@ -17,12 +17,12 @@ import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 @Slf4j
 public abstract class StandAloneHttpPlatformServiceContainer extends PlatformService {
   private HttpContainer container;
-  private final GrpcChannelRegistry grpcChannelRegistry;
+  private final InProcessGrpcChannelRegistry grpcChannelRegistry;
 
   public StandAloneHttpPlatformServiceContainer(ConfigClient config) {
     super(config);
     grpcChannelRegistry =
-        new GrpcChannelRegistry(
+        new InProcessGrpcChannelRegistry(
             GrpcRegistryConfig.builder()
                 .defaultInterceptor(
                     new MetricCollectingClientInterceptor(
