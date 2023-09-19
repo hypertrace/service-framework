@@ -15,4 +15,14 @@
     <packageUrl regex="true">^pkg:maven/com\.fasterxml\.jackson\.core/jackson\-databind@.*$</packageUrl>
     <cve>CVE-2023-35116</cve>
   </suppress>
+  <suppress until="2023-11-30Z">
+    <notes><![CDATA[
+   This CVE is declared fixed from 9.4.52, but the vuln db is not reflecting that. Suppress that specific version until
+   db is updated.
+   Ref:
+   https://github.com/eclipse/jetty.project/security/advisories/GHSA-3gh6-v5v9-6v9j
+   ]]></notes>
+    <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty\-servlets@9.4.52\..*$</packageUrl>
+    <vulnerabilityName>CVE-2023-36479</vulnerabilityName>
+  </suppress>
 </suppressions> 
