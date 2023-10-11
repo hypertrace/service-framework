@@ -22,7 +22,7 @@
    Ref:
    https://github.com/eclipse/jetty.project/security/advisories/GHSA-3gh6-v5v9-6v9j
    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty\-servlets@9.4.52\..*$</packageUrl>
+    <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty\-servlets@9.4.53\..*$</packageUrl>
     <vulnerabilityName>CVE-2023-36479</vulnerabilityName>
   </suppress>
 </suppressions> 
