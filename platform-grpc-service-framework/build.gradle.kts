@@ -19,6 +19,7 @@ dependencies {
 
   implementation(project(":platform-metrics"))
   implementation("io.grpc:grpc-inprocess")
+  implementation("io.grpc:grpc-netty")
   implementation("org.slf4j:slf4j-api:1.7.36")
   implementation("org.hypertrace.core.grpcutils:grpc-server-utils:0.12.7-SNAPSHOT")
 }

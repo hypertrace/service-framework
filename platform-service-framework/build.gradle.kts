@@ -11,7 +11,7 @@ tasks.test {
 
 dependencies {
   api(project(":service-framework-spi"))
-  api(platform("com.fasterxml.jackson.core:jackson-databind:2.16.0"))
+  api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
   implementation(project(":platform-metrics"))
 
   api("org.slf4j:slf4j-api:1.7.36")
