@@ -11,6 +11,7 @@ tasks.test {
 
 dependencies {
   api(project(":service-framework-spi"))
+  api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
   implementation(project(":platform-metrics"))
 
   api("org.slf4j:slf4j-api:1.7.36")
@@ -18,9 +19,6 @@ dependencies {
 
   // Use for thread dump servlet
   implementation("io.dropwizard.metrics:metrics-servlets:4.2.16")
-  constraints {
-    implementation("com.fasterxml.jackson.core:jackson-databind:2.15.2")
-  }
   implementation("org.eclipse.jetty:jetty-servlet:9.4.53.v20231009")
 
   // Use for metrics servlet

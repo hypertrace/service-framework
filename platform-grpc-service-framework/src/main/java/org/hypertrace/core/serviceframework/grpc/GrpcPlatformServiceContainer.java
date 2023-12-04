@@ -11,6 +11,7 @@ import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 import io.grpc.health.v1.HealthGrpc;
 import io.grpc.health.v1.HealthGrpc.HealthBlockingStub;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.grpc.netty.NettyServerBuilder;
 import io.grpc.protobuf.services.HealthStatusManager;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientInterceptor;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
@@ -233,10 +234,13 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
       InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager);
 
   private ServerBuilder<?> initializeBuilder(GrpcPlatformServerDefinition serverDefinition) {
-    ServerBuilder<?> builder = ServerBuilder.forPort(serverDefinition.getPort());
+    NettyServerBuilder builder = NettyServerBuilder.forPort(serverDefinition.getPort());
 
     if (serverDefinition.getMaxInboundMessageSize() > 0) {
       builder.maxInboundMessageSize(serverDefinition.getMaxInboundMessageSize());
+    }
+    if (serverDefinition.getMaxRstPerMinute() > 0) {
+      builder.maxRstFramesPerWindow(serverDefinition.getMaxRstPerMinute(), 60);
     }
     // add micrometer-grpc interceptor to collect server metrics.
     builder.intercept(
@@ -248,6 +252,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   @Value
   private static class ConstructedServer {
+
     String name;
     Server server;
   }
