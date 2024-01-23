@@ -11,13 +11,15 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
-import org.hypertrace.core.documentstore.model.config.CustomMetricConfig;
+import org.hypertrace.core.serviceframework.docstore.metrics.model.GaugeBuilderProvider;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
+@Slf4j
 @SuppressWarnings("unused")
 public class DocStoreMetricsRegistry {
   private static final long INITIAL_DELAY_SECONDS = MINUTES.toSeconds(5);
@@ -94,8 +96,10 @@ public class DocStoreMetricsRegistry {
   }
 
   /** Instantly query the datastore and report the custom metric once */
-  public void report(final CustomMetricConfig customMetricConfig) {
-    metricProvider.getCustomMetrics(customMetricConfig).forEach(this::report);
+  public void report(final DocStoreCustomMetricReportingConfig reportingConfig) {
+    metricProvider
+        .getCustomMetrics(reportingConfig.config())
+        .forEach(metric -> report(reportingConfig, metric));
   }
 
   /** Stop monitoring the database */
@@ -115,14 +119,24 @@ public class DocStoreMetricsRegistry {
     customMetricConfigs.forEach(
         reportingConfig ->
             executor.scheduleAtFixedRate(
-                () -> report(reportingConfig.config()),
+                () -> report(reportingConfig),
                 INITIAL_DELAY_SECONDS,
                 reportingConfig.reportingInterval().toSeconds(),
                 SECONDS));
   }
 
-  private void report(final DocStoreMetric metric) {
-    PlatformMetricsRegistry.registerGauge(metric.name(), metric.labels(), metric.value());
+  private void report(
+      final DocStoreCustomMetricReportingConfig reportingConfig, final DocStoreMetric metric) {
+    final GaugeBuilderProvider<Number> builderProvider =
+        GaugeBuilderProvider.builder()
+            .name(metric.name())
+            .tags(metric.labels())
+            .number(metric.value())
+            .duration(reportingConfig.reportingInterval())
+            .executor(executor)
+            .build();
+    log.debug("Reporting custom database metrics {} for configuration {}", metric, reportingConfig);
+    PlatformMetricsRegistry.registerGauge(builderProvider.get());
   }
 
   private class StandardDocStoreMetricsRegistry {
