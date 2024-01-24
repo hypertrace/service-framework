@@ -11,5 +11,6 @@ dependencies {
 
   api(libs.hypertrace.documentStore)
   api(project(":service-framework-spi"))
+  api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
   implementation(project(":platform-metrics"))
 }
