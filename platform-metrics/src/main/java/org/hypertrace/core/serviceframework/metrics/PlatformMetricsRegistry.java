@@ -390,17 +390,6 @@ public class PlatformMetricsRegistry {
   }
 
   /**
-   * Registers the given Gauge Builder with the service's metric registry and reports it
-   * periodically to the configured reporters. Apart from the given tags, the reporting service's
-   * default tags also will be reported with the metrics.
-   *
-   * <p>See https://micrometer.io/docs/concepts#_gauges for more details on the Gauges.
-   */
-  public static <T extends Number> void registerGauge(final Gauge.Builder<T> builder) {
-    builder.register(meterRegistry);
-  }
-
-  /**
    * Registers a DistributionSummary (with predefined percentiles computed locally) for the given
    * name with the service's metric registry and reports it periodically to the configured
    * reporters. Apart from the provided tags, the reporting service's default tags also will be
