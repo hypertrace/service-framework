@@ -14,6 +14,7 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
@@ -382,6 +383,10 @@ public class PlatformMetricsRegistry {
         .strongReference(true)
         .register(meterRegistry);
     return number;
+  }
+
+  public static MultiGauge registerMultiGauge(final String gaugeName) {
+    return MultiGauge.builder(gaugeName).register(meterRegistry);
   }
 
   /**

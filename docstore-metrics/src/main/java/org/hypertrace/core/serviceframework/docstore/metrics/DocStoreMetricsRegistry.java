@@ -3,8 +3,13 @@ package org.hypertrace.core.serviceframework.docstore.metrics;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.toIterable;
 
 import io.micrometer.common.lang.Nullable;
+import io.micrometer.core.instrument.MultiGauge;
+import io.micrometer.core.instrument.MultiGauge.Row;
+import io.micrometer.core.instrument.Tags;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -15,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
-import org.hypertrace.core.serviceframework.docstore.metrics.model.GaugeBuilderProvider;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
@@ -95,13 +99,6 @@ public class DocStoreMetricsRegistry {
     monitorCustomMetrics();
   }
 
-  /** Instantly query the datastore and report the custom metric once */
-  public void report(final DocStoreCustomMetricReportingConfig reportingConfig) {
-    metricProvider
-        .getCustomMetrics(reportingConfig.config())
-        .forEach(metric -> report(reportingConfig, metric));
-  }
-
   /** Stop monitoring the database */
   public void shutdown() {
     if (executor != null) {
@@ -117,26 +114,33 @@ public class DocStoreMetricsRegistry {
 
   private void monitorCustomMetrics() {
     customMetricConfigs.forEach(
-        reportingConfig ->
-            executor.scheduleAtFixedRate(
-                () -> report(reportingConfig),
-                INITIAL_DELAY_SECONDS,
-                reportingConfig.reportingInterval().toSeconds(),
-                SECONDS));
+        reportingConfig -> {
+          final MultiGauge multiGauge =
+              PlatformMetricsRegistry.registerMultiGauge(reportingConfig.config().metricName());
+          executor.scheduleAtFixedRate(
+              () -> report(reportingConfig, multiGauge),
+              INITIAL_DELAY_SECONDS,
+              reportingConfig.reportingInterval().toSeconds(),
+              SECONDS);
+        });
   }
 
   private void report(
-      final DocStoreCustomMetricReportingConfig reportingConfig, final DocStoreMetric metric) {
-    final GaugeBuilderProvider<Number> builderProvider =
-        GaugeBuilderProvider.builder()
-            .name(metric.name())
-            .tags(metric.labels())
-            .number(metric.value())
-            .duration(reportingConfig.reportingInterval())
-            .executor(executor)
-            .build();
-    log.debug("Reporting custom database metrics {} for configuration {}", metric, reportingConfig);
-    PlatformMetricsRegistry.registerGauge(builderProvider.get());
+      final DocStoreCustomMetricReportingConfig reportingConfig, final MultiGauge multiGauge) {
+    final List<DocStoreMetric> customMetrics =
+        metricProvider.getCustomMetrics(reportingConfig.config());
+
+    log.debug(
+        "Reporting custom database metrics {} for configuration {}",
+        customMetrics,
+        reportingConfig);
+
+    final List<Row<?>> rows =
+        customMetrics.stream()
+            .map(metric -> Row.of(Tags.of(toIterable(metric.labels())), metric::value))
+            .collect(toUnmodifiableList());
+
+    multiGauge.register(rows);
   }
 
   private class StandardDocStoreMetricsRegistry {
