@@ -385,10 +385,6 @@ public class PlatformMetricsRegistry {
     return number;
   }
 
-  public static MultiGauge registerMultiGauge(final String gaugeName) {
-    return MultiGauge.builder(gaugeName).register(meterRegistry);
-  }
-
   /**
    * Registers a DistributionSummary (with predefined percentiles computed locally) for the given
    * name with the service's metric registry and reports it periodically to the configured
@@ -468,16 +464,6 @@ public class PlatformMetricsRegistry {
     new ExecutorServiceMetrics(executorService, name, toIterable(tags)).bindTo(meterRegistry);
   }
 
-  public static Iterable<Tag> toIterable(Map<String, String> tags) {
-    List<Tag> newTags = new ArrayList<>();
-
-    if (tags != null) {
-      tags.forEach((k, v) -> newTags.add(new ImmutableTag(k, v)));
-    }
-
-    return newTags;
-  }
-
   public static MetricRegistry getMetricRegistry() {
     return METRIC_REGISTRY;
   }
@@ -500,6 +486,20 @@ public class PlatformMetricsRegistry {
     CollectorRegistry.defaultRegistry.clear();
     meterRegistry = new CompositeMeterRegistry();
     isInit = false;
+  }
+
+  static MultiGauge registerMultiGauge(final String gaugeName) {
+    return MultiGauge.builder(gaugeName).register(meterRegistry);
+  }
+
+  static Iterable<Tag> toIterable(Map<String, String> tags) {
+    List<Tag> newTags = new ArrayList<>();
+
+    if (tags != null) {
+      tags.forEach((k, v) -> newTags.add(new ImmutableTag(k, v)));
+    }
+
+    return newTags;
   }
 
   /*
