@@ -1,7 +1,5 @@
 package org.hypertrace.core.serviceframework.metrics;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
-
 import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
@@ -17,9 +15,7 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MultiGauge;
-import io.micrometer.core.instrument.MultiGauge.Row;
 import io.micrometer.core.instrument.Tag;
-import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
@@ -46,7 +42,6 @@ import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.PushGateway;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -390,6 +385,10 @@ public class PlatformMetricsRegistry {
     return number;
   }
 
+  public static MultiGauge registerMultiGauge(final String gaugeName) {
+    return MultiGauge.builder(gaugeName).register(meterRegistry);
+  }
+
   /**
    * Registers a DistributionSummary (with predefined percentiles computed locally) for the given
    * name with the service's metric registry and reports it periodically to the configured
@@ -469,7 +468,7 @@ public class PlatformMetricsRegistry {
     new ExecutorServiceMetrics(executorService, name, toIterable(tags)).bindTo(meterRegistry);
   }
 
-  private static Iterable<Tag> toIterable(Map<String, String> tags) {
+  public static Iterable<Tag> toIterable(Map<String, String> tags) {
     List<Tag> newTags = new ArrayList<>();
 
     if (tags != null) {
@@ -503,47 +502,10 @@ public class PlatformMetricsRegistry {
     isInit = false;
   }
 
-  public static class Measurement {
-    private final Map<String, String> labels;
-    private final double value;
-
-    public Measurement(final Map<String, String> labels, final double value) {
-      this.labels = labels;
-      this.value = value;
-    }
-
-    public Map<String, String> labels() {
-      return labels;
-    }
-
-    public double value() {
-      return value;
-    }
-  }
-
-  public static class ResizeableMetricRegistry {
-    private final MultiGauge gauge;
-
-    public ResizeableMetricRegistry(final String gaugeName) {
-      gauge = MultiGauge.builder(gaugeName).register(meterRegistry);
-    }
-
-    public void report(final Collection<Measurement> measurements) {
-      final List<Row<?>> rows =
-          measurements.stream()
-              .map(
-                  measurement ->
-                      Row.of(Tags.of(toIterable(measurement.labels())), measurement::value))
-              .collect(toUnmodifiableList());
-
-      gauge.register(rows);
-    }
-  }
   /*
    * This is needed because ConsoleMetricReporter.stop() doesn't call report for the last time
    * before closing the scheduled thread
    */
-
   private static void stopConsoleMetricsReporter() {
     if (consoleReporter == null) {
       return;

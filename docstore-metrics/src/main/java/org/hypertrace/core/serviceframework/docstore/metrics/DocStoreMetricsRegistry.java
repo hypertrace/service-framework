@@ -4,8 +4,12 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.toIterable;
 
 import io.micrometer.common.lang.Nullable;
+import io.micrometer.core.instrument.MultiGauge;
+import io.micrometer.core.instrument.MultiGauge.Row;
+import io.micrometer.core.instrument.Tags;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.Executors;
@@ -17,8 +21,6 @@ import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
-import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.Measurement;
-import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.ResizeableMetricRegistry;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
 @Slf4j
@@ -113,10 +115,10 @@ public class DocStoreMetricsRegistry {
   private void monitorCustomMetrics() {
     customMetricConfigs.forEach(
         reportingConfig -> {
-          final ResizeableMetricRegistry resizeableMetricRegistry =
-              new ResizeableMetricRegistry(reportingConfig.config().metricName());
+          final MultiGauge multiGauge =
+              PlatformMetricsRegistry.registerMultiGauge(reportingConfig.config().metricName());
           executor.scheduleAtFixedRate(
-              () -> report(reportingConfig, resizeableMetricRegistry),
+              () -> report(reportingConfig, multiGauge),
               INITIAL_DELAY_SECONDS,
               reportingConfig.reportingInterval().toSeconds(),
               SECONDS);
@@ -124,8 +126,7 @@ public class DocStoreMetricsRegistry {
   }
 
   private void report(
-      final DocStoreCustomMetricReportingConfig reportingConfig,
-      final ResizeableMetricRegistry resizeableMetricRegistry) {
+      final DocStoreCustomMetricReportingConfig reportingConfig, final MultiGauge multiGauge) {
     final List<DocStoreMetric> customMetrics =
         metricProvider.getCustomMetrics(reportingConfig.config());
 
@@ -134,12 +135,12 @@ public class DocStoreMetricsRegistry {
         customMetrics,
         reportingConfig);
 
-    final List<Measurement> measurements =
+    final List<Row<?>> rows =
         customMetrics.stream()
-            .map(metric -> new Measurement(metric.labels(), metric.value()))
+            .map(metric -> Row.of(Tags.of(toIterable(metric.labels())), metric::value))
             .collect(toUnmodifiableList());
 
-    resizeableMetricRegistry.report(measurements);
+    multiGauge.register(rows);
   }
 
   private class StandardDocStoreMetricsRegistry {
