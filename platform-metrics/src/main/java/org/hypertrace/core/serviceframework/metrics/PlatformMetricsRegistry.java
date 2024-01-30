@@ -543,6 +543,7 @@ public class PlatformMetricsRegistry {
    * This is needed because ConsoleMetricReporter.stop() doesn't call report for the last time
    * before closing the scheduled thread
    */
+
   private static void stopConsoleMetricsReporter() {
     if (consoleReporter == null) {
       return;
