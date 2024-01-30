@@ -127,20 +127,24 @@ public class DocStoreMetricsRegistry {
   private void report(
       final DocStoreCustomMetricReportingConfig reportingConfig,
       final ResizeableGauge resizeableGauge) {
-    final List<DocStoreMetric> customMetrics =
-        metricProvider.getCustomMetrics(reportingConfig.config());
+    try {
+      final List<DocStoreMetric> customMetrics =
+          metricProvider.getCustomMetrics(reportingConfig.config());
 
-    log.debug(
-        "Reporting custom database metrics {} for configuration {}",
-        customMetrics,
-        reportingConfig);
+      log.debug(
+          "Reporting custom database metrics {} for configuration {}",
+          customMetrics,
+          reportingConfig);
 
-    final List<Measurement> measurements =
-        customMetrics.stream()
-            .map(metric -> new Measurement(metric.value(), metric.labels()))
-            .collect(toUnmodifiableList());
+      final List<Measurement> measurements =
+          customMetrics.stream()
+              .map(metric -> new Measurement(metric.value(), metric.labels()))
+              .collect(toUnmodifiableList());
 
-    resizeableGauge.report(measurements);
+      resizeableGauge.report(measurements);
+    } catch (final Exception e) {
+      log.warn("Unable to report custom database metric for config: {}", reportingConfig, e);
+    }
   }
 
   private class StandardDocStoreMetricsRegistry {
