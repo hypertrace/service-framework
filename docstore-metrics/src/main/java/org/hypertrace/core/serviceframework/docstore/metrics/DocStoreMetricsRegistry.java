@@ -4,6 +4,7 @@ import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
 import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.registerResizeableGauge;
 
 import io.micrometer.common.lang.Nullable;
 import java.time.Duration;
@@ -116,7 +117,7 @@ public class DocStoreMetricsRegistry {
 
   private void monitorCustomMetric(final DocStoreCustomMetricReportingConfig reportingConfig) {
     final ResizeableGauge resizeableGauge =
-        new ResizeableGauge(reportingConfig.config().metricName());
+        registerResizeableGauge(reportingConfig.config().metricName());
     executor.scheduleAtFixedRate(
         () -> report(reportingConfig, resizeableGauge),
         INITIAL_DELAY_SECONDS,

@@ -488,8 +488,8 @@ public class PlatformMetricsRegistry {
     isInit = false;
   }
 
-  static MultiGauge registerMultiGauge(final String gaugeName) {
-    return MultiGauge.builder(gaugeName).register(meterRegistry);
+  public static ResizeableGauge registerResizeableGauge(final String name) {
+    return new ResizeableGauge(MultiGauge.builder(name).register(meterRegistry));
   }
 
   static Iterable<Tag> toIterable(Map<String, String> tags) {

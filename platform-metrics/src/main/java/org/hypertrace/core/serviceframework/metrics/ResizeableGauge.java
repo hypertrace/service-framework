@@ -1,7 +1,6 @@
 package org.hypertrace.core.serviceframework.metrics;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
-import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.registerMultiGauge;
 import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.toIterable;
 
 import io.micrometer.core.instrument.MultiGauge;
@@ -13,8 +12,8 @@ import java.util.List;
 public class ResizeableGauge {
   private final MultiGauge multiGauge;
 
-  public ResizeableGauge(final String name) {
-    this.multiGauge = registerMultiGauge(name);
+  ResizeableGauge(final MultiGauge multiGauge) {
+    this.multiGauge = multiGauge;
   }
 
   public void report(final Collection<Measurement> measurements) {
