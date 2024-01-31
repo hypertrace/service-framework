@@ -464,7 +464,7 @@ public class PlatformMetricsRegistry {
       CacheBuilder<Object, Object> guavaCacheBuilder,
       CacheLoader<? super K, V> loader,
       Map<String, String> tags) {
-    reportCacheMaxSize(cacheName, guavaCacheBuilder);
+    reportCacheMaxSize(cacheName, guavaCacheBuilder, tags);
     Cache<K, V> guavaCache = guavaCacheBuilder.build(loader);
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
     return guavaCache;
@@ -476,19 +476,21 @@ public class PlatformMetricsRegistry {
    */
   public static <K, V> Cache<K, V> registerAndGetCache(
       String cacheName, CacheBuilder<Object, Object> guavaCacheBuilder, Map<String, String> tags) {
-    reportCacheMaxSize(cacheName, guavaCacheBuilder);
+    reportCacheMaxSize(cacheName, guavaCacheBuilder, tags);
     Cache<K, V> guavaCache = guavaCacheBuilder.build();
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
     return guavaCache;
   }
 
   private static <K, V> void reportCacheMaxSize(
-      String cacheName, CacheBuilder<K, V> guavaCacheBuilder) {
+      String cacheName, CacheBuilder<K, V> guavaCacheBuilder, Map<String, String> tags) {
     try {
       Field maximumSizeField = guavaCacheBuilder.getClass().getDeclaredField("maximumSize");
       maximumSizeField.setAccessible(true);
       long maximumSize = maximumSizeField.getLong(guavaCacheBuilder);
-      registerGauge(CACHE_MAX_SIZE_GAUGE, Map.of("cache", cacheName), maximumSize);
+      Map<String, String> tagsCopy = new HashMap<>(tags);
+      tagsCopy.put("cache", cacheName);
+      registerGauge(CACHE_MAX_SIZE_GAUGE, tagsCopy, maximumSize);
     } catch (NoSuchFieldException | IllegalAccessException e) {
       // ignore
     }
