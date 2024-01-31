@@ -4,6 +4,7 @@ import com.codahale.metrics.ConsoleReporter;
 import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
@@ -39,6 +40,7 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.PushGateway;
+import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -73,6 +75,7 @@ public class PlatformMetricsRegistry {
   private static final String LOGGING_REPORTER_NAME = "logging";
   private static final String TESTING_REPORTER_NAME = "testing";
   private static final String CONSOLE_REPORTER_NAME = "console";
+  private static final String CACHE_MAX_SIZE_GAUGE = "cache.max.size";
 
   /**
    * List of tags that need to be reported for all the metrics reported by this service. The tags
@@ -443,12 +446,31 @@ public class PlatformMetricsRegistry {
   }
 
   /**
-   * Registers metrics for GuavaCaches using micrometer's GuavaCacheMetrics under the given
-   * cacheName for the given guavaCache
+   * @Deprecated. Use overload which takes in builder and returns instance instead
    */
+  @Deprecated(forRemoval = true)
   public static <K, V> void registerCache(
       String cacheName, Cache<K, V> guavaCache, Map<String, String> tags) {
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
+  }
+
+  /**
+   * Registers metrics for GuavaCaches using micrometer's GuavaCacheMetrics under the given
+   * cacheName for the given guavaCache
+   */
+  public static <K, V> Cache<K, V> registerCache(
+      String cacheName, CacheBuilder<K, V> guavaCacheBuilder, Map<String, String> tags) {
+    try {
+      Field maximumSizeField = guavaCacheBuilder.getClass().getDeclaredField("maximumSize");
+      maximumSizeField.setAccessible(true);
+      long maximumSize = maximumSizeField.getLong(guavaCacheBuilder);
+      registerGauge(CACHE_MAX_SIZE_GAUGE, Map.of("cache", cacheName), maximumSize);
+    } catch (NoSuchFieldException | IllegalAccessException e) {
+      // ignore
+    }
+    Cache<K, V> guavaCache = guavaCacheBuilder.build();
+    GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
+    return guavaCache;
   }
 
   /**
