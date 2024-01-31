@@ -3,6 +3,8 @@ package org.hypertrace.core.serviceframework.docstore.metrics;
 import static java.util.Collections.emptyList;
 import static java.util.concurrent.TimeUnit.MINUTES;
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.registerResizeableGauge;
 
 import io.micrometer.common.lang.Nullable;
 import java.time.Duration;
@@ -11,13 +13,16 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.atomic.AtomicLong;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
-import org.hypertrace.core.documentstore.model.config.CustomMetricConfig;
+import org.hypertrace.core.serviceframework.metrics.Measurement;
 import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
+import org.hypertrace.core.serviceframework.metrics.ResizeableGauge;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
+@Slf4j
 @SuppressWarnings("unused")
 public class DocStoreMetricsRegistry {
   private static final long INITIAL_DELAY_SECONDS = MINUTES.toSeconds(5);
@@ -93,11 +98,6 @@ public class DocStoreMetricsRegistry {
     monitorCustomMetrics();
   }
 
-  /** Instantly query the datastore and report the custom metric once */
-  public void report(final CustomMetricConfig customMetricConfig) {
-    metricProvider.getCustomMetrics(customMetricConfig).forEach(this::report);
-  }
-
   /** Stop monitoring the database */
   public void shutdown() {
     if (executor != null) {
@@ -112,17 +112,40 @@ public class DocStoreMetricsRegistry {
   }
 
   private void monitorCustomMetrics() {
-    customMetricConfigs.forEach(
-        reportingConfig ->
-            executor.scheduleAtFixedRate(
-                () -> report(reportingConfig.config()),
-                INITIAL_DELAY_SECONDS,
-                reportingConfig.reportingInterval().toSeconds(),
-                SECONDS));
+    customMetricConfigs.forEach(this::monitorCustomMetric);
   }
 
-  private void report(final DocStoreMetric metric) {
-    PlatformMetricsRegistry.registerGauge(metric.name(), metric.labels(), metric.value());
+  private void monitorCustomMetric(final DocStoreCustomMetricReportingConfig reportingConfig) {
+    final ResizeableGauge resizeableGauge =
+        registerResizeableGauge(reportingConfig.config().metricName());
+    executor.scheduleAtFixedRate(
+        () -> report(reportingConfig, resizeableGauge),
+        INITIAL_DELAY_SECONDS,
+        reportingConfig.reportingInterval().toSeconds(),
+        SECONDS);
+  }
+
+  private void report(
+      final DocStoreCustomMetricReportingConfig reportingConfig,
+      final ResizeableGauge resizeableGauge) {
+    try {
+      final List<DocStoreMetric> customMetrics =
+          metricProvider.getCustomMetrics(reportingConfig.config());
+
+      log.debug(
+          "Reporting custom database metrics {} for configuration {}",
+          customMetrics,
+          reportingConfig);
+
+      final List<Measurement> measurements =
+          customMetrics.stream()
+              .map(metric -> new Measurement(metric.value(), metric.labels()))
+              .collect(toUnmodifiableList());
+
+      resizeableGauge.report(measurements);
+    } catch (final Exception e) {
+      log.warn("Unable to report custom database metric for config: {}", reportingConfig, e);
+    }
   }
 
   private class StandardDocStoreMetricsRegistry {

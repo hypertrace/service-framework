@@ -16,6 +16,7 @@ import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.ImmutableTag;
 import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
 import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
@@ -508,16 +509,6 @@ public class PlatformMetricsRegistry {
     new ExecutorServiceMetrics(executorService, name, toIterable(tags)).bindTo(meterRegistry);
   }
 
-  private static Iterable<Tag> toIterable(Map<String, String> tags) {
-    List<Tag> newTags = new ArrayList<>();
-
-    if (tags != null) {
-      tags.forEach((k, v) -> newTags.add(new ImmutableTag(k, v)));
-    }
-
-    return newTags;
-  }
-
   public static MetricRegistry getMetricRegistry() {
     return METRIC_REGISTRY;
   }
@@ -540,6 +531,20 @@ public class PlatformMetricsRegistry {
     CollectorRegistry.defaultRegistry.clear();
     meterRegistry = new CompositeMeterRegistry();
     isInit = false;
+  }
+
+  public static ResizeableGauge registerResizeableGauge(final String name) {
+    return new ResizeableGauge(MultiGauge.builder(name).register(meterRegistry));
+  }
+
+  static Iterable<Tag> toIterable(Map<String, String> tags) {
+    List<Tag> newTags = new ArrayList<>();
+
+    if (tags != null) {
+      tags.forEach((k, v) -> newTags.add(new ImmutableTag(k, v)));
+    }
+
+    return newTags;
   }
 
   /*
