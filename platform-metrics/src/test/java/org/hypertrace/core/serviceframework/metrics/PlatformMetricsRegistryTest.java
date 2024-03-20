@@ -3,6 +3,7 @@ package org.hypertrace.core.serviceframework.metrics;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.typesafe.config.Config;
@@ -238,6 +239,108 @@ public class PlatformMetricsRegistryTest {
 
     // Doing some more cache activity
     cache.get("NotPresent", loader); // miss hence loaded from loader
+
+    // Cache = {One,Two,Three,Failed,NotPresent}
+    // expected hit=3.0, miss=3.0, size=5.0
+    hits =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "hit")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    misses =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "miss")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    size =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.size")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+
+    assertEquals(3.0, hits);
+    assertEquals(3.0, misses);
+    assertEquals(5.0, size);
+  }
+
+  @Test
+  public void testCaffeine() throws Exception {
+    initializeCustomRegistry(List.of("testing"));
+    com.github.benmanes.caffeine.cache.Cache<String, Integer> cache =
+        Caffeine.newBuilder().maximumSize(10).recordStats().build();
+    PlatformMetricsRegistry.registerCaffeine("my.cache", cache, Map.of("foo", "bar"));
+    Callable<Integer> loader =
+        new Callable<Integer>() {
+          @Override
+          public Integer call() throws Exception {
+            return -1;
+          }
+        };
+
+    // Doing some cache activity
+    cache.put("One", 1);
+    cache.put("Two", 2);
+    cache.get("One", x -> -1); // hit
+    cache.get("Two", x -> -1); // hit
+    cache.get("Two", x -> -1); // hit
+    cache.get("Three", x -> -1); // miss hence loaded from loader
+    cache.get("Failed", x -> -1); // miss hence loaded from loader
+    /*
+    * Cache = {One,Two, Three, Failed}
+    * Cache Hit is basically the number of times cache.get returned an entry which was present in the cache, hence hit = 3
+    * Cache Miss is basically the number of times cache.get returned an entry not present in the cache (hence loaded from loader), hence miss = 2
+    * The way cache.get works is that if there is a cache miss then the entry is loaded from the loader and included in the cache,
+    hence the cache size due to the above activity would be 2 (already put One,Two) + 2 (cache miss on Three, Failed) = 4
+
+    Expected hit count = 3.0, miss count = 2.0, cache size = 4
+     */
+
+    // Checking Cache Stats from registry
+    double hits = 0, misses = 0, size = 0;
+    hits =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "hit")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    misses =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.gets")
+            .tag("result", "miss")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+    size =
+        PlatformMetricsRegistry.getMeterRegistry()
+            .get("cache.size")
+            .meter()
+            .measure()
+            .iterator()
+            .next()
+            .getValue();
+
+    assertEquals(3.0, hits);
+    assertEquals(2.0, misses);
+    assertEquals(4.0, size);
+
+    // Doing some more cache activity
+    cache.get("NotPresent", x -> -1); // miss hence loaded from loader
 
     // Cache = {One,Two,Three,Failed,NotPresent}
     // expected hit=3.0, miss=3.0, size=5.0

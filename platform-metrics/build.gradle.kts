@@ -31,4 +31,5 @@ dependencies {
 
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")
+  testImplementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 }
