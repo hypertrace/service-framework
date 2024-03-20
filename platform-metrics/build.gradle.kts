@@ -27,6 +27,9 @@ dependencies {
   implementation("org.eclipse.jetty:jetty-servlet:9.4.53.v20231009")
   implementation("com.google.guava:guava:32.0.1-jre")
 
+  compileOnly("com.github.ben-manes.caffeine:caffeine:3.1.8")
+
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")
+  testImplementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
 }

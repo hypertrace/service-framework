@@ -17,6 +17,7 @@ import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.MultiGauge;
 import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Timer;
+import io.micrometer.core.instrument.binder.cache.CaffeineCacheMetrics;
 import io.micrometer.core.instrument.binder.cache.GuavaCacheMetrics;
 import io.micrometer.core.instrument.binder.jvm.ClassLoaderMetrics;
 import io.micrometer.core.instrument.binder.jvm.ExecutorServiceMetrics;
@@ -460,6 +461,32 @@ public class PlatformMetricsRegistry {
   public static <K, V> void registerCacheTrackingOccupancy(
       String cacheName, Cache<K, V> guavaCache, Map<String, String> tags, long maxSize) {
     GuavaCacheMetrics.monitor(meterRegistry, guavaCache, cacheName, toIterable(tags));
+    Map<String, String> tagsForGauge = new HashMap<>(tags);
+    tagsForGauge.put("cache", cacheName);
+    registerGauge(CACHE_MAX_SIZE_GAUGE, tagsForGauge, maxSize);
+  }
+
+  /**
+   * Registers metrics for CaffeineCaches using micrometer's CaffeineCacheMetrics under the given
+   * cacheName for the given caffeineCache
+   */
+  public static <K, V> void registerCaffeine(
+      String cacheName,
+      com.github.benmanes.caffeine.cache.Cache<K, V> caffeineCache,
+      Map<String, String> tags) {
+    CaffeineCacheMetrics.monitor(meterRegistry, caffeineCache, cacheName, toIterable(tags));
+  }
+
+  /**
+   * Registers metrics for CaffeineCaches using micrometer's CaffeineCacheMetrics under the given
+   * cacheName for the given caffeineCache and also reports maximum size configured
+   */
+  public static <K, V> void registerCaffeineTrackingOccupancy(
+      String cacheName,
+      com.github.benmanes.caffeine.cache.Cache<K, V> caffeineCache,
+      Map<String, String> tags,
+      long maxSize) {
+    CaffeineCacheMetrics.monitor(meterRegistry, caffeineCache, cacheName, toIterable(tags));
     Map<String, String> tagsForGauge = new HashMap<>(tags);
     tagsForGauge.put("cache", cacheName);
     registerGauge(CACHE_MAX_SIZE_GAUGE, tagsForGauge, maxSize);
