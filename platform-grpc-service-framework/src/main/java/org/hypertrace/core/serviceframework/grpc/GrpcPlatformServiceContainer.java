@@ -6,6 +6,7 @@ import static java.util.concurrent.TimeUnit.SECONDS;
 
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.Status;
 import io.grpc.health.v1.HealthCheckRequest;
 import io.grpc.health.v1.HealthCheckResponse.ServingStatus;
 import io.grpc.health.v1.HealthGrpc;
@@ -25,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import lombok.Value;
@@ -63,7 +65,11 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     final ServerBuilder<?> inProcessServerBuilder =
         InProcessServerBuilder.forName(this.getInProcessServerName())
             .intercept(
-                new MetricCollectingServerInterceptor(PlatformMetricsRegistry.getMeterRegistry()))
+                new MetricCollectingServerInterceptor(
+                    PlatformMetricsRegistry.getMeterRegistry(),
+                    UnaryOperator.identity(),
+                    timerBuilder -> timerBuilder.publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99),
+                    Status.Code.OK))
             .addService(this.healthStatusManager.getHealthService());
     final GrpcServiceContainerEnvironment serviceContainerEnvironment =
         this.buildContainerEnvironment(this.grpcChannelRegistry, this.healthStatusManager);
@@ -198,7 +204,11 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
         this.getAuthorityInProcessOverrideMap(),
         GrpcRegistryConfig.builder()
             .defaultInterceptor(
-                new MetricCollectingClientInterceptor(PlatformMetricsRegistry.getMeterRegistry()))
+                new MetricCollectingClientInterceptor(
+                    PlatformMetricsRegistry.getMeterRegistry(),
+                    UnaryOperator.identity(),
+                    timerBuilder -> timerBuilder.publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99),
+                    Status.Code.OK))
             .build());
   }
 
@@ -244,7 +254,11 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     }
     // add micrometer-grpc interceptor to collect server metrics.
     builder.intercept(
-        new MetricCollectingServerInterceptor(PlatformMetricsRegistry.getMeterRegistry()));
+        new MetricCollectingServerInterceptor(
+            PlatformMetricsRegistry.getMeterRegistry(),
+            UnaryOperator.identity(),
+            timerBuilder -> timerBuilder.publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99),
+            Status.Code.OK));
 
     serverDefinition.getServerInterceptors().forEach(builder::intercept);
     return builder;
