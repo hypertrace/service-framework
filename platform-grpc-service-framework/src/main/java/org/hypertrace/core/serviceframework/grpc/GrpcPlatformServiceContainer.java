@@ -210,17 +210,17 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   }
 
   private Duration[] generateLatencyHistogramBuckets() {
-    ArrayList<Duration> histogram_buckets = new ArrayList<>();
-    Duration curr_duration =
+    ArrayList<Duration> histogramBuckets = new ArrayList<>();
+    Duration currDuration =
         getAppConfig().hasPath(MAX_LATENCY_HISTOGRAM_BUCKET_DURATION)
             ? getAppConfig().getDuration(MAX_LATENCY_HISTOGRAM_BUCKET_DURATION)
             : DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_DURATION;
-    while (curr_duration.compareTo(DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION) > 0) {
-      histogram_buckets.add(curr_duration);
-      curr_duration = curr_duration.dividedBy(LATENCY_HISTOGRAM_BUCKET_FACTOR);
-      curr_duration = Duration.ofMillis(curr_duration.toMillis()); // Round off to milliseconds
+    while (currDuration.compareTo(DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION) > 0) {
+      histogramBuckets.add(currDuration);
+      currDuration = currDuration.dividedBy(LATENCY_HISTOGRAM_BUCKET_FACTOR);
+      currDuration = Duration.ofMillis(currDuration.toMillis()); // Round off to milliseconds
     }
-    return histogram_buckets.toArray(new Duration[histogram_buckets.size()]);
+    return histogramBuckets.toArray(new Duration[histogramBuckets.size()]);
   }
 
   protected InProcessGrpcChannelRegistry buildChannelRegistry() {
