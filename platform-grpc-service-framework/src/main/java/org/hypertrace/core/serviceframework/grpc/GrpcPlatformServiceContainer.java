@@ -18,7 +18,12 @@ import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientIntercept
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import java.io.IOException;
 import java.time.Duration;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -48,8 +53,13 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   private final HealthStatusManager healthStatusManager = new HealthStatusManager();
   private InProcessGrpcChannelRegistry grpcChannelRegistry;
   private HealthBlockingStub healthClient;
-  private static final String MAX_LATENCY_HISTOGRAM_BUCKET_MS = "metrics.latency.bucket.max.millis";
-  private static final long DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_MS = 10000;
+  private static final String MAX_LATENCY_HISTOGRAM_BUCKET_DURATION =
+      "metrics.latency.bucket.max.duration";
+  private static final Duration DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_DURATION =
+      Duration.ofSeconds(10);
+  private static final Duration DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION =
+      Duration.ofMillis(10);
+  private static final int LATENCY_HISTOGRAM_BUCKET_FACTOR = 5;
 
   public GrpcPlatformServiceContainer(ConfigClient configClient) {
     super(configClient);
@@ -201,19 +211,16 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   private Duration[] generateLatencyHistogramBuckets() {
     ArrayList<Duration> histogram_buckets = new ArrayList<>();
-    int factor = 3;
-    long curr_duration_ms =
-        getAppConfig().hasPath(MAX_LATENCY_HISTOGRAM_BUCKET_MS)
-            ? getAppConfig().getLong(MAX_LATENCY_HISTOGRAM_BUCKET_MS)
-            : DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_MS;
-    while (curr_duration_ms >= 10) {
-      histogram_buckets.add(Duration.ofMillis(curr_duration_ms));
-      curr_duration_ms = curr_duration_ms / factor;
-      curr_duration_ms = curr_duration_ms - (curr_duration_ms % 5);
+    Duration curr_duration =
+        getAppConfig().hasPath(MAX_LATENCY_HISTOGRAM_BUCKET_DURATION)
+            ? getAppConfig().getDuration(MAX_LATENCY_HISTOGRAM_BUCKET_DURATION)
+            : DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_DURATION;
+    while (curr_duration.compareTo(DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION) > 0) {
+      histogram_buckets.add(curr_duration);
+      curr_duration = curr_duration.dividedBy(LATENCY_HISTOGRAM_BUCKET_FACTOR);
+      curr_duration = Duration.ofMillis(curr_duration.toMillis()); // Round off to milliseconds
     }
-    Duration[] histogram_buckets_array = new Duration[histogram_buckets.size()];
-    histogram_buckets_array = histogram_buckets.toArray(histogram_buckets_array);
-    return histogram_buckets_array;
+    return histogram_buckets.toArray(new Duration[histogram_buckets.size()]);
   }
 
   protected InProcessGrpcChannelRegistry buildChannelRegistry() {
