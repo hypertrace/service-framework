@@ -18,6 +18,7 @@ import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientIntercept
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import java.io.IOException;
 import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -217,8 +218,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
             : DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_DURATION;
     while (currDuration.compareTo(DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION) > 0) {
       histogramBuckets.add(currDuration);
-      currDuration = currDuration.dividedBy(LATENCY_HISTOGRAM_BUCKET_FACTOR);
-      currDuration = Duration.ofMillis(currDuration.toMillis()); // Round off to milliseconds
+      currDuration =
+          currDuration.dividedBy(LATENCY_HISTOGRAM_BUCKET_FACTOR).truncatedTo(ChronoUnit.MILLIS);
     }
     return histogramBuckets.toArray(new Duration[histogramBuckets.size()]);
   }
