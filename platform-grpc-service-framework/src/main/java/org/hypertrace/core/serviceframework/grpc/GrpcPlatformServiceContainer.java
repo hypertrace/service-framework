@@ -17,6 +17,9 @@ import io.grpc.protobuf.services.HealthStatusManager;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientInterceptor;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import java.io.IOException;
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedList;
@@ -51,6 +54,13 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   private final HealthStatusManager healthStatusManager = new HealthStatusManager();
   private InProcessGrpcChannelRegistry grpcChannelRegistry;
   private HealthBlockingStub healthClient;
+  private static final String MAX_LATENCY_HISTOGRAM_BUCKET_DURATION =
+      "metrics.latency.bucket.max.duration";
+  private static final Duration DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_DURATION =
+      Duration.ofSeconds(10);
+  private static final Duration DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION =
+      Duration.ofMillis(10);
+  private static final int LATENCY_HISTOGRAM_BUCKET_FACTOR = 5;
 
   public GrpcPlatformServiceContainer(ConfigClient configClient) {
     super(configClient);
@@ -68,7 +78,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
                 new MetricCollectingServerInterceptor(
                     PlatformMetricsRegistry.getMeterRegistry(),
                     UnaryOperator.identity(),
-                    timerBuilder -> timerBuilder.publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99),
+                    timerBuilder ->
+                        timerBuilder.serviceLevelObjectives(generateLatencyHistogramBuckets()),
                     Status.Code.OK))
             .addService(this.healthStatusManager.getHealthService());
     final GrpcServiceContainerEnvironment serviceContainerEnvironment =
@@ -199,6 +210,20 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     }
   }
 
+  private Duration[] generateLatencyHistogramBuckets() {
+    ArrayList<Duration> histogramBuckets = new ArrayList<>();
+    Duration currDuration =
+        getAppConfig().hasPath(MAX_LATENCY_HISTOGRAM_BUCKET_DURATION)
+            ? getAppConfig().getDuration(MAX_LATENCY_HISTOGRAM_BUCKET_DURATION)
+            : DEFAULT_MAX_LATENCY_HISTOGRAM_BUCKET_DURATION;
+    while (currDuration.compareTo(DEFAULT_MIN_LATENCY_HISTOGRAM_BUCKET_DURATION) > 0) {
+      histogramBuckets.add(currDuration);
+      currDuration =
+          currDuration.dividedBy(LATENCY_HISTOGRAM_BUCKET_FACTOR).truncatedTo(ChronoUnit.MILLIS);
+    }
+    return histogramBuckets.toArray(new Duration[histogramBuckets.size()]);
+  }
+
   protected InProcessGrpcChannelRegistry buildChannelRegistry() {
     return new InProcessGrpcChannelRegistry(
         this.getAuthorityInProcessOverrideMap(),
@@ -207,7 +232,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
                 new MetricCollectingClientInterceptor(
                     PlatformMetricsRegistry.getMeterRegistry(),
                     UnaryOperator.identity(),
-                    timerBuilder -> timerBuilder.publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99),
+                    timerBuilder ->
+                        timerBuilder.serviceLevelObjectives(generateLatencyHistogramBuckets()),
                     Status.Code.OK))
             .build());
   }
@@ -257,7 +283,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
         new MetricCollectingServerInterceptor(
             PlatformMetricsRegistry.getMeterRegistry(),
             UnaryOperator.identity(),
-            timerBuilder -> timerBuilder.publishPercentiles(0.5, 0.75, 0.90, 0.95, 0.99),
+            timerBuilder -> timerBuilder.serviceLevelObjectives(generateLatencyHistogramBuckets()),
             Status.Code.OK));
 
     serverDefinition.getServerInterceptors().forEach(builder::intercept);
