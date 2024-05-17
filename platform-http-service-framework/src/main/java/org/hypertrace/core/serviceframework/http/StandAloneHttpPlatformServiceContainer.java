@@ -48,8 +48,8 @@ public abstract class StandAloneHttpPlatformServiceContainer extends PlatformSer
   @Override
   protected void doStop() {
     log.info("Stopping service {}", this.getServiceName());
-    grpcChannelRegistry.shutdown(after(10, SECONDS));
     this.container.stop();
+    grpcChannelRegistry.shutdown(after(10, SECONDS));
   }
 
   @Override
