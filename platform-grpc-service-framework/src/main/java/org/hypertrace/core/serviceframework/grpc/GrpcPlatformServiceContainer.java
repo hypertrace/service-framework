@@ -1,6 +1,7 @@
 package org.hypertrace.core.serviceframework.grpc;
 
 import static io.grpc.Deadline.after;
+import static java.util.Objects.nonNull;
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -46,7 +47,7 @@ import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle.State;
 @Slf4j
 abstract class GrpcPlatformServiceContainer extends PlatformService {
 
-  private List<ConstructedServer> servers;
+  private List<ConstructedServer> servers = Collections.emptyList();
   private final List<PlatformPeriodicTaskDefinition> taskDefinitions = new LinkedList<>();
   private final List<ScheduledFuture<?>> scheduledFutures = new LinkedList<>();
   private ScheduledExecutorService periodicTaskExecutor;
@@ -189,11 +190,13 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   protected void doStop() {
     this.scheduledFutures.forEach(future -> future.cancel(true));
     healthStatusManager.enterTerminalState();
-    grpcChannelRegistry.shutdown(after(10, SECONDS));
     this.servers.forEach(
         constructedServer ->
             ServerManagementUtil.shutdownServer(
                 constructedServer.getServer(), constructedServer.getName(), after(30, SECONDS)));
+    if (nonNull(grpcChannelRegistry)) {
+      grpcChannelRegistry.shutdown(after(10, SECONDS));
+    }
   }
 
   @Override
