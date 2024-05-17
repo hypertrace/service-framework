@@ -188,8 +188,8 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
 
   @Override
   protected void doStop() {
-    this.scheduledFutures.forEach(future -> future.cancel(true));
     healthStatusManager.enterTerminalState();
+    this.scheduledFutures.forEach(future -> future.cancel(true));
     this.servers.forEach(
         constructedServer ->
             ServerManagementUtil.shutdownServer(
