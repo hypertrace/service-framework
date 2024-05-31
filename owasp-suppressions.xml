@@ -8,7 +8,7 @@
     <cpe>cpe:/a:grpc:grpc</cpe>
     <cpe>cpe:/a:utils_project:utils</cpe>
   </suppress>
-  <suppress until="2024-05-31Z">
+  <suppress until="2024-07-31Z">
     <notes><![CDATA[
    This CVE is declared fixed from 9.4.52, but the vuln db is not reflecting that. Suppress that specific version until
    db is updated.
