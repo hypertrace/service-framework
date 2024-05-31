@@ -37,6 +37,7 @@ import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.grpcutils.client.GrpcRegistryConfig;
 import org.hypertrace.core.grpcutils.client.InProcessGrpcChannelRegistry;
+import org.hypertrace.core.grpcutils.client.TimeoutVerifyingClientInterceptor;
 import org.hypertrace.core.grpcutils.server.InterceptorUtil;
 import org.hypertrace.core.grpcutils.server.ServerManagementUtil;
 import org.hypertrace.core.serviceframework.PlatformService;
@@ -238,6 +239,7 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
                     timerBuilder ->
                         timerBuilder.serviceLevelObjectives(generateLatencyHistogramBuckets()),
                     Status.Code.OK))
+            .defaultInterceptor(new TimeoutVerifyingClientInterceptor())
             .build());
   }
 
