@@ -13,4 +13,5 @@ dependencies {
   api(project(":service-framework-spi"))
   api(platform("com.fasterxml.jackson:jackson-bom:2.16.0"))
   implementation(project(":platform-metrics"))
+  implementation("com.google.guava:guava:32.0.1-jre")
 }
