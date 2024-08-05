@@ -1,10 +1,10 @@
 package org.hypertrace.core.serviceframework.http;
 
 import com.google.inject.Injector;
+import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.Servlet;
 import java.util.List;
 import java.util.Map;
-import javax.servlet.MultipartConfigElement;
-import javax.servlet.Servlet;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.Value;

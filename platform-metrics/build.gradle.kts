@@ -11,19 +11,19 @@ tasks.test {
 
 dependencies {
   api("com.typesafe:config:1.4.2")
-  api("io.dropwizard.metrics:metrics-core:4.2.16")
+  api("io.dropwizard.metrics:metrics-jakarta-servlet:4.2.25")
   api("io.micrometer:micrometer-core:1.10.2")
-  api("javax.servlet:javax.servlet-api:3.1.0")
+  api("jakarta.servlet:jakarta.servlet-api:6.0.0")
 
   implementation("io.micrometer:micrometer-registry-prometheus:1.10.2")
 
   implementation("io.github.mweirauch:micrometer-jvm-extras:0.2.2")
   implementation("org.slf4j:slf4j-api:1.7.36")
   implementation("io.dropwizard.metrics:metrics-jvm:4.2.16")
-  implementation("io.prometheus:simpleclient_dropwizard:0.12.0")
-  implementation("io.prometheus:simpleclient_servlet:0.12.0")
-  implementation("io.prometheus:simpleclient_pushgateway:0.12.0")
-  implementation("org.eclipse.jetty:jetty-servlet:9.4.53.v20231009")
+  implementation("io.prometheus:simpleclient_dropwizard:0.16.0")
+  implementation("io.prometheus:simpleclient_servlet_jakarta:0.16.0")
+  implementation("io.prometheus:simpleclient_pushgateway:0.16.0")
+  implementation("org.eclipse.jetty:jetty-servlet:11.0.0")
   implementation("com.google.guava:guava:32.0.1-jre")
 
   compileOnly("com.github.ben-manes.caffeine:caffeine:3.1.8")
