@@ -16,7 +16,7 @@ public class JVMDiagnosticCommandTest {
 
   @Test
   public void testHelpCommand() {
-    String result = command.invoke(Op.HELP, new String[] {Op.JVM_VERSION.getCmdlineOpName()});
+    String result = command.invoke(Op.HELP, Op.JVM_VERSION.getCmdlineArgs());
     Assertions.assertNotNull(result, "Command invocation failed");
   }
 

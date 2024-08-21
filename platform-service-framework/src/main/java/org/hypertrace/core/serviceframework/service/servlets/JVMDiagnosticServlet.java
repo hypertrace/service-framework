@@ -26,6 +26,7 @@ public class JVMDiagnosticServlet extends HttpServlet {
 
   static {
     URI_TO_OP.put("/jvm/threads", Op.JVM_THREADS);
+    URI_TO_OP.put("/jvm/threads-dump-to-file", Op.JVM_THREADS_DUMP_TO_FILE);
     URI_TO_OP.put("/jvm/classloaders", Op.JVM_CLASSLOADERS);
     URI_TO_OP.put("/jvm/classloader-stats", Op.JVM_CLASSLOADER_STATS);
     URI_TO_OP.put("/jvm/cmdline", Op.JVM_CMDLINE);
@@ -92,7 +93,7 @@ public class JVMDiagnosticServlet extends HttpServlet {
       responseWriter.println("=================================================================");
       responseWriter.println("URI: " + req.getServletPath() + relativePath);
       responseWriter.println("=================================================================");
-      processOp(Op.HELP, new String[] {op.getCmdlineOpName()}, responseWriter);
+      processOp(Op.HELP, op.getCmdlineArgs(), responseWriter);
     }
   }
 
