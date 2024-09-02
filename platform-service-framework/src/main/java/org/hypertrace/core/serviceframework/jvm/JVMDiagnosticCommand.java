@@ -59,6 +59,7 @@ public class JVMDiagnosticCommand {
    */
   public enum Op {
     JVM_THREADS("threadPrint", "Thread.Print"),
+    JVM_THREADS_DUMP_TO_FILE("threadDumpToFile", "Thread.dump_to_file", "/tmp/jvm_thread_dump"),
     JVM_CLASSLOADERS("vmClassloaders", "VM.classloaders"),
     JVM_CLASSLOADER_STATS("vmClassloaderStats", "VM.classloader_stats"),
     JVM_CMDLINE("vmCommandLine", "VM.command_line"),
@@ -74,19 +75,19 @@ public class JVMDiagnosticCommand {
     HELP("help", "help");
 
     private final String apiOpName;
-    private final String cmdlineOpName;
+    private final String[] cmdlineArgs;
 
-    Op(String apiOpName, String cmdlineOpName) {
+    Op(String apiOpName, String... cmdlineArgs) {
       this.apiOpName = apiOpName;
-      this.cmdlineOpName = cmdlineOpName;
+      this.cmdlineArgs = cmdlineArgs;
     }
 
     public String getApiOpName() {
       return apiOpName;
     }
 
-    public String getCmdlineOpName() {
-      return cmdlineOpName;
+    public String[] getCmdlineArgs() {
+      return cmdlineArgs;
     }
   }
 }
