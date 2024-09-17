@@ -26,6 +26,7 @@ public class PlatformServiceLauncher {
     } catch (Throwable e) {
       System.err.println("Got exception to start PlatformService.");
       e.printStackTrace();
+      System.exit(1);
     }
   }
 
