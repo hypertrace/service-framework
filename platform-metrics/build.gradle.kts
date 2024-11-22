@@ -23,7 +23,7 @@ dependencies {
   implementation("io.prometheus:simpleclient_dropwizard:0.16.0")
   implementation("io.prometheus:simpleclient_servlet_jakarta:0.16.0")
   implementation("io.prometheus:simpleclient_pushgateway:0.16.0")
-  implementation("org.eclipse.jetty:jetty-servlet:11.0.0")
+  implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
   implementation("com.google.guava:guava:32.0.1-jre")
 
   compileOnly("com.github.ben-manes.caffeine:caffeine:3.1.8")

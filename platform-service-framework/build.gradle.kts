@@ -19,7 +19,7 @@ dependencies {
 
   // Use for thread dump servlet
   implementation("io.dropwizard.metrics:metrics-jakarta-servlets:4.2.25")
-  implementation("org.eclipse.jetty:jetty-servlet:11.0.0")
+  implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
 
   // Use for metrics servlet
   implementation("io.prometheus:simpleclient_servlet_jakarta:0.16.0")
@@ -36,6 +36,4 @@ dependencies {
   testImplementation("org.apache.logging.log4j:log4j-slf4j-impl:2.19.0")
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
   testImplementation("org.mockito:mockito-core:4.8.0")
-  testImplementation("org.eclipse.jetty:jetty-servlet:9.4.56.v20240826:tests")
-  testImplementation("org.eclipse.jetty:jetty-http:9.4.56.v20240826:tests")
 }
