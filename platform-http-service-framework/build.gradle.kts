@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
   api(project(":platform-service-framework"))
-  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.4")
+  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.7")
   api("com.typesafe:config:1.4.2")
   api("jakarta.servlet:jakarta.servlet-api:6.0.0")
   api("com.google.inject:guice:7.0.0")
@@ -18,7 +18,6 @@ dependencies {
   implementation("org.eclipse.jetty:jetty-servlet:11.0.0")
   implementation("org.eclipse.jetty:jetty-server:11.0.0")
   implementation("org.eclipse.jetty:jetty-servlets:11.0.0")
-
   annotationProcessor("org.projectlombok:lombok:1.18.24")
   compileOnly("org.projectlombok:lombok:1.18.24")
 }

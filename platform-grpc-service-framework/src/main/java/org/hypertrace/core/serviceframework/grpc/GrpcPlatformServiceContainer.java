@@ -97,12 +97,15 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
                         serviceContainerEnvironment))
             .collect(Collectors.toUnmodifiableList());
 
+    // Servers are processed in order. We want in process to be the last to start (so health check
+    // only returns when all other servers are up) and the last to shut down (so all other servers
+    // have drained external requests)
     this.servers =
         Stream.concat(
+                providedServers.stream(),
                 Stream.of(
                     new ConstructedServer(
-                        this.getInProcessServerName(), inProcessServerBuilder.build())),
-                providedServers.stream())
+                        this.getInProcessServerName(), inProcessServerBuilder.build())))
             .collect(Collectors.toUnmodifiableList());
 
     this.healthClient =
