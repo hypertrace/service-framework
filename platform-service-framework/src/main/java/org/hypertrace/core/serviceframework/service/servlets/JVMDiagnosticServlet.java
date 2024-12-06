@@ -1,15 +1,15 @@
 package org.hypertrace.core.serviceframework.service.servlets;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.management.ManagementFactory;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import org.hypertrace.core.serviceframework.jvm.JVMDiagnosticCommand;
 import org.hypertrace.core.serviceframework.jvm.JVMDiagnosticCommand.Op;
 

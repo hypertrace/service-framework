@@ -1,10 +1,10 @@
 package org.hypertrace.core.serviceframework;
 
-import com.codahale.metrics.servlets.CpuProfileServlet;
-import com.codahale.metrics.servlets.ThreadDumpServlet;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
-import io.prometheus.client.exporter.MetricsServlet;
+import io.dropwizard.metrics.servlets.CpuProfileServlet;
+import io.dropwizard.metrics.servlets.ThreadDumpServlet;
+import io.prometheus.client.servlet.jakarta.exporter.MetricsServlet;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
