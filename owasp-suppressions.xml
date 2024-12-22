@@ -1,9 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <suppress until="2025-01-31Z">
-    <packageUrl regex="true">^pkg:maven/org\.eclipse\.jetty/jetty\-servlets@11.0.20$
-    </packageUrl>
-    <vulnerabilityName>CVE-2024-6763</vulnerabilityName>
-    <vulnerabilityName>CVE-2024-8184</vulnerabilityName>
-  </suppress>
 </suppressions> 
