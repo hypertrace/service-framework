@@ -6,6 +6,8 @@ import static java.util.Optional.ofNullable;
 
 import com.google.inject.Injector;
 import com.google.inject.servlet.GuiceFilter;
+import jakarta.servlet.DispatcherType;
+import jakarta.servlet.ServletContextListener;
 import java.nio.file.Path;
 import java.util.EnumSet;
 import java.util.LinkedList;
@@ -15,8 +17,6 @@ import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.annotation.Nullable;
-import javax.servlet.DispatcherType;
-import javax.servlet.ServletContextListener;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.HttpConfiguration;
