@@ -1,6 +1,8 @@
 package org.hypertrace.core.serviceframework.hybrid;
 
+import com.google.common.collect.Streams;
 import io.grpc.protobuf.services.HealthStatusManager;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
@@ -9,7 +11,6 @@ import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.grpc.GrpcPlatformServerDefinition;
 import org.hypertrace.core.serviceframework.grpc.StandAloneGrpcPlatformServiceContainer;
 import org.hypertrace.core.serviceframework.http.HttpContainer;
-import org.hypertrace.core.serviceframework.http.HttpContainerEnvironment;
 import org.hypertrace.core.serviceframework.http.HttpHandlerDefinition;
 import org.hypertrace.core.serviceframework.http.HttpHandlerFactory;
 import org.hypertrace.core.serviceframework.http.jetty.JettyHttpServerBuilder;
@@ -37,7 +38,13 @@ public abstract class HybridPlatformService extends StandAloneGrpcPlatformServic
 
   protected abstract List<GrpcPlatformServerDefinition> getServerDefinitions();
 
-  protected abstract List<HttpHandlerFactory> getHandlerFactories();
+  protected List<HttpHandlerFactory> getHttpHandlerFactories() {
+    return List.of();
+  }
+
+  protected List<HybridHttpHandlerFactory> getHybridHttpHandlerFactories() {
+    return List.of();
+  }
 
   @Override
   protected HybridServiceContainerEnvironment buildContainerEnvironment(
@@ -53,16 +60,20 @@ public abstract class HybridPlatformService extends StandAloneGrpcPlatformServic
     return containerEnvironment;
   }
 
-  private HttpContainer buildHttpContainer(HttpContainerEnvironment environment) {
+  private HttpContainer buildHttpContainer(HybridServiceContainerEnvironment environment) {
     return new JettyHttpServerBuilder()
         .addHandlers(this.buildHandlerDefinitions(environment))
         .build();
   }
 
   private List<HttpHandlerDefinition> buildHandlerDefinitions(
-      HttpContainerEnvironment environment) {
-    return this.getHandlerFactories().stream()
-        .flatMap(handlerFactory -> handlerFactory.buildHandlers(environment).stream())
+      HybridServiceContainerEnvironment environment) {
+    return Streams.concat(
+            this.getHttpHandlerFactories().stream()
+                .map(handlerFactory -> handlerFactory.buildHandlers(environment)),
+            this.getHybridHttpHandlerFactories().stream()
+                .map(handlerFactory -> handlerFactory.buildHandlers(environment)))
+        .flatMap(Collection::stream)
         .collect(Collectors.toUnmodifiableList());
   }
 }
