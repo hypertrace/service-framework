@@ -4,6 +4,4 @@ import org.hypertrace.core.serviceframework.grpc.GrpcServiceContainerEnvironment
 import org.hypertrace.core.serviceframework.http.HttpContainerEnvironment;
 
 public interface HybridServiceContainerEnvironment
-    extends GrpcServiceContainerEnvironment, HttpContainerEnvironment {
-
-}
+    extends GrpcServiceContainerEnvironment, HttpContainerEnvironment {}

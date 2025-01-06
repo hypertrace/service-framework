@@ -10,21 +10,16 @@ import org.hypertrace.core.serviceframework.config.ConfigClient;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
 @AllArgsConstructor
-class StandAloneHybridServiceContainerEnvironment
-    implements HybridServiceContainerEnvironment {
+class StandAloneHybridServiceContainerEnvironment implements HybridServiceContainerEnvironment {
 
-  @Getter
-  private final InProcessGrpcChannelRegistry channelRegistry;
+  @Getter private final InProcessGrpcChannelRegistry channelRegistry;
   private final HealthStatusManager healthStatusManager;
 
   private final ConfigClient configClient;
 
-  @Getter
-  private final String inProcessChannelName;
+  @Getter private final String inProcessChannelName;
 
-  @Getter
-  private final PlatformServiceLifecycle lifecycle;
-
+  @Getter private final PlatformServiceLifecycle lifecycle;
 
   @Override
   public void reportServiceStatus(String serviceName, ServingStatus status) {

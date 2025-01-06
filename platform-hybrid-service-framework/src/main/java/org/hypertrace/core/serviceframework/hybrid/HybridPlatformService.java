@@ -42,12 +42,13 @@ public abstract class HybridPlatformService extends StandAloneGrpcPlatformServic
   @Override
   protected HybridServiceContainerEnvironment buildContainerEnvironment(
       InProcessGrpcChannelRegistry channelRegistry, HealthStatusManager healthStatusManager) {
-    HybridServiceContainerEnvironment containerEnvironment = new StandAloneHybridServiceContainerEnvironment(
-        channelRegistry,
-        healthStatusManager,
-        this.configClient,
-        this.getInProcessServerName(),
-        this.getLifecycle());
+    HybridServiceContainerEnvironment containerEnvironment =
+        new StandAloneHybridServiceContainerEnvironment(
+            channelRegistry,
+            healthStatusManager,
+            this.configClient,
+            this.getInProcessServerName(),
+            this.getLifecycle());
     this.httpContainer = this.buildHttpContainer(containerEnvironment);
     return containerEnvironment;
   }
@@ -64,5 +65,4 @@ public abstract class HybridPlatformService extends StandAloneGrpcPlatformServic
         .flatMap(handlerFactory -> handlerFactory.buildHandlers(environment).stream())
         .collect(Collectors.toUnmodifiableList());
   }
-
 }
