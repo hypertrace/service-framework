@@ -19,7 +19,7 @@ dependencies {
 
   // Use for thread dump servlet
   implementation("io.dropwizard.metrics:metrics-jakarta-servlets:4.2.25")
-  implementation("org.eclipse.jetty:jetty-servlet:11.0.20")
+  implementation("org.eclipse.jetty:jetty-servlet:11.0.24")
 
   // Use for metrics servlet
   implementation("io.prometheus:simpleclient_servlet_jakarta:0.16.0")

@@ -7,10 +7,10 @@ plugins {
 
 dependencies {
   api(project(":platform-service-framework"))
-  api(platform("io.grpc:grpc-bom:1.68.1"))
+  api(platform("io.grpc:grpc-bom:1.68.3"))
   api("io.grpc:grpc-api")
   api("io.grpc:grpc-services")
-  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.7")
+  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.10")
   api("com.typesafe:config:1.4.2")
   api("com.google.protobuf:protobuf-java:3.25.5")
   api(project(":service-framework-spi"))
@@ -22,5 +22,5 @@ dependencies {
   implementation("io.grpc:grpc-inprocess")
   implementation("io.grpc:grpc-netty")
   implementation("org.slf4j:slf4j-api:1.7.36")
-  implementation("org.hypertrace.core.grpcutils:grpc-server-utils:0.13.7")
+  implementation("org.hypertrace.core.grpcutils:grpc-server-utils:0.13.10")
 }
