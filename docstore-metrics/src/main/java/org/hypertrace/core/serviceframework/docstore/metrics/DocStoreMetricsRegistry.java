@@ -97,7 +97,6 @@ public class DocStoreMetricsRegistry {
 
     addShutdownHook();
 
-    new StandardDocStoreMetricsRegistry().monitor();
     monitorCustomMetrics();
   }
 
@@ -156,41 +155,6 @@ public class DocStoreMetricsRegistry {
       resizeableGauge.report(measurements);
     } catch (final Exception e) {
       log.warn("Unable to report custom database metric for config: {}", reportingConfig, e);
-    }
-  }
-
-  private class StandardDocStoreMetricsRegistry {
-    private final AtomicLong connectionCount;
-
-    public StandardDocStoreMetricsRegistry() {
-      this.connectionCount = registerConnectionCountMetric();
-    }
-
-    private void monitor() {
-      // TODO: Disabled for fixing ENG-57034
-      // This module can be removed once we have an external monitoring solution
-      
-      // executor.scheduleAtFixedRate(
-      //     this::queryDocStoreAndSetMetricValues,
-      //     INITIAL_DELAY_SECONDS,
-      //     standardMetricsReportingInterval.toSeconds(),
-      //     SECONDS);
-    }
-
-    private AtomicLong registerConnectionCountMetric() {
-      final DocStoreMetric docStoreMetric = metricProvider.getConnectionCountMetric();
-      return PlatformMetricsRegistry.registerGauge(
-          docStoreMetric.name(),
-          docStoreMetric.labels(),
-          new AtomicLong(castToLong(docStoreMetric.value())));
-    }
-
-    private void queryDocStoreAndSetMetricValues() {
-      connectionCount.set(castToLong(metricProvider.getConnectionCountMetric().value()));
-    }
-
-    private long castToLong(final double value) {
-      return Double.valueOf(value).longValue();
     }
   }
 }
