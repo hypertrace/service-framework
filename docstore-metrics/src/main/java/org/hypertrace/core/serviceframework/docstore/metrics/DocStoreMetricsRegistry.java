@@ -167,11 +167,14 @@ public class DocStoreMetricsRegistry {
     }
 
     private void monitor() {
-      executor.scheduleAtFixedRate(
-          this::queryDocStoreAndSetMetricValues,
-          INITIAL_DELAY_SECONDS,
-          standardMetricsReportingInterval.toSeconds(),
-          SECONDS);
+      // TODO: Disabled for fixing ENG-57034
+      // This module can be removed once we have an external monitoring solution
+      
+      // executor.scheduleAtFixedRate(
+      //     this::queryDocStoreAndSetMetricValues,
+      //     INITIAL_DELAY_SECONDS,
+      //     standardMetricsReportingInterval.toSeconds(),
+      //     SECONDS);
     }
 
     private AtomicLong registerConnectionCountMetric() {
