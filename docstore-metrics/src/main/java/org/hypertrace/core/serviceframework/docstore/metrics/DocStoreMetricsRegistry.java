@@ -14,14 +14,12 @@ import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
 import org.hypertrace.core.serviceframework.metrics.Measurement;
-import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.metrics.ResizeableGauge;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
 
@@ -97,7 +95,6 @@ public class DocStoreMetricsRegistry {
 
     addShutdownHook();
 
-    new StandardDocStoreMetricsRegistry().monitor();
     monitorCustomMetrics();
   }
 
@@ -156,38 +153,6 @@ public class DocStoreMetricsRegistry {
       resizeableGauge.report(measurements);
     } catch (final Exception e) {
       log.warn("Unable to report custom database metric for config: {}", reportingConfig, e);
-    }
-  }
-
-  private class StandardDocStoreMetricsRegistry {
-    private final AtomicLong connectionCount;
-
-    public StandardDocStoreMetricsRegistry() {
-      this.connectionCount = registerConnectionCountMetric();
-    }
-
-    private void monitor() {
-      executor.scheduleAtFixedRate(
-          this::queryDocStoreAndSetMetricValues,
-          INITIAL_DELAY_SECONDS,
-          standardMetricsReportingInterval.toSeconds(),
-          SECONDS);
-    }
-
-    private AtomicLong registerConnectionCountMetric() {
-      final DocStoreMetric docStoreMetric = metricProvider.getConnectionCountMetric();
-      return PlatformMetricsRegistry.registerGauge(
-          docStoreMetric.name(),
-          docStoreMetric.labels(),
-          new AtomicLong(castToLong(docStoreMetric.value())));
-    }
-
-    private void queryDocStoreAndSetMetricValues() {
-      connectionCount.set(castToLong(metricProvider.getConnectionCountMetric().value()));
-    }
-
-    private long castToLong(final double value) {
-      return Double.valueOf(value).longValue();
     }
   }
 }
