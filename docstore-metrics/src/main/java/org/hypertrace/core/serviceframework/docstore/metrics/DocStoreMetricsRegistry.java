@@ -1,29 +1,28 @@
 package org.hypertrace.core.serviceframework.docstore.metrics;
 
-import static java.lang.Thread.MIN_PRIORITY;
-import static java.util.Collections.emptyList;
-import static java.util.concurrent.TimeUnit.MINUTES;
-import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.stream.Collectors.toUnmodifiableList;
-import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.registerResizeableGauge;
-
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import io.micrometer.common.lang.Nullable;
-import java.time.Duration;
-import java.util.List;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.atomic.AtomicLong;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.hypertrace.core.documentstore.Datastore;
 import org.hypertrace.core.documentstore.metric.DocStoreMetric;
 import org.hypertrace.core.documentstore.metric.DocStoreMetricProvider;
 import org.hypertrace.core.serviceframework.metrics.Measurement;
-import org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry;
 import org.hypertrace.core.serviceframework.metrics.ResizeableGauge;
 import org.hypertrace.core.serviceframework.spi.PlatformServiceLifecycle;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
+
+import static java.lang.Thread.MIN_PRIORITY;
+import static java.util.Collections.emptyList;
+import static java.util.concurrent.TimeUnit.MINUTES;
+import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.stream.Collectors.toUnmodifiableList;
+import static org.hypertrace.core.serviceframework.metrics.PlatformMetricsRegistry.registerResizeableGauge;
 
 @Slf4j
 @SuppressWarnings("unused")
