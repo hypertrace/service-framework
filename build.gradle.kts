@@ -7,7 +7,7 @@ plugins {
   id("org.hypertrace.publish-plugin") version "1.0.2" apply false
   id("org.hypertrace.jacoco-report-plugin") version "0.2.1" apply false
   id("org.hypertrace.code-style-plugin") version "1.1.2" apply false
-  id("org.owasp.dependencycheck") version "8.3.1"
+  id("org.owasp.dependencycheck") version "12.1.0"
 }
 
 subprojects {
