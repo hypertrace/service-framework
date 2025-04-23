@@ -286,6 +286,9 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     if (serverDefinition.getMaxRstPerMinute() > 0) {
       builder.maxRstFramesPerWindow(serverDefinition.getMaxRstPerMinute(), 60);
     }
+    if (serverDefinition.getExecutor() != null) {
+      builder.executor(serverDefinition.getExecutor());
+    }
     // add micrometer-grpc interceptor to collect server metrics.
     builder.intercept(
         new MetricCollectingServerInterceptor(
