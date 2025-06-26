@@ -5,7 +5,7 @@ plugins {
 
 dependencies {
   api(project(":platform-service-framework"))
-  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.10")
+  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.14")
   api("com.typesafe:config:1.4.2")
   api("jakarta.servlet:jakarta.servlet-api:6.0.0")
   api("com.google.inject:guice:7.0.0")
