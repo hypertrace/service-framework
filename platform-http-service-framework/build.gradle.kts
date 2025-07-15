@@ -18,6 +18,6 @@ dependencies {
   implementation("org.eclipse.jetty:jetty-servlet:11.0.24")
   implementation("org.eclipse.jetty:jetty-server:11.0.24")
   implementation("org.eclipse.jetty:jetty-servlets:11.0.24")
-  annotationProcessor("org.projectlombok:lombok:1.18.24")
-  compileOnly("org.projectlombok:lombok:1.18.24")
+  annotationProcessor(libs.lombok)
+  compileOnly(libs.lombok)
 }

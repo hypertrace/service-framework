@@ -15,8 +15,8 @@ dependencies {
   api("com.google.protobuf:protobuf-java:3.25.5")
   api(project(":service-framework-spi"))
 
-  annotationProcessor("org.projectlombok:lombok:1.18.24")
-  compileOnly("org.projectlombok:lombok:1.18.24")
+  annotationProcessor(libs.lombok)
+  compileOnly(libs.lombok)
 
   implementation(project(":platform-metrics"))
   implementation("io.grpc:grpc-inprocess")
