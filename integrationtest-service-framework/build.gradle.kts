@@ -1,8 +1,8 @@
 plugins {
   `java-library`
   jacoco
-  id("org.hypertrace.publish-plugin")
-  id("org.hypertrace.jacoco-report-plugin")
+  alias(commonLibs.plugins.hypertrace.publish)
+  alias(commonLibs.plugins.hypertrace.jacoco)
 }
 
 tasks.test {
@@ -10,11 +10,11 @@ tasks.test {
 }
 
 dependencies {
-  implementation(project(":platform-service-framework"))
+  implementation(projects.platformServiceFramework)
 
   // Configuration
-  implementation("com.typesafe:config:1.4.2")
+  implementation(commonLibs.typesafe.config)
   // Logging
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  implementation("org.awaitility:awaitility:4.0.3")
+  implementation(commonLibs.slf4j2.api)
+  implementation(localLibs.awaitility)
 }

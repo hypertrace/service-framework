@@ -1,8 +1,8 @@
 plugins {
   `java-library`
   jacoco
-  id("org.hypertrace.publish-plugin")
-  id("org.hypertrace.jacoco-report-plugin")
+  alias(commonLibs.plugins.hypertrace.publish)
+  alias(commonLibs.plugins.hypertrace.jacoco)
 }
 
 tasks.test {
@@ -10,28 +10,25 @@ tasks.test {
 }
 
 dependencies {
-  api("com.typesafe:config:1.4.2")
-  api("io.dropwizard.metrics:metrics-jakarta-servlet:4.2.25")
-  api("io.micrometer:micrometer-core:1.14.4")
-  api("jakarta.servlet:jakarta.servlet-api:6.0.0")
+  api(commonLibs.typesafe.config)
+  api(localLibs.dropwizard.metrics.jakarta.servlet)
+  api(localLibs.micrometer.core)
+  api(localLibs.jakarta.servlet.api)
 
-  // Using simpleclient flavour since with version >= 1.13.0 micrometer does not support io.prometheus.simpleclient dependencies
-  // https://github.com/micrometer-metrics/micrometer/wiki/1.13-Migration-Guide
-  implementation("io.micrometer:micrometer-registry-prometheus-simpleclient:1.14.4")
+  implementation(localLibs.micrometer.registry.prometheus.simpleclient)
+  implementation(localLibs.micrometer.jvm.extras)
+  implementation(commonLibs.slf4j2.api)
+  implementation(localLibs.dropwizard.metrics.jvm)
+  implementation(localLibs.prometheus.simpleclient.dropwizard)
+  implementation(localLibs.prometheus.simpleclient.servlet.jakarta)
+  implementation(localLibs.prometheus.simpleclient.pushgateway)
+  implementation(localLibs.jetty.servlet)
+  implementation(commonLibs.guava)
 
-  implementation("io.github.mweirauch:micrometer-jvm-extras:0.2.2")
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  implementation("io.dropwizard.metrics:metrics-jvm:4.2.16")
-  implementation("io.prometheus:simpleclient_dropwizard:0.16.0")
-  implementation("io.prometheus:simpleclient_servlet_jakarta:0.16.0")
-  implementation("io.prometheus:simpleclient_pushgateway:0.16.0")
-  implementation("org.eclipse.jetty:jetty-servlet:11.0.24")
-  implementation("com.google.guava:guava:32.0.1-jre")
+  compileOnly(localLibs.caffeine)
 
-  compileOnly("com.github.ben-manes.caffeine:caffeine:3.1.8")
-
-  testImplementation("org.junit.jupiter:junit-jupiter:5.9.0")
-  testImplementation("org.mockito:mockito-core:4.8.0")
-  testImplementation("com.github.ben-manes.caffeine:caffeine:3.1.8")
-  testRuntimeOnly("org.apache.logging.log4j:log4j-slf4j-impl:2.19.0")
+  testImplementation(commonLibs.junit.jupiter)
+  testImplementation(commonLibs.mockito.core)
+  testImplementation(localLibs.caffeine)
+  testRuntimeOnly(commonLibs.log4j.slf4j2.impl)
 }

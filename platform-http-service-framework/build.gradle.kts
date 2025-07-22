@@ -1,23 +1,23 @@
 plugins {
   `java-library`
-  id("org.hypertrace.publish-plugin")
+  alias(commonLibs.plugins.hypertrace.publish)
 }
 
 dependencies {
-  api(project(":platform-service-framework"))
-  api("org.hypertrace.core.grpcutils:grpc-client-utils:0.13.14")
-  api("com.typesafe:config:1.4.2")
-  api("jakarta.servlet:jakarta.servlet-api:6.0.0")
-  api("com.google.inject:guice:7.0.0")
-  api(project(":service-framework-spi"))
+  api(projects.platformServiceFramework)
+  api(commonLibs.hypertrace.grpcutils.client)
+  api(commonLibs.typesafe.config)
+  api(localLibs.jakarta.servlet.api)
+  api(commonLibs.guice)
+  api(projects.serviceFrameworkSpi)
 
-  implementation(project(":platform-metrics"))
-  implementation("org.slf4j:slf4j-api:1.7.36")
-  implementation("com.google.inject.extensions:guice-servlet:7.0.0")
-  implementation("com.google.guava:guava:31.1-jre")
-  implementation("org.eclipse.jetty:jetty-servlet:11.0.24")
-  implementation("org.eclipse.jetty:jetty-server:11.0.24")
-  implementation("org.eclipse.jetty:jetty-servlets:11.0.24")
-  annotationProcessor(libs.lombok)
-  compileOnly(libs.lombok)
+  implementation(projects.platformMetrics)
+  implementation(commonLibs.slf4j2.api)
+  implementation(localLibs.guice.servlet)
+  implementation(commonLibs.guava)
+  implementation(localLibs.jetty.servlet)
+  implementation(localLibs.jetty.server)
+  implementation(localLibs.jetty.servlets)
+  annotationProcessor(commonLibs.lombok)
+  compileOnly(commonLibs.lombok)
 }
