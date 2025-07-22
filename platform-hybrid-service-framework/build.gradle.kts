@@ -1,15 +1,15 @@
 plugins {
   `java-library`
   jacoco
-  id("org.hypertrace.publish-plugin")
-  id("org.hypertrace.jacoco-report-plugin")
+  alias(commonLibs.plugins.hypertrace.publish)
+  alias(commonLibs.plugins.hypertrace.jacoco)
 }
 
 dependencies {
-  api(project(":platform-grpc-service-framework"))
-  api(project(":platform-http-service-framework"))
-  api(project(":platform-service-framework"))
+  api(projects.platformGrpcServiceFramework)
+  api(projects.platformHttpServiceFramework)
+  api(projects.platformServiceFramework)
 
-  annotationProcessor(libs.lombok)
-  compileOnly(libs.lombok)
+  annotationProcessor(commonLibs.lombok)
+  compileOnly(commonLibs.lombok)
 }
