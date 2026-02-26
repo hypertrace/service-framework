@@ -1,7 +1,4 @@
 [versions]
-hypertrace-grpcutils = "0.13.14"
-jetty = "11.0.24"
-guice = "7.0.0"
 dropwizard-metrics = "4.2.25"
 micrometer = "1.14.4"
 prometheus-simpleclient = "0.16.0"
@@ -9,8 +6,6 @@ caffeine = "3.1.8"
 
 [libraries]
 awaitility = { module = "org.awaitility:awaitility", version = "4.0.3" }
-hypertrace-grpcutils-server = { module = "org.hypertrace.core.grpcutils:grpc-server-utils", version.ref = "hypertrace-grpcutils" }
-grpc-services = { module = "io.grpc:grpc-services" }
 jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version = "6.0.0" }
 dropwizard-metrics-jakarta-servlet = { module = "io.dropwizard.metrics:metrics-jakarta-servlet", version.ref = "dropwizard-metrics" }
 dropwizard-metrics-jakarta-servlets = { module = "io.dropwizard.metrics:metrics-jakarta-servlets", version.ref = "dropwizard-metrics" }
@@ -21,11 +16,7 @@ micrometer-jvm-extras = { module = "io.github.mweirauch:micrometer-jvm-extras", 
 prometheus-simpleclient-dropwizard = { module = "io.prometheus:simpleclient_dropwizard", version.ref = "prometheus-simpleclient" }
 prometheus-simpleclient-servlet-jakarta = { module = "io.prometheus:simpleclient_servlet_jakarta", version.ref = "prometheus-simpleclient" }
 prometheus-simpleclient-pushgateway = { module = "io.prometheus:simpleclient_pushgateway", version.ref = "prometheus-simpleclient" }
-jetty-servlet = { module = "org.eclipse.jetty:jetty-servlet", version.ref = "jetty" }
-jetty-server = { module = "org.eclipse.jetty:jetty-server", version.ref = "jetty" }
-jetty-servlets = { module = "org.eclipse.jetty:jetty-servlets", version.ref = "jetty" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
-guice-servlet = { module = "com.google.inject.extensions:guice-servlet", version.ref = "guice" }
 apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.13" }
 
 [plugins]
