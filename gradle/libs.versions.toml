@@ -1,6 +1,6 @@
 [versions]
 hypertrace-grpcutils = "0.13.14"
-jetty = "11.0.25"
+jetty = "11.0.26"
 guice = "7.0.0"
 dropwizard-metrics = "4.2.25"
 micrometer = "1.14.4"
