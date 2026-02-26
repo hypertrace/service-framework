@@ -1,5 +1,4 @@
 [versions]
-hypertrace-grpcutils = "0.13.14"
 dropwizard-metrics = "4.2.25"
 micrometer = "1.14.4"
 prometheus-simpleclient = "0.16.0"
@@ -7,8 +6,6 @@ caffeine = "3.1.8"
 
 [libraries]
 awaitility = { module = "org.awaitility:awaitility", version = "4.0.3" }
-hypertrace-grpcutils-server = { module = "org.hypertrace.core.grpcutils:grpc-server-utils", version.ref = "hypertrace-grpcutils" }
-grpc-services = { module = "io.grpc:grpc-services" }
 jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version = "6.0.0" }
 dropwizard-metrics-jakarta-servlet = { module = "io.dropwizard.metrics:metrics-jakarta-servlet", version.ref = "dropwizard-metrics" }
 dropwizard-metrics-jakarta-servlets = { module = "io.dropwizard.metrics:metrics-jakarta-servlets", version.ref = "dropwizard-metrics" }

@@ -8,7 +8,7 @@ plugins {
 dependencies {
   api(projects.platformServiceFramework)
   api(commonLibs.grpc.api)
-  api(localLibs.grpc.services)
+  api(commonLibs.grpc.services)
   api(commonLibs.hypertrace.grpcutils.client)
   api(commonLibs.typesafe.config)
   api(commonLibs.protobuf.java)
@@ -21,5 +21,5 @@ dependencies {
   implementation(commonLibs.grpc.inprocess)
   implementation(commonLibs.grpc.netty)
   implementation(commonLibs.slf4j2.api)
-  implementation(localLibs.hypertrace.grpcutils.server)
+  implementation(commonLibs.hypertrace.grpcutils.server)
 }
