@@ -22,7 +22,7 @@ dependencies {
   implementation(localLibs.prometheus.simpleclient.dropwizard)
   implementation(localLibs.prometheus.simpleclient.servlet.jakarta)
   implementation(localLibs.prometheus.simpleclient.pushgateway)
-  implementation(localLibs.jetty.servlet)
+  implementation(commonLibs.jetty.servlet)
   implementation(commonLibs.guava)
 
   compileOnly(localLibs.caffeine)

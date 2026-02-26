@@ -1,6 +1,5 @@
 [versions]
 hypertrace-grpcutils = "0.13.14"
-jetty = "11.0.26"
 guice = "7.0.0"
 dropwizard-metrics = "4.2.25"
 micrometer = "1.14.4"
@@ -21,9 +20,6 @@ micrometer-jvm-extras = { module = "io.github.mweirauch:micrometer-jvm-extras", 
 prometheus-simpleclient-dropwizard = { module = "io.prometheus:simpleclient_dropwizard", version.ref = "prometheus-simpleclient" }
 prometheus-simpleclient-servlet-jakarta = { module = "io.prometheus:simpleclient_servlet_jakarta", version.ref = "prometheus-simpleclient" }
 prometheus-simpleclient-pushgateway = { module = "io.prometheus:simpleclient_pushgateway", version.ref = "prometheus-simpleclient" }
-jetty-servlet = { module = "org.eclipse.jetty:jetty-servlet", version.ref = "jetty" }
-jetty-server = { module = "org.eclipse.jetty:jetty-server", version.ref = "jetty" }
-jetty-servlets = { module = "org.eclipse.jetty:jetty-servlets", version.ref = "jetty" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 guice-servlet = { module = "com.google.inject.extensions:guice-servlet", version.ref = "guice" }
 apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.13" }
