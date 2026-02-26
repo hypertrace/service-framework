@@ -13,7 +13,7 @@ dependencies {
 
   implementation(projects.platformMetrics)
   implementation(commonLibs.slf4j2.api)
-  implementation(localLibs.guice.servlet)
+  implementation(commonLibs.guice.servlet)
   implementation(commonLibs.guava)
   implementation(commonLibs.jetty.servlet)
   implementation(commonLibs.jetty.server)
