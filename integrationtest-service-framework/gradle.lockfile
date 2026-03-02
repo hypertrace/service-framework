@@ -1,10 +1,10 @@
 # This is a Gradle generated file for dependency locking.
 # Manual edits can break the build and are not advised.
 # This file is expected to be part of source control.
-com.fasterxml.jackson.core:jackson-annotations:2.16.1=runtimeClasspath,testRuntimeClasspath
-com.fasterxml.jackson.core:jackson-core:2.16.1=runtimeClasspath,testRuntimeClasspath
-com.fasterxml.jackson.core:jackson-databind:2.16.1=runtimeClasspath,testRuntimeClasspath
-com.fasterxml.jackson:jackson-bom:2.16.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+com.fasterxml.jackson.core:jackson-annotations:2.21=runtimeClasspath,testRuntimeClasspath
+com.fasterxml.jackson.core:jackson-core:2.21.1=runtimeClasspath,testRuntimeClasspath
+com.fasterxml.jackson.core:jackson-databind:2.21.1=runtimeClasspath,testRuntimeClasspath
+com.fasterxml.jackson:jackson-bom:2.21.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 com.google.code.findbugs:jsr305:3.0.2=runtimeClasspath,testRuntimeClasspath
 com.google.errorprone:error_prone_annotations:2.18.0=runtimeClasspath,testRuntimeClasspath
 com.google.guava:failureaccess:1.0.1=runtimeClasspath,testRuntimeClasspath
@@ -52,7 +52,7 @@ org.eclipse.jetty:jetty-servlet:11.0.26=runtimeClasspath,testRuntimeClasspath
 org.eclipse.jetty:jetty-util:11.0.26=runtimeClasspath,testRuntimeClasspath
 org.hamcrest:hamcrest:2.1=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.hdrhistogram:HdrHistogram:2.2.2=runtimeClasspath,testRuntimeClasspath
-org.hypertrace.bom:hypertrace-bom:0.3.72=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
+org.hypertrace.bom:hypertrace-bom:0.3.73=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.hypertrace.core.kafkastreams.framework:kafka-bom:0.6.4=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
 org.latencyutils:LatencyUtils:2.0.3=runtimeClasspath,testRuntimeClasspath
 org.slf4j:slf4j-api:2.0.13=runtimeClasspath,testRuntimeClasspath
