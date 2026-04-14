@@ -1,6 +1,7 @@
 package org.hypertrace.core.serviceframework.grpc;
 
 import io.grpc.ServerInterceptor;
+import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
 import lombok.AccessLevel;
@@ -17,8 +18,8 @@ public class GrpcPlatformServerDefinition {
   int port;
   int maxInboundMessageSize;
   @Builder.Default int maxRstPerMinute = 500;
-  @Builder.Default long maxConnectionAgeInSeconds = 0;
-  @Builder.Default long maxConnectionAgeGraceInSeconds = 0;
+  @Builder.Default Duration maxConnectionAge = Duration.ZERO;
+  @Builder.Default Duration maxConnectionAgeGrace = Duration.ZERO;
   @Singular Collection<GrpcPlatformServiceFactory> serviceFactories;
   @Singular List<ServerInterceptor> serverInterceptors;
 }

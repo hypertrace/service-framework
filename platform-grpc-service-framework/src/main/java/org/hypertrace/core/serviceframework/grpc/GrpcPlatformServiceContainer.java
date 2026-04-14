@@ -286,11 +286,12 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
     if (serverDefinition.getMaxRstPerMinute() > 0) {
       builder.maxRstFramesPerWindow(serverDefinition.getMaxRstPerMinute(), 60);
     }
-    if (serverDefinition.getMaxConnectionAgeInSeconds() > 0) {
-      builder.maxConnectionAge(serverDefinition.getMaxConnectionAgeInSeconds(), SECONDS);
+    if (!serverDefinition.getMaxConnectionAge().isZero()) {
+      builder.maxConnectionAge(serverDefinition.getMaxConnectionAge().toMillis(), MILLISECONDS);
     }
-    if (serverDefinition.getMaxConnectionAgeGraceInSeconds() > 0) {
-      builder.maxConnectionAgeGrace(serverDefinition.getMaxConnectionAgeGraceInSeconds(), SECONDS);
+    if (!serverDefinition.getMaxConnectionAgeGrace().isZero()) {
+      builder.maxConnectionAgeGrace(
+          serverDefinition.getMaxConnectionAgeGrace().toMillis(), MILLISECONDS);
     }
     // add micrometer-grpc interceptor to collect server metrics.
     builder.intercept(
