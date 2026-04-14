@@ -17,6 +17,8 @@ public class GrpcPlatformServerDefinition {
   int port;
   int maxInboundMessageSize;
   @Builder.Default int maxRstPerMinute = 500;
+  @Builder.Default long maxConnectionAgeInSeconds = 0;
+  @Builder.Default long maxConnectionAgeGraceInSeconds = 0;
   @Singular Collection<GrpcPlatformServiceFactory> serviceFactories;
   @Singular List<ServerInterceptor> serverInterceptors;
 }
