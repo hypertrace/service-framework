@@ -22,6 +22,11 @@ subprojects {
       apply(plugin = rootProject.commonLibs.plugins.hypertrace.codestyle.get().pluginId)
     }
   }
+  pluginManager.withPlugin("java-library") {
+    dependencies {
+      "api"(platform(rootProject.localLibs.jetty.bom))
+    }
+  }
 }
 
 dependencyCheck {

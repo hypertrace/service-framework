@@ -3,6 +3,7 @@ dropwizard-metrics = "4.2.25"
 micrometer = "1.14.4"
 prometheus-simpleclient = "0.16.0"
 caffeine = "3.1.8"
+jetty = "12.0.33"
 
 [libraries]
 awaitility = { module = "org.awaitility:awaitility", version = "4.0.3" }
@@ -18,6 +19,10 @@ prometheus-simpleclient-servlet-jakarta = { module = "io.prometheus:simpleclient
 prometheus-simpleclient-pushgateway = { module = "io.prometheus:simpleclient_pushgateway", version.ref = "prometheus-simpleclient" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
 apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.13" }
+jetty-bom = { module = "org.eclipse.jetty:jetty-bom", version.ref = "jetty" }
+jetty-ee10-servlet = { module = "org.eclipse.jetty.ee10:jetty-ee10-servlet", version.ref = "jetty" }
+jetty-ee10-servlets = { module = "org.eclipse.jetty.ee10:jetty-ee10-servlets", version.ref = "jetty" }
+jetty-server = { module = "org.eclipse.jetty:jetty-server", version.ref = "jetty" }
 
 [plugins]
 hypertrace-java-convention = { id = "org.hypertrace.java-convention", version = "0.4.0" }
