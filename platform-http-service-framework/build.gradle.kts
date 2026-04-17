@@ -15,9 +15,9 @@ dependencies {
   implementation(commonLibs.slf4j2.api)
   implementation(commonLibs.guice.servlet)
   implementation(commonLibs.guava)
-  implementation(commonLibs.jetty.servlet)
-  implementation(commonLibs.jetty.server)
-  implementation(commonLibs.jetty.servlets)
+  implementation(localLibs.jetty.ee10.servlet)
+  implementation(localLibs.jetty.server)
+  implementation(localLibs.jetty.ee10.servlets)
   annotationProcessor(commonLibs.lombok)
   compileOnly(commonLibs.lombok)
 }

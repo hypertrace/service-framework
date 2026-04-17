@@ -18,7 +18,7 @@ dependencies {
 
   // Use for thread dump servlet
   implementation(localLibs.dropwizard.metrics.jakarta.servlets)
-  implementation(commonLibs.jetty.servlet)
+  implementation(localLibs.jetty.ee10.servlet)
 
   // Use for metrics servlet
   implementation(localLibs.prometheus.simpleclient.servlet.jakarta)
