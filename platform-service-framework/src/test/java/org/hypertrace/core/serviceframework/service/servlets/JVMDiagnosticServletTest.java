@@ -1,11 +1,11 @@
 package org.hypertrace.core.serviceframework.service.servlets;
 
-import org.eclipse.jetty.ee10.servlet.ServletTester;
 import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.http.HttpTester;
 import org.eclipse.jetty.http.HttpTester.Request;
 import org.eclipse.jetty.http.HttpTester.Response;
 import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.servlet.ServletTester;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
