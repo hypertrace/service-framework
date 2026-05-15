@@ -1,14 +1,3 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
-  <!-- False positive: CVE-2026-42154 is a DoS in the Prometheus server's remote read endpoint,
-       not the Java simpleclient metrics library (io.prometheus:simpleclient*) -->
-  <suppress>
-    <notes><![CDATA[
-      CVE-2026-42154 affects the Prometheus server (Go binary), not the Java client library.
-      The OWASP dependency-check incorrectly matches io.prometheus:simpleclient* against
-      cpe:2.3:a:prometheus:prometheus due to the shared "prometheus" name.
-    ]]></notes>
-    <packageUrl regex="true">^pkg:maven/io\.prometheus/simpleclient.*@.*$</packageUrl>
-    <cve>CVE-2026-42154</cve>
-  </suppress>
 </suppressions> 
