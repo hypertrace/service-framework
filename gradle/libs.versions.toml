@@ -6,7 +6,7 @@ caffeine = "3.1.8"
 
 [libraries]
 awaitility = { module = "org.awaitility:awaitility", version = "4.0.3" }
-jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version = "6.0.0" }
+jakarta-servlet-api = { module = "jakarta.servlet:jakarta.servlet-api", version = "6.1.0" }
 dropwizard-metrics-jakarta-servlet = { module = "io.dropwizard.metrics:metrics-jakarta-servlet", version.ref = "dropwizard-metrics" }
 dropwizard-metrics-jakarta-servlets = { module = "io.dropwizard.metrics:metrics-jakarta-servlets", version.ref = "dropwizard-metrics" }
 dropwizard-metrics-jvm = { module = "io.dropwizard.metrics:metrics-jvm", version.ref = "dropwizard-metrics" }
