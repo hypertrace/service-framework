@@ -5,6 +5,7 @@ prometheus-simpleclient = "0.16.0"
 # Aligns with the io.prometheus:* transitives pulled in by micrometer-registry-prometheus.
 prometheus = "1.3.5"
 caffeine = "3.1.8"
+flink = "2.2.1"
 
 [libraries]
 awaitility = { module = "org.awaitility:awaitility", version = "4.0.3" }
@@ -23,6 +24,7 @@ prometheus-simpleclient-dropwizard = { module = "io.prometheus:simpleclient_drop
 prometheus-simpleclient-servlet-jakarta = { module = "io.prometheus:simpleclient_servlet_jakarta", version.ref = "prometheus-simpleclient" }
 prometheus-simpleclient-pushgateway = { module = "io.prometheus:simpleclient_pushgateway", version.ref = "prometheus-simpleclient" }
 caffeine = { module = "com.github.ben-manes.caffeine:caffeine", version.ref = "caffeine" }
+flink-core = { module = "org.apache.flink:flink-core", version.ref = "flink" }
 apache-httpcomponents-httpclient = { module = "org.apache.httpcomponents:httpclient", version = "4.5.13" }
 
 [plugins]

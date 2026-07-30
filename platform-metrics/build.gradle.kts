@@ -33,6 +33,10 @@ dependencies {
   implementation(commonLibs.guava)
 
   compileOnly(localLibs.caffeine)
+  // gRPC and Flink types only appear in the v2 client interceptor and MetricRegistryFactory, both
+  // used by consumers that already provide these at runtime.
+  compileOnly(commonLibs.grpc.api)
+  compileOnly(localLibs.flink.core)
 
   annotationProcessor(commonLibs.lombok)
   compileOnly(commonLibs.lombok)
@@ -40,5 +44,8 @@ dependencies {
   testImplementation(commonLibs.junit.jupiter)
   testImplementation(commonLibs.mockito.core)
   testImplementation(localLibs.caffeine)
+  // Provided as compileOnly for production; needed on the test classpath for the v2 suites.
+  testImplementation(commonLibs.grpc.api)
+  testImplementation(localLibs.flink.core)
   testRuntimeOnly(commonLibs.log4j.slf4j2.impl)
 }
