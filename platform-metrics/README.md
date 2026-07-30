@@ -42,3 +42,8 @@ counter.increment();
 ## References
 This library uses MicroMeter for metrics, and the API of MicroMeter is exposed directly
 to leverage the power of it. See https://micrometer.io/docs for more details.
+
+## Metrics v2
+
+For the scoped `MetricRegistry` / `Counter` / `Timer` API (including Flink subtask
+scoping and the gRPC client interceptor), see [`v2/README.md`](src/main/java/org/hypertrace/core/serviceframework/metrics/v2/README.md).
