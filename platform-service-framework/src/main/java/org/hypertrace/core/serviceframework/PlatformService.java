@@ -4,7 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import io.dropwizard.metrics.servlets.CpuProfileServlet;
 import io.dropwizard.metrics.servlets.ThreadDumpServlet;
-import io.prometheus.client.servlet.jakarta.exporter.MetricsServlet;
+import io.prometheus.metrics.exporter.servlet.jakarta.PrometheusMetricsServlet;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
@@ -126,7 +126,10 @@ public abstract class PlatformService {
     adminServer.setStopAtShutdown(true);
     adminServer.setStopTimeout(2000);
 
-    context.addServlet(new ServletHolder(new MetricsServlet()), "/metrics");
+    context.addServlet(
+        new ServletHolder(
+            new PrometheusMetricsServlet(PlatformMetricsRegistry.getPrometheusRegistry())),
+        "/metrics");
     context.addServlet(new ServletHolder(new HealthCheckServlet(this)), "/health");
     context.addServlet(new ServletHolder(new ThreadDumpServlet()), "/threads");
     context.addServlet(new ServletHolder(new CpuProfileServlet()), "/pprof");

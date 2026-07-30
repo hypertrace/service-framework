@@ -16,6 +16,13 @@ dependencies {
   api(localLibs.jakarta.servlet.api)
 
   implementation(localLibs.micrometer.registry.prometheus.simpleclient)
+  implementation(localLibs.micrometer.registry.prometheus)
+  // Standalone HTTP server that exposes the Prometheus scrape endpoint.
+  implementation(localLibs.prometheus.exporter.httpserver)
+  // Jakarta servlet exporter for the new Prometheus client scrape endpoint.
+  implementation(localLibs.prometheus.exporter.servlet.jakarta)
+  // Bridges Dropwizard MetricRegistry into the new PrometheusRegistry.
+  implementation(localLibs.prometheus.instrumentation.dropwizard)
   implementation(localLibs.micrometer.jvm.extras)
   implementation(commonLibs.slf4j2.api)
   implementation(localLibs.dropwizard.metrics.jvm)
@@ -26,6 +33,9 @@ dependencies {
   implementation(commonLibs.guava)
 
   compileOnly(localLibs.caffeine)
+
+  annotationProcessor(commonLibs.lombok)
+  compileOnly(commonLibs.lombok)
 
   testImplementation(commonLibs.junit.jupiter)
   testImplementation(commonLibs.mockito.core)

@@ -22,6 +22,7 @@ dependencies {
 
   // Use for metrics servlet
   implementation(localLibs.prometheus.simpleclient.servlet.jakarta)
+  implementation(localLibs.prometheus.exporter.servlet.jakarta)
 
   testImplementation(commonLibs.log4j.slf4j2.impl)
   testImplementation(commonLibs.junit.jupiter)
