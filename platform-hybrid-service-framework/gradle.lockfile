@@ -80,7 +80,6 @@ io.prometheus:prometheus-metrics-tracer-otel-agent:1.3.5=runtimeClasspath,testRu
 io.prometheus:prometheus-metrics-tracer-otel:1.3.5=runtimeClasspath,testRuntimeClasspath
 io.prometheus:simpleclient:0.16.0=runtimeClasspath,testRuntimeClasspath
 io.prometheus:simpleclient_common:0.16.0=runtimeClasspath,testRuntimeClasspath
-io.prometheus:simpleclient_dropwizard:0.16.0=runtimeClasspath,testRuntimeClasspath
 io.prometheus:simpleclient_pushgateway:0.16.0=runtimeClasspath,testRuntimeClasspath
 io.prometheus:simpleclient_servlet_common:0.16.0=runtimeClasspath,testRuntimeClasspath
 io.prometheus:simpleclient_servlet_jakarta:0.16.0=runtimeClasspath,testRuntimeClasspath

@@ -43,7 +43,7 @@ counter.increment();
 This library uses MicroMeter for metrics, and the API of MicroMeter is exposed directly
 to leverage the power of it. See https://micrometer.io/docs for more details.
 
-## Metrics v2
-
-For the scoped `MetricRegistry` / `Counter` / `Timer` API (including Flink subtask
-scoping and the gRPC client interceptor), see [`v2/README.md`](src/main/java/org/hypertrace/core/serviceframework/metrics/v2/README.md).
+For Flink TaskManagers, `SharedMeterRegistry.getPrometheusRegistry(serviceName, port)`
+binds the process scrape endpoint and returns the Prometheus registry so a Flink metric
+reporter can bridge Flink-native metrics onto the same endpoint. Application meters still
+go through `PlatformMetricsRegistry.getMeterRegistry()`.
