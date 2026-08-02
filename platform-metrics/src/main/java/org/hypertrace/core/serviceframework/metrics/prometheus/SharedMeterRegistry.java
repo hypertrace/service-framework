@@ -33,7 +33,7 @@ public final class SharedMeterRegistry {
    * @param exporterPort the port on which to publish the Prometheus scrape endpoint
    * @return the shared Prometheus registry
    */
-  public static synchronized PrometheusRegistry buildOrRetrievePrometheusRegistry(
+  public static synchronized PrometheusRegistry getOrCreatePrometheusRegistry(
       String serviceName, int exporterPort) {
     if (!initialized) {
       PlatformMetricsRegistry.initMetricsRegistry(serviceName);
