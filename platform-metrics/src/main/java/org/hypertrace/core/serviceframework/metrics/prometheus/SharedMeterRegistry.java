@@ -36,7 +36,7 @@ public final class SharedMeterRegistry {
   public static synchronized PrometheusRegistry getOrCreatePrometheusRegistry(
       String serviceName, int exporterPort) {
     if (!initialized) {
-      PlatformMetricsRegistry.initMetricsRegistry(serviceName);
+      PlatformMetricsRegistry.initMetricsRegistryForFlink(serviceName);
       try {
         HTTPServer.builder()
             .port(exporterPort)

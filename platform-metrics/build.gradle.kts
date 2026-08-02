@@ -21,11 +21,15 @@ dependencies {
   implementation(localLibs.prometheus.exporter.httpserver)
   // Bridges Dropwizard MetricRegistry into the new PrometheusRegistry.
   implementation(localLibs.prometheus.instrumentation.dropwizard)
+  // Bridges the legacy simpleclient CollectorRegistry onto the new PrometheusRegistry.
+  implementation(localLibs.prometheus.simpleclient.bridge)
 
   // Legacy simpleclient stack — still required by PrometheusPushMeterRegistry
   // (io.micrometer.prometheus.PrometheusMeterRegistry + PushGateway).
   implementation(localLibs.micrometer.registry.prometheus.simpleclient)
   implementation(localLibs.prometheus.simpleclient.pushgateway)
+  // Bridges Dropwizard MetricRegistry into the legacy simpleclient CollectorRegistry.
+  implementation(localLibs.prometheus.simpleclient.dropwizard)
 
   implementation(localLibs.micrometer.jvm.extras)
   implementation(commonLibs.slf4j2.api)
