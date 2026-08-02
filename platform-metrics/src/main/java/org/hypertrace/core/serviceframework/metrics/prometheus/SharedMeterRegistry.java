@@ -1,4 +1,4 @@
-package org.hypertrace.core.serviceframework.metrics.flink;
+package org.hypertrace.core.serviceframework.metrics.prometheus;
 
 import io.prometheus.metrics.exporter.httpserver.HTTPServer;
 import io.prometheus.metrics.model.registry.PrometheusRegistry;
@@ -33,7 +33,7 @@ public final class SharedMeterRegistry {
    * @param exporterPort the port on which to publish the Prometheus scrape endpoint
    * @return the shared Prometheus registry
    */
-  public static synchronized PrometheusRegistry getPrometheusRegistry(
+  public static synchronized PrometheusRegistry buildOrRetrievePrometheusRegistry(
       String serviceName, int exporterPort) {
     if (!initialized) {
       PlatformMetricsRegistry.initMetricsRegistry(serviceName);
