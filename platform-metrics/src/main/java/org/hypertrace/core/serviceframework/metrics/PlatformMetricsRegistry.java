@@ -129,8 +129,7 @@ public class PlatformMetricsRegistry {
 
     CollectorRegistry.defaultRegistry.register(new DropwizardExports(METRIC_REGISTRY));
     // exposing the metrics registered via the Collector Registry to a Prometheus instance which
-    // will be
-    // served via a separate prometheus server.
+    // will be served via a separate prometheus server.
     SimpleclientCollector.builder()
         .collectorRegistry(CollectorRegistry.defaultRegistry)
         .register(PROMETHEUS_REGISTRY);
