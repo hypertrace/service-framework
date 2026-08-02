@@ -7,6 +7,8 @@ import com.google.common.cache.Cache;
 import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
+import io.micrometer.common.lang.NonNull;
+import io.micrometer.common.lang.Nullable;
 import io.micrometer.common.util.StringUtils;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
@@ -34,8 +36,6 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.core.lang.NonNull;
-import io.micrometer.core.lang.Nullable;
 import io.micrometer.prometheusmetrics.PrometheusConfig;
 import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
 import io.prometheus.client.exporter.PushGateway;
@@ -115,7 +115,7 @@ public class PlatformMetricsRegistry {
               }
 
               @Override
-              @io.micrometer.core.lang.Nullable
+              @Nullable
               public String get(String k) {
                 return null;
               }
