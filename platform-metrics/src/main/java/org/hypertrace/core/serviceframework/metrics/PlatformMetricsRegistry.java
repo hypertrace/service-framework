@@ -7,8 +7,6 @@ import com.google.common.cache.Cache;
 import com.typesafe.config.Config;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
-import io.micrometer.common.lang.NonNull;
-import io.micrometer.common.lang.Nullable;
 import io.micrometer.common.util.StringUtils;
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
@@ -36,11 +34,13 @@ import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingMeterRegistry;
 import io.micrometer.core.instrument.logging.LoggingRegistryConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
-import io.micrometer.prometheusmetrics.PrometheusConfig;
-import io.micrometer.prometheusmetrics.PrometheusMeterRegistry;
+import io.micrometer.core.lang.NonNull;
+import io.micrometer.core.lang.Nullable;
+import io.micrometer.prometheus.PrometheusConfig;
+import io.micrometer.prometheus.PrometheusMeterRegistry;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.PushGateway;
-import io.prometheus.metrics.instrumentation.dropwizard.DropwizardExports;
-import io.prometheus.metrics.model.registry.PrometheusRegistry;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,8 +88,8 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "defaultTags";
 
   private static final MetricRegistry METRIC_REGISTRY = new MetricRegistry();
-  private static final PrometheusRegistry PROMETHEUS_REGISTRY = new PrometheusRegistry();
   public static final List<String> DEFAULT_METRICS_REPORTERS = List.of("prometheus");
+
   private static ConsoleReporter consoleReporter;
   private static String metricsPrefix;
   private static boolean isInit = false;
@@ -115,15 +115,15 @@ public class PlatformMetricsRegistry {
               }
 
               @Override
-              @Nullable
+              @io.micrometer.core.lang.Nullable
               public String get(String k) {
                 return null;
               }
             },
-            PROMETHEUS_REGISTRY,
+            CollectorRegistry.defaultRegistry,
             Clock.SYSTEM));
 
-    PROMETHEUS_REGISTRY.register(new DropwizardExports(METRIC_REGISTRY));
+    CollectorRegistry.defaultRegistry.register(new DropwizardExports(METRIC_REGISTRY));
   }
 
   private static void initConsoleMetricsReporter(final int reportIntervalSec) {
@@ -208,21 +208,6 @@ public class PlatformMetricsRegistry {
     return defaultVal;
   }
 
-  /**
-   * Initializes the metrics registry with the default reporters and settings.
-   *
-   * @param serviceName service name added to the common metric tags
-   */
-  public static synchronized void initMetricsRegistry(String serviceName) {
-    initMetricsRegistry(
-        serviceName,
-        DEFAULT_METRICS_REPORTERS,
-        DEFAULT_METRICS_PREFIX,
-        DEFAULT_METRIC_REPORT_INTERVAL_SEC,
-        null,
-        List.of());
-  }
-
   public static synchronized void initMetricsRegistry(String serviceName, Config config) {
     if (isInit) {
       return;
@@ -233,9 +218,9 @@ public class PlatformMetricsRegistry {
     List<String> reporters =
         getStringList(config, METRICS_REPORTER_NAMES_CONFIG_KEY, DEFAULT_METRICS_REPORTERS);
 
-    String configuredMetricsPrefix = DEFAULT_METRICS_PREFIX;
+    metricsPrefix = DEFAULT_METRICS_PREFIX;
     if (config.hasPath(METRICS_REPORTER_PREFIX_CONFIG_KEY)) {
-      configuredMetricsPrefix = config.getString(METRICS_REPORTER_PREFIX_CONFIG_KEY);
+      metricsPrefix = config.getString(METRICS_REPORTER_PREFIX_CONFIG_KEY);
     }
 
     int reportIntervalSec = DEFAULT_METRIC_REPORT_INTERVAL_SEC;
@@ -247,28 +232,6 @@ public class PlatformMetricsRegistry {
     if (config.hasPath(METRICS_REPORT_PUSH_URL_ADDRESS)) {
       pushUrlAddress = config.getString(METRICS_REPORT_PUSH_URL_ADDRESS);
     }
-
-    initMetricsRegistry(
-        serviceName,
-        reporters,
-        configuredMetricsPrefix,
-        reportIntervalSec,
-        pushUrlAddress,
-        getStringList(config, METRICS_DEFAULT_TAGS_CONFIG_KEY, List.of()));
-  }
-
-  private static void initMetricsRegistry(
-      String serviceName,
-      List<String> reporters,
-      String configuredMetricsPrefix,
-      int reportIntervalSec,
-      @Nullable String pushUrlAddress,
-      List<String> configuredDefaultTags) {
-    if (isInit) {
-      return;
-    }
-
-    metricsPrefix = configuredMetricsPrefix;
     Map<String, String> defaultTags = new HashMap<>();
 
     // Add the service name and other given tags to the default tags list.
@@ -276,8 +239,10 @@ public class PlatformMetricsRegistry {
       defaultTags.put("app", serviceName);
     }
 
-    for (int i = 0; i + 1 < configuredDefaultTags.size(); i += 2) {
-      defaultTags.put(configuredDefaultTags.get(i), configuredDefaultTags.get(i + 1));
+    List<String> defaultTagsList =
+        getStringList(config, METRICS_DEFAULT_TAGS_CONFIG_KEY, List.of());
+    for (int i = 0; i + 1 < defaultTagsList.size(); i += 2) {
+      defaultTags.put(defaultTagsList.get(i), defaultTagsList.get(i + 1));
     }
 
     for (String reporter : reporters) {
@@ -547,10 +512,6 @@ public class PlatformMetricsRegistry {
     return meterRegistry;
   }
 
-  public static PrometheusRegistry getPrometheusRegistry() {
-    return PROMETHEUS_REGISTRY;
-  }
-
   public static synchronized void stop() {
     stopConsoleMetricsReporter();
     METRIC_REGISTRY.getNames().forEach(METRIC_REGISTRY::remove);
@@ -562,7 +523,7 @@ public class PlatformMetricsRegistry {
     Set<MeterRegistry> registries = new HashSet<>(meterRegistry.getRegistries());
     registries.forEach(meterRegistry::remove);
     registries.clear();
-    PROMETHEUS_REGISTRY.clear();
+    CollectorRegistry.defaultRegistry.clear();
     meterRegistry = new CompositeMeterRegistry();
     isInit = false;
   }
