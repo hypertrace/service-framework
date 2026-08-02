@@ -109,6 +109,7 @@ public class PlatformMetricsRegistry {
     LOGGER.info("Trying to init PrometheusReporter");
 
     // Add Prometheus registry to the composite registry.
+    // fixme: this uses deprecated prometheus client and needs to be migrated to the newer API
     meterRegistry.add(
         new PrometheusMeterRegistry(
             new PrometheusConfig() {
