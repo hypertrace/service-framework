@@ -42,3 +42,8 @@ counter.increment();
 ## References
 This library uses MicroMeter for metrics, and the API of MicroMeter is exposed directly
 to leverage the power of it. See https://micrometer.io/docs for more details.
+
+For Flink TaskManagers, `SharedMeterRegistry.getPrometheusRegistry(serviceName, port)`
+binds the process scrape endpoint and returns the Prometheus registry so a Flink metric
+reporter can bridge Flink-native metrics onto the same endpoint. Application meters still
+go through `PlatformMetricsRegistry.getMeterRegistry()`.

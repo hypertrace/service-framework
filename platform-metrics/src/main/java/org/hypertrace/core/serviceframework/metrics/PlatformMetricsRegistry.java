@@ -5,6 +5,7 @@ import com.codahale.metrics.Metric;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.cache.Cache;
 import com.typesafe.config.Config;
+import com.typesafe.config.ConfigFactory;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessMemoryMetrics;
 import io.github.mweirauch.micrometer.jvm.extras.ProcessThreadMetrics;
 import io.micrometer.common.util.StringUtils;
@@ -41,6 +42,8 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.PushGateway;
+import io.prometheus.metrics.model.registry.PrometheusRegistry;
+import io.prometheus.metrics.simpleclient.bridge.SimpleclientCollector;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -88,6 +91,7 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "defaultTags";
 
   private static final MetricRegistry METRIC_REGISTRY = new MetricRegistry();
+  private static final PrometheusRegistry PROMETHEUS_REGISTRY = new PrometheusRegistry();
   public static final List<String> DEFAULT_METRICS_REPORTERS = List.of("prometheus");
 
   private static ConsoleReporter consoleReporter;
@@ -105,6 +109,7 @@ public class PlatformMetricsRegistry {
     LOGGER.info("Trying to init PrometheusReporter");
 
     // Add Prometheus registry to the composite registry.
+    // fixme: this uses deprecated prometheus client and needs to be migrated to the newer API
     meterRegistry.add(
         new PrometheusMeterRegistry(
             new PrometheusConfig() {
@@ -124,6 +129,11 @@ public class PlatformMetricsRegistry {
             Clock.SYSTEM));
 
     CollectorRegistry.defaultRegistry.register(new DropwizardExports(METRIC_REGISTRY));
+    // exposing the metrics registered via the Collector Registry to a Prometheus instance which
+    // will be served via a separate prometheus server.
+    SimpleclientCollector.builder()
+        .collectorRegistry(CollectorRegistry.defaultRegistry)
+        .register(PROMETHEUS_REGISTRY);
   }
 
   private static void initConsoleMetricsReporter(final int reportIntervalSec) {
@@ -206,6 +216,19 @@ public class PlatformMetricsRegistry {
       return config.getStringList(path);
     }
     return defaultVal;
+  }
+
+  /**
+   * Config-free initialization used by Flink TaskManagers that cannot construct a typesafe {@link
+   * Config}. Pins the Prometheus reporter and falls back to defaults for everything else.
+   *
+   * @param serviceName service name added to the common metric tags
+   */
+  public static synchronized void initMetricsRegistryForFlink(String serviceName) {
+    Config config =
+        ConfigFactory.parseMap(
+            Map.of(METRICS_REPORTER_NAMES_CONFIG_KEY, List.of(PROMETHEUS_REPORTER_NAME)));
+    initMetricsRegistry(serviceName, config);
   }
 
   public static synchronized void initMetricsRegistry(String serviceName, Config config) {
@@ -510,6 +533,10 @@ public class PlatformMetricsRegistry {
 
   public static MeterRegistry getMeterRegistry() {
     return meterRegistry;
+  }
+
+  public static PrometheusRegistry getPrometheusRegistry() {
+    return PROMETHEUS_REGISTRY;
   }
 
   public static synchronized void stop() {

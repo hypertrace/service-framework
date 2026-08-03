@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /** Metric Registry for Prometheus Push Gateway */
+// fixme: this also uses deprecated prometheus client and needs migration
 public class PrometheusPushMeterRegistry extends PrometheusMeterRegistry {
   private static final Logger logger = LoggerFactory.getLogger(PlatformMetricsRegistry.class);
   private final PrometheusPushRegistryConfig pushConfig;
