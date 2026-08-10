@@ -280,6 +280,9 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
   private ServerBuilder<?> initializeBuilder(GrpcPlatformServerDefinition serverDefinition) {
     NettyServerBuilder builder = NettyServerBuilder.forPort(serverDefinition.getPort());
 
+    if (serverDefinition.getExecutor() != null) {
+      builder.executor(serverDefinition.getExecutor());
+    }
     if (serverDefinition.getMaxInboundMessageSize() > 0) {
       builder.maxInboundMessageSize(serverDefinition.getMaxInboundMessageSize());
     }
