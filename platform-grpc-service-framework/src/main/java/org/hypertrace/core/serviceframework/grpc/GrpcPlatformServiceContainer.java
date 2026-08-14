@@ -18,6 +18,8 @@ import io.grpc.protobuf.services.HealthStatusManager;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingClientInterceptor;
 import io.micrometer.core.instrument.binder.grpc.MetricCollectingServerInterceptor;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
@@ -26,6 +28,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -302,7 +305,25 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
             Status.Code.OK));
 
     serverDefinition.getServerInterceptors().forEach(builder::intercept);
+
+    if (serverDefinition.getExecutorType() == ExecutorType.VIRTUAL) {
+      log.info("Server [{}] using virtual thread executor", serverDefinition.getName());
+      builder.executor(createVirtualThreadExecutor());
+    }
+
     return builder;
+  }
+
+  private static ExecutorService createVirtualThreadExecutor() {
+    try {
+      final Method method = Executors.class.getMethod("newVirtualThreadPerTaskExecutor");
+      return (ExecutorService) method.invoke(null);
+    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException e) {
+      log.warn(
+          "Virtual threads not available (requires JDK 21+), falling back to cached thread pool",
+          e);
+      return Executors.newCachedThreadPool();
+    }
   }
 
   @Value

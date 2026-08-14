@@ -20,6 +20,7 @@ public class GrpcPlatformServerDefinition {
   @Builder.Default int maxRstPerMinute = 500;
   @Builder.Default Duration maxConnectionAge = Duration.ZERO;
   @Builder.Default Duration maxConnectionAgeGrace = Duration.ZERO;
+  @Builder.Default ExecutorType executorType = ExecutorType.PLATFORM;
   @Singular Collection<GrpcPlatformServiceFactory> serviceFactories;
   @Singular List<ServerInterceptor> serverInterceptors;
 }
