@@ -302,6 +302,12 @@ abstract class GrpcPlatformServiceContainer extends PlatformService {
             Status.Code.OK));
 
     serverDefinition.getServerInterceptors().forEach(builder::intercept);
+
+    if (serverDefinition.getExecutor() != null) {
+      log.info("Server [{}] using custom executor", serverDefinition.getName());
+      builder.executor(serverDefinition.getExecutor());
+    }
+
     return builder;
   }
 
