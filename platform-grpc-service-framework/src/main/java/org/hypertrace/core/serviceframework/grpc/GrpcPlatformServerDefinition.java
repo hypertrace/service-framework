@@ -4,6 +4,7 @@ import io.grpc.ServerInterceptor;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.Executor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,7 +21,7 @@ public class GrpcPlatformServerDefinition {
   @Builder.Default int maxRstPerMinute = 500;
   @Builder.Default Duration maxConnectionAge = Duration.ZERO;
   @Builder.Default Duration maxConnectionAgeGrace = Duration.ZERO;
-  @Builder.Default ExecutorType executorType = ExecutorType.PLATFORM;
+  @Builder.Default Executor executor = null;
   @Singular Collection<GrpcPlatformServiceFactory> serviceFactories;
   @Singular List<ServerInterceptor> serverInterceptors;
 }
