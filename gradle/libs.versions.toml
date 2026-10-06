@@ -1,6 +1,6 @@
 [versions]
 dropwizard-metrics = "4.2.25"
-micrometer = "1.14.4"
+micrometer = "1.15.12"
 prometheus-simpleclient = "0.16.0"
 # Aligns with the io.prometheus:* transitives pulled in by micrometer-registry-prometheus.
 prometheus = "1.3.5"
