@@ -15,6 +15,7 @@ com.google.errorprone:error_prone_annotations:2.30.0=compileClasspath,testCompil
 com.google.errorprone:error_prone_annotations:2.38.0=runtimeClasspath,testRuntimeClasspath
 com.google.guava:failureaccess:1.0.1=compileClasspath,testCompileClasspath
 com.google.guava:failureaccess:1.0.2=runtimeClasspath,testRuntimeClasspath
+com.google.guava:guava-parent:32.1.2-jre=compileClasspath,testCompileClasspath
 com.google.guava:guava:32.1.2-jre=compileClasspath,testCompileClasspath
 com.google.guava:guava:33.3.1-android=runtimeClasspath,testRuntimeClasspath
 com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava=compileClasspath,runtimeClasspath,testCompileClasspath,testRuntimeClasspath
