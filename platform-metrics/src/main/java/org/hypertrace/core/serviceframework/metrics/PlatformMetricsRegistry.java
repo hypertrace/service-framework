@@ -42,8 +42,6 @@ import io.micrometer.prometheus.PrometheusMeterRegistry;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
 import io.prometheus.client.exporter.PushGateway;
-import io.prometheus.metrics.model.registry.PrometheusRegistry;
-import io.prometheus.metrics.simpleclient.bridge.SimpleclientCollector;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -91,7 +89,6 @@ public class PlatformMetricsRegistry {
   private static final String METRICS_DEFAULT_TAGS_CONFIG_KEY = "defaultTags";
 
   private static final MetricRegistry METRIC_REGISTRY = new MetricRegistry();
-  private static final PrometheusRegistry PROMETHEUS_REGISTRY = new PrometheusRegistry();
   public static final List<String> DEFAULT_METRICS_REPORTERS = List.of("prometheus");
 
   private static ConsoleReporter consoleReporter;
@@ -129,11 +126,6 @@ public class PlatformMetricsRegistry {
             Clock.SYSTEM));
 
     CollectorRegistry.defaultRegistry.register(new DropwizardExports(METRIC_REGISTRY));
-    // exposing the metrics registered via the Collector Registry to a Prometheus instance which
-    // will be served via a separate prometheus server.
-    SimpleclientCollector.builder()
-        .collectorRegistry(CollectorRegistry.defaultRegistry)
-        .register(PROMETHEUS_REGISTRY);
   }
 
   private static void initConsoleMetricsReporter(final int reportIntervalSec) {
@@ -220,7 +212,8 @@ public class PlatformMetricsRegistry {
 
   /**
    * Config-free initialization used by Flink TaskManagers that cannot construct a typesafe {@link
-   * Config}. Pins the Prometheus reporter and falls back to defaults for everything else.
+   * Config}. Pins the Prometheus reporter, so meters land in {@link
+   * CollectorRegistry#defaultRegistry}, and falls back to defaults for everything else.
    *
    * @param serviceName service name added to the common metric tags
    */
@@ -533,10 +526,6 @@ public class PlatformMetricsRegistry {
 
   public static MeterRegistry getMeterRegistry() {
     return meterRegistry;
-  }
-
-  public static PrometheusRegistry getPrometheusRegistry() {
-    return PROMETHEUS_REGISTRY;
   }
 
   public static synchronized void stop() {
